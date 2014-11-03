@@ -1,0 +1,7 @@
+{
+	"name": "magic-string",
+	"author": "Rich Harris",
+	"version": "0.1.0",
+	"main": "index.js",
+	"license": "MIT"
+}
