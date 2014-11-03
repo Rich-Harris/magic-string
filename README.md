@@ -1,0 +1,3 @@
+# magic-string
+
+README coming soon...
