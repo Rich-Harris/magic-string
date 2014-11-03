@@ -1,4 +1,5 @@
 var assert = require( 'assert' ),
+	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
 	MagicString = require( '../' );
 
 describe( 'MagicString', function () {
@@ -140,32 +141,53 @@ describe( 'MagicString', function () {
 		assert.equal( s.toString(), '\txyzaef\n\tgklxyz' );
 	});
 
-	it( 'should allow the same content to be replaced more than once, barring overlaps', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.replace( 3, 6, 'DEF' );
-		s.replace( 3, 6, '345' );
-		assert.equal( s.toString(), 'abc345ghijkl' );
-
-		s.replace( 7, 11, 'xx' );
-		s.replace( 6, 12, 'yy' );
-		assert.equal( s.toString(), 'abc345yy' );
-	});
-
 	it( 'should throw an error if overlapping replacements are attempted', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 
 		s.replace( 7, 11, 'xx' );
 		assert.throws( function () {
 			s.replace( 8, 12, 'yy' );
-		}, /Cannot make overlapping replacements/ );
+		}, /Cannot replace the same content twice/ );
 		assert.equal( s.toString(), 'abcdefgxxl' );
 
 		s.replace( 6, 12, 'yes' );
 		assert.equal( s.toString(), 'abcdefyes' );
 	});
 
-	it( 'should generate a sourcemap', function () {
-		assert.equal( false );
+	it.only( 'should generate a sourcemap', function () {
+		var s, map, smc, loc;
+
+		s = new MagicString( 'abcdefghijkl' );
+
+		s.remove( 3, 9 );
+		map = s.generateMap({
+			file: 'content.md.map',
+			source: 'content.md',
+			includeContent: true,
+			hires: true
+		});
+
+		assert.equal( map.version, 3 );
+		assert.equal( map.file, 'content.md.map' );
+		assert.deepEqual( map.sources, [ 'content.md' ]);
+		assert.deepEqual( map.sourcesContent, [ 'abcdefghijkl' ]);
+
+		smc = new SourceMapConsumer( map );
+
+		loc = smc.originalPositionFor({ line: 1, column: 0 });
+		assert.equal( loc.line, 1 );
+		assert.equal( loc.column, 0 );
+
+		loc = smc.originalPositionFor({ line: 1, column: 1 });
+		assert.equal( loc.line, 1 );
+		assert.equal( loc.column, 1 );
+
+		loc = smc.originalPositionFor({ line: 1, column: 3 });
+		assert.equal( loc.line, 1 );
+		assert.equal( loc.column, 9 );
+
+		loc = smc.originalPositionFor({ line: 1, column: 4 });
+		assert.equal( loc.line, 1 );
+		assert.equal( loc.column, 10 );
 	});
 });
