@@ -2,22 +2,8 @@ var assert = require( 'assert' ),
 	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
 	MagicString = require( '../' );
 
-describe( 'MagicString', function () {
-	it( 'should correctly locate characters in an unmodified string', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-		assert.equal( s.locate( 0 ), 0 );
-		assert.equal( s.locate( 6 ), 6 );
-		assert.equal( s.locate( 11 ), 11 );
-	});
-
-	it ( 'should throw an error if character is out of bounds', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		assert.throws( function () { s.locate( -1 ); });
-		assert.throws( function () { s.locate( 12 ); });
-	});
-
-	it( 'should allow characters to be removed', function () {
+describe( 'MagicString$remove', function () {
+	it( 'should remove characters from the original string', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 
 		s.remove( 1, 5 );
@@ -27,118 +13,18 @@ describe( 'MagicString', function () {
 		assert.equal( s.toString(), 'afghi' );
 	});
 
-	it( 'should correctly locate characters in a string with characters removed', function () {
+	it( 'should return this', function () {
 		var s = new MagicString( 'abcdefghijkl' );
-
-		s.remove( 1, 5 );
-		assert.equal( s.locate( 0 ), 0 );
-		assert.equal( s.locate( 1 ), null );
-		assert.equal( s.locate( 2 ), null );
-		assert.equal( s.locate( 5 ), 1 );
-		assert.equal( s.locate( 11 ), 7 );
+		assert.strictEqual( s.remove( 3, 4 ), s );
 	});
+});
 
-	it( 'should allow characters to be replaced', function () {
+describe( 'MagicString$replace', function () {
+	it( 'should replace characters', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 
 		s.replace( 5, 8, 'FGH' );
 		assert.equal( s.toString(), 'abcdeFGHijkl' );
-	});
-
-	it( 'should correctly locate characters in a string with characters replaced', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.replace( 5, 8, 'FGH' );
-		assert.equal( s.locate( 0 ), 0 );
-		assert.equal( s.locate( 4 ), 4 );
-		assert.equal( s.locate( 5 ), null );
-		assert.equal( s.locate( 7 ), null );
-		assert.equal( s.locate( 8 ), 8 );
-
-		s.replace( 1, 4, 'X' );
-		assert.equal( s.toString(), 'aXeFGHijkl' );
-		assert.equal( s.locate( 2 ), null );
-		assert.equal( s.locate( 4 ), 2 );
-		assert.equal( s.locate( 8 ), 6 );
-	});
-
-	it( 'should allow content to be prepended', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.prepend( 'xyz' );
-		assert.equal( s.toString(), 'xyzabcdefghijkl' );
-		assert.equal( s.locate( 0 ), 3 );
-		assert.equal( s.locate( 11 ), 14 );
-
-		s.prepend( 'xyz' );
-		assert.equal( s.toString(), 'xyzxyzabcdefghijkl' );
-		assert.equal( s.locate( 0 ), 6 );
-		assert.equal( s.locate( 11 ), 17 );
-	});
-
-	it( 'should allow content to be appended', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.append( 'xyz' );
-		assert.equal( s.toString(), 'abcdefghijklxyz' );
-		assert.equal( s.locate( 0 ), 0 );
-		assert.equal( s.locate( 11 ), 11 );
-
-		s.append( 'xyz' );
-		assert.equal( s.toString(), 'abcdefghijklxyzxyz' );
-		assert.equal( s.locate( 0 ), 0 );
-		assert.equal( s.locate( 11 ), 11 );
-	});
-
-	it( 'should locate the origin of characters in the generated string', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		assert.equal( s.locateOrigin( 4 ), 4 );
-		assert.equal( s.locateOrigin( 11 ), 11 );
-
-		s.remove( 1, 3 );
-		assert.equal( s.locateOrigin( 0 ), 0 );
-		assert.equal( s.locateOrigin( 1 ), 3 );
-		assert.equal( s.locateOrigin( 2 ), 4 );
-	});
-
-	it( 'should indent content with a single tab character by default', function () {
-		var s = new MagicString( 'abc\ndef\nghi\njkl' );
-
-		s.indent();
-		assert.equal( s.toString(), '\tabc\n\tdef\n\tghi\n\tjkl' );
-
-		assert.equal( s.locate( 0 ), 1 );
-		assert.equal( s.locate( 4 ), 6 );
-		assert.equal( s.locate( 5 ), 7 );
-		assert.equal( s.locate( 8 ), 11 );
-		assert.equal( s.locate( 12 ), 16 );
-		assert.equal( s.locate( 13 ), 17 );
-
-		s.indent();
-		assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\t\tghi\n\t\tjkl' );
-
-		assert.equal( s.locate( 0 ), 2 );
-		assert.equal( s.locate( 4 ), 8 );
-		assert.equal( s.locate( 8 ), 14 );
-		assert.equal( s.locate( 12 ), 20 );
-	});
-
-	it( 'should indent content, using existing indentation as a guide', function () {
-		var s = new MagicString( 'abc\n  def\n    ghi\n  jkl' );
-
-		s.indent();
-		assert.equal( s.toString(), '  abc\n    def\n      ghi\n    jkl' );
-
-		s.indent();
-		assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
-	});
-
-	it( 'should allow method calls to be chained', function () {
-		var s = new MagicString( 'abcdef\nghijkl' );
-
-		assert.strictEqual( s.prepend( 'xyz' ).append( 'xyz' ).indent().remove( 1, 4 ).remove( 8, 11 ), s );
-		assert.equal( s.toString(), '\txyzaef\n\tgklxyz' );
 	});
 
 	it( 'should throw an error if overlapping replacements are attempted', function () {
@@ -154,7 +40,75 @@ describe( 'MagicString', function () {
 		assert.equal( s.toString(), 'abcdefyes' );
 	});
 
-	it.only( 'should generate a sourcemap', function () {
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.replace( 3, 4, 'D' ), s );
+	});
+});
+
+describe( 'MagicString$prepend', function () {
+	it( 'should prepend content', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.prepend( 'xyz' );
+		assert.equal( s.toString(), 'xyzabcdefghijkl' );
+
+		s.prepend( 'xyz' );
+		assert.equal( s.toString(), 'xyzxyzabcdefghijkl' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.prepend( 'xyz' ), s );
+	});
+});
+
+describe( 'MagicString$append', function () {
+	it( 'should append content', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.append( 'xyz' );
+		assert.equal( s.toString(), 'abcdefghijklxyz' );
+
+		s.append( 'xyz' );
+		assert.equal( s.toString(), 'abcdefghijklxyzxyz' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.append( 'xyz' ), s );
+	});
+});
+
+describe( 'MagicString$indent', function () {
+	it( 'should indent content with a single tab character by default', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+		s.indent();
+		assert.equal( s.toString(), '\tabc\n\tdef\n\tghi\n\tjkl' );
+
+		s.indent();
+		assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\t\tghi\n\t\tjkl' );
+	});
+
+	it( 'should indent content, using existing indentation as a guide', function () {
+		var s = new MagicString( 'abc\n  def\n    ghi\n  jkl' );
+
+		s.indent();
+		assert.equal( s.toString(), '  abc\n    def\n      ghi\n    jkl' );
+
+		s.indent();
+		assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.indent(), s );
+	});
+});
+
+describe( 'MagicString$generateMap', function () {
+	it( 'should generate a sourcemap', function () {
 		var s, map, smc, loc;
 
 		s = new MagicString( 'abcdefghijkl' );
@@ -189,5 +143,107 @@ describe( 'MagicString', function () {
 		loc = smc.originalPositionFor({ line: 1, column: 4 });
 		assert.equal( loc.line, 1 );
 		assert.equal( loc.column, 10 );
+	});
+});
+
+describe( 'MagicString$locate', function () {
+	it( 'should correctly locate characters in an unmodified string', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.equal( s.locate( 0 ), 0 );
+		assert.equal( s.locate( 6 ), 6 );
+		assert.equal( s.locate( 11 ), 11 );
+	});
+
+	it ( 'should throw an error if character is out of bounds', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		assert.throws( function () { s.locate( -1 ); });
+		assert.throws( function () { s.locate( 12 ); });
+	});
+
+	it( 'should correctly locate characters in a string with characters removed', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.remove( 1, 5 );
+		assert.equal( s.locate( 0 ), 0 );
+		assert.equal( s.locate( 1 ), null );
+		assert.equal( s.locate( 2 ), null );
+		assert.equal( s.locate( 5 ), 1 );
+		assert.equal( s.locate( 11 ), 7 );
+	});
+
+	it( 'should correctly locate characters in a string with characters replaced', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 5, 8, 'FGH' );
+		assert.equal( s.locate( 0 ), 0 );
+		assert.equal( s.locate( 4 ), 4 );
+		assert.equal( s.locate( 5 ), null );
+		assert.equal( s.locate( 7 ), null );
+		assert.equal( s.locate( 8 ), 8 );
+
+		s.replace( 1, 4, 'X' );
+		assert.equal( s.toString(), 'aXeFGHijkl' );
+		assert.equal( s.locate( 2 ), null );
+		assert.equal( s.locate( 4 ), 2 );
+		assert.equal( s.locate( 8 ), 6 );
+	});
+
+	it( 'should correctly locate characters in a string that has had content prepended', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.prepend( 'xyz' );
+		assert.equal( s.locate( 0 ), 3 );
+		assert.equal( s.locate( 11 ), 14 );
+
+		s.prepend( 'xyz' );
+		assert.equal( s.locate( 0 ), 6 );
+		assert.equal( s.locate( 11 ), 17 );
+	});
+
+	it( 'should correctly locate characters in a string that has had content appended', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.append( 'xyz' );
+		assert.equal( s.locate( 0 ), 0 );
+		assert.equal( s.locate( 11 ), 11 );
+
+		s.append( 'xyz' );
+		assert.equal( s.locate( 0 ), 0 );
+		assert.equal( s.locate( 11 ), 11 );
+	});
+
+	it( 'should correctly locate characters in indented code', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+		s.indent();
+
+		assert.equal( s.locate( 0 ), 1 );
+		assert.equal( s.locate( 4 ), 6 );
+		assert.equal( s.locate( 5 ), 7 );
+		assert.equal( s.locate( 8 ), 11 );
+		assert.equal( s.locate( 12 ), 16 );
+		assert.equal( s.locate( 13 ), 17 );
+
+		s.indent();
+
+		assert.equal( s.locate( 0 ), 2 );
+		assert.equal( s.locate( 4 ), 8 );
+		assert.equal( s.locate( 8 ), 14 );
+		assert.equal( s.locate( 12 ), 20 );
+	});
+});
+
+describe( 'MagicString$locateOrigin', function () {
+	it( 'should locate the origin of characters in the generated string', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		assert.equal( s.locateOrigin( 4 ), 4 );
+		assert.equal( s.locateOrigin( 11 ), 11 );
+
+		s.remove( 1, 3 );
+		assert.equal( s.locateOrigin( 0 ), 0 );
+		assert.equal( s.locateOrigin( 1 ), 3 );
+		assert.equal( s.locateOrigin( 2 ), 4 );
 	});
 });
