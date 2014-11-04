@@ -9,5 +9,12 @@
   },
   "devDependencies": {
     "source-map": "^0.1.40"
-  }
+  },
+  "keywords": [
+    "string",
+    "string manipulation",
+    "sourcemap",
+    "templating",
+    "transpilation"
+  ]
 }
