@@ -146,6 +146,20 @@ describe( 'MagicString$generateMap', function () {
 	});
 });
 
+describe( 'MagicString$clone', function () {
+	it( 'should clone a magic string', function () {
+		var s = new MagicString( 'abcdefghijkl' ),
+			c;
+
+		s.replace( 3, 9, 'XYZ' );
+		c = s.clone();
+
+		assert.notEqual( s, c );
+		assert.equal( c.toString(), 'abcXYZjkl' );
+		assert.equal( c.locate( 9 ), 6 );
+	});
+});
+
 describe( 'MagicString$locate', function () {
 	it( 'should correctly locate characters in an unmodified string', function () {
 		var s = new MagicString( 'abcdefghijkl' );
