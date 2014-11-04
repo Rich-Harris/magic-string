@@ -101,6 +101,16 @@ describe( 'MagicString$indent', function () {
 		assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
 	});
 
+	it( 'should indent content using the supplied indent string', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+		s.indent( '  ');
+		assert.equal( s.toString(), '  abc\n  def\n  ghi\n  jkl' );
+
+		s.indent( '>>' );
+		assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
+	});
+
 	it( 'should return this', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 		assert.strictEqual( s.indent(), s );
