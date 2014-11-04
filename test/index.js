@@ -2,67 +2,6 @@ var assert = require( 'assert' ),
 	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
 	MagicString = require( '../' );
 
-describe( 'MagicString$remove', function () {
-	it( 'should remove characters from the original string', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.remove( 1, 5 );
-		assert.equal( s.toString(), 'afghijkl' );
-
-		s.remove( 9, 12 );
-		assert.equal( s.toString(), 'afghi' );
-	});
-
-	it( 'should return this', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-		assert.strictEqual( s.remove( 3, 4 ), s );
-	});
-});
-
-describe( 'MagicString$replace', function () {
-	it( 'should replace characters', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.replace( 5, 8, 'FGH' );
-		assert.equal( s.toString(), 'abcdeFGHijkl' );
-	});
-
-	it( 'should throw an error if overlapping replacements are attempted', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.replace( 7, 11, 'xx' );
-		assert.throws( function () {
-			s.replace( 8, 12, 'yy' );
-		}, /Cannot replace the same content twice/ );
-		assert.equal( s.toString(), 'abcdefgxxl' );
-
-		s.replace( 6, 12, 'yes' );
-		assert.equal( s.toString(), 'abcdefyes' );
-	});
-
-	it( 'should return this', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-		assert.strictEqual( s.replace( 3, 4, 'D' ), s );
-	});
-});
-
-describe( 'MagicString$prepend', function () {
-	it( 'should prepend content', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-
-		s.prepend( 'xyz' );
-		assert.equal( s.toString(), 'xyzabcdefghijkl' );
-
-		s.prepend( 'xyz' );
-		assert.equal( s.toString(), 'xyzxyzabcdefghijkl' );
-	});
-
-	it( 'should return this', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-		assert.strictEqual( s.prepend( 'xyz' ), s );
-	});
-});
-
 describe( 'MagicString$append', function () {
 	it( 'should append content', function () {
 		var s = new MagicString( 'abcdefghijkl' );
@@ -80,40 +19,17 @@ describe( 'MagicString$append', function () {
 	});
 });
 
-describe( 'MagicString$indent', function () {
-	it( 'should indent content with a single tab character by default', function () {
-		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+describe( 'MagicString$clone', function () {
+	it( 'should clone a magic string', function () {
+		var s = new MagicString( 'abcdefghijkl' ),
+			c;
 
-		s.indent();
-		assert.equal( s.toString(), '\tabc\n\tdef\n\tghi\n\tjkl' );
+		s.replace( 3, 9, 'XYZ' );
+		c = s.clone();
 
-		s.indent();
-		assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\t\tghi\n\t\tjkl' );
-	});
-
-	it( 'should indent content, using existing indentation as a guide', function () {
-		var s = new MagicString( 'abc\n  def\n    ghi\n  jkl' );
-
-		s.indent();
-		assert.equal( s.toString(), '  abc\n    def\n      ghi\n    jkl' );
-
-		s.indent();
-		assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
-	});
-
-	it( 'should indent content using the supplied indent string', function () {
-		var s = new MagicString( 'abc\ndef\nghi\njkl' );
-
-		s.indent( '  ');
-		assert.equal( s.toString(), '  abc\n  def\n  ghi\n  jkl' );
-
-		s.indent( '>>' );
-		assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
-	});
-
-	it( 'should return this', function () {
-		var s = new MagicString( 'abcdefghijkl' );
-		assert.strictEqual( s.indent(), s );
+		assert.notEqual( s, c );
+		assert.equal( c.toString(), 'abcXYZjkl' );
+		assert.equal( c.locate( 9 ), 6 );
 	});
 });
 
@@ -156,17 +72,40 @@ describe( 'MagicString$generateMap', function () {
 	});
 });
 
-describe( 'MagicString$clone', function () {
-	it( 'should clone a magic string', function () {
-		var s = new MagicString( 'abcdefghijkl' ),
-			c;
+describe( 'MagicString$indent', function () {
+	it( 'should indent content with a single tab character by default', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
 
-		s.replace( 3, 9, 'XYZ' );
-		c = s.clone();
+		s.indent();
+		assert.equal( s.toString(), '\tabc\n\tdef\n\tghi\n\tjkl' );
 
-		assert.notEqual( s, c );
-		assert.equal( c.toString(), 'abcXYZjkl' );
-		assert.equal( c.locate( 9 ), 6 );
+		s.indent();
+		assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\t\tghi\n\t\tjkl' );
+	});
+
+	it( 'should indent content, using existing indentation as a guide', function () {
+		var s = new MagicString( 'abc\n  def\n    ghi\n  jkl' );
+
+		s.indent();
+		assert.equal( s.toString(), '  abc\n    def\n      ghi\n    jkl' );
+
+		s.indent();
+		assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
+	});
+
+	it( 'should indent content using the supplied indent string', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+		s.indent( '  ');
+		assert.equal( s.toString(), '  abc\n  def\n  ghi\n  jkl' );
+
+		s.indent( '>>' );
+		assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.indent(), s );
 	});
 });
 
@@ -256,6 +195,39 @@ describe( 'MagicString$locate', function () {
 		assert.equal( s.locate( 8 ), 14 );
 		assert.equal( s.locate( 12 ), 20 );
 	});
+
+	it( 'should correctly locate characters in trimmed original content', function () {
+		var s = new MagicString( '   abcdefghijkl   ' );
+
+		s.trim();
+		assert.equal( s.locate( 0 ), null );
+		assert.equal( s.locate( 2 ), null );
+		assert.equal( s.locate( 3 ), 0 );
+		assert.equal( s.locate( 14 ), 11 );
+		assert.equal( s.locate( 15 ), null );
+	});
+
+	it( 'should correctly locate characters in trimmed replaced content', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 0, 3, '   ' ).replace( 9, 12, '   ' ).trim();
+		assert.equal( s.locate( 0 ), null );
+		assert.equal( s.locate( 2 ), null );
+		assert.equal( s.locate( 3 ), 0 );
+
+		assert.equal( s.locate( 8 ), 5 );
+		assert.equal( s.locate( 9 ), null );
+	});
+
+	it.only( 'should correctly locate characters in trimmed appended/prepended content', function () {
+		var s = new MagicString( ' abcdefghijkl ' );
+
+		s.prepend( '  ' ).append( '  ' ).trim();
+		assert.equal( s.locate( 0 ), null );
+		assert.equal( s.locate( 1 ), 0 );
+		assert.equal( s.locate( 12 ), 11 );
+		assert.equal( s.locate( 13 ), null );
+	});
 });
 
 describe( 'MagicString$locateOrigin', function () {
@@ -269,5 +241,89 @@ describe( 'MagicString$locateOrigin', function () {
 		assert.equal( s.locateOrigin( 0 ), 0 );
 		assert.equal( s.locateOrigin( 1 ), 3 );
 		assert.equal( s.locateOrigin( 2 ), 4 );
+	});
+});
+
+describe( 'MagicString$prepend', function () {
+	it( 'should prepend content', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.prepend( 'xyz' );
+		assert.equal( s.toString(), 'xyzabcdefghijkl' );
+
+		s.prepend( 'xyz' );
+		assert.equal( s.toString(), 'xyzxyzabcdefghijkl' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.prepend( 'xyz' ), s );
+	});
+});
+
+describe( 'MagicString$remove', function () {
+	it( 'should remove characters from the original string', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.remove( 1, 5 );
+		assert.equal( s.toString(), 'afghijkl' );
+
+		s.remove( 9, 12 );
+		assert.equal( s.toString(), 'afghi' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.remove( 3, 4 ), s );
+	});
+});
+
+describe( 'MagicString$replace', function () {
+	it( 'should replace characters', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 5, 8, 'FGH' );
+		assert.equal( s.toString(), 'abcdeFGHijkl' );
+	});
+
+	it( 'should throw an error if overlapping replacements are attempted', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 7, 11, 'xx' );
+		assert.throws( function () {
+			s.replace( 8, 12, 'yy' );
+		}, /Cannot replace the same content twice/ );
+		assert.equal( s.toString(), 'abcdefgxxl' );
+
+		s.replace( 6, 12, 'yes' );
+		assert.equal( s.toString(), 'abcdefyes' );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.replace( 3, 4, 'D' ), s );
+	});
+});
+
+describe( 'MagicString$trim', function () {
+	it( 'should trim original content', function () {
+		var s = new MagicString( '   abcdefghijkl   ' );
+
+		s.trim();
+		assert.equal( s.toString(), 'abcdefghijkl' );
+	});
+
+	it( 'should trim replaced content', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 0, 3, '   ' ).replace( 9, 12, '   ' ).trim();
+		assert.equal( s.toString(), 'defghi' );
+	});
+
+	it( 'should trim appended/prepended content', function () {
+		var s = new MagicString( ' abcdefghijkl ' );
+
+		s.prepend( '  ' ).append( '  ' ).trim();
+		assert.equal( s.toString(), 'abcdefghijkl' );
 	});
 });
