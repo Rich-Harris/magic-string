@@ -219,7 +219,7 @@ describe( 'MagicString$locate', function () {
 		assert.equal( s.locate( 9 ), null );
 	});
 
-	it.only( 'should correctly locate characters in trimmed appended/prepended content', function () {
+	it( 'should correctly locate characters in trimmed appended/prepended content', function () {
 		var s = new MagicString( ' abcdefghijkl ' );
 
 		s.prepend( '  ' ).append( '  ' ).trim();
@@ -302,6 +302,23 @@ describe( 'MagicString$replace', function () {
 	it( 'should return this', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 		assert.strictEqual( s.replace( 3, 4, 'D' ), s );
+	});
+});
+
+describe( 'MagicString$slice', function () {
+	it( 'should return the generated content between the specified original characters', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		assert.equal( s.slice( 3, 9 ), 'defghi' );
+		s.replace( 4, 8, 'XX' );
+		assert.equal( s.slice( 3, 9 ), 'dXXi' );
+		s.replace( 2, 10, 'ZZ' );
+		console.log( 's.toString()', s.toString() );
+		assert.equal( s.slice( 1, 11 ), 'bZZk' );
+
+		assert.throws( function () {
+			s.slice( 2, 10 );
+		});
 	});
 });
 
