@@ -84,6 +84,10 @@ Removes the characters from `start` to `end` (of the original string, **not** th
 
 Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
 
+### s.slice( start, end )
+
+Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string. Throws error if the indices are for characters that were already removed.
+
 ### s.toString()
 
 Returns the generated string.
