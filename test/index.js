@@ -121,7 +121,7 @@ describe( 'MagicString$locate', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 
 		assert.throws( function () { s.locate( -1 ); });
-		assert.throws( function () { s.locate( 12 ); });
+		assert.throws( function () { s.locate( 13 ); });
 	});
 
 	it( 'should correctly locate characters in a string with characters removed', function () {
@@ -297,6 +297,13 @@ describe( 'MagicString$replace', function () {
 
 		s.replace( 6, 12, 'yes' );
 		assert.equal( s.toString(), 'abcdefyes' );
+	});
+
+	it( 'should replace characters at the end of the original string', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 12, 12, '<<<' );
+		assert.equal( s.toString(), 'abcdefghijkl<<<' );
 	});
 
 	it( 'should return this', function () {
