@@ -114,6 +114,16 @@ describe( 'MagicString$indent', function () {
 		assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
 	});
 
+	it( 'should prevent excluded characters from being indented', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+		s.indent( '  ', { exclude: [ 7, 15 ] });
+		assert.equal( s.toString(), '  abc\n  def\nghi\njkl' );
+
+		s.indent( '>>', { exclude: [ 7, 15 ] });
+		assert.equal( s.toString(), '>>  abc\n>>  def\nghi\njkl' );
+	});
+
 	it( 'should return this', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 		assert.strictEqual( s.indent(), s );

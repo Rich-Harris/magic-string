@@ -54,23 +54,78 @@ MagicString.prototype = {
 		return map;
 	},
 
-	indent: function ( indentStr ) {
+	indent: function ( indentStr, options ) {
 		var self = this,
 			mappings = this.mappings,
 			pattern = /\n/g,
 			match,
 			inserts = [ 0 ],
-			i;
+			i,
+			exclusions,
+			lastEnd;
+
+		if ( typeof indentStr === 'object' ) {
+			options = indentStr;
+			indentStr = undefined;
+		}
 
 		indentStr = indentStr !== undefined ? indentStr : this.indentStr;
 
-		while ( match = pattern.exec( this.str ) ) {
-			inserts.push( match.index + 1 );
+		options = options || {};
+
+		// Process exclusion ranges
+		if ( options.exclude ) {
+			exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
+
+			exclusions = exclusions.map( function ( range ) {
+				var rangeStart, rangeEnd;
+
+				rangeStart = self.locate( range[0] );
+				rangeEnd = self.locate( range[1] );
+
+				if ( rangeStart === null || rangeEnd === null ) {
+					throw new Error( 'Cannot use indices of replaced characters as exclusion ranges' );
+				}
+
+				return [ rangeStart, rangeEnd ];
+			});
+
+			exclusions.sort( function ( a, b ) {
+				return a[0] - b[0];
+			});
+
+			// check for overlaps
+			lastEnd = -1;
+			exclusions.forEach( function ( range ) {
+				if ( range[0] < lastEnd ) {
+					throw new Error( 'Exclusion ranges cannot overlap' );
+				}
+
+				lastEnd = range[1];
+			});
 		}
 
-		this.str = indentStr + this.str.replace( pattern, '\n' + indentStr );
+		if ( !exclusions ) {
+			while ( match = pattern.exec( this.str ) ) {
+				inserts.push( match.index + 1 );
+			}
+
+			this.str = indentStr + this.str.replace( pattern, '\n' + indentStr );
+		} else {
+			while ( match = pattern.exec( this.str ) ) {
+				if ( !isExcluded( match.index ) ) {
+					inserts.push( match.index + 1 );
+				}
+			}
+
+			this.str = indentStr + this.str.replace( pattern, function ( match, index ) {
+				return isExcluded( index ) ? match : '\n' + indentStr;
+			});
+		}
 
 		inserts.forEach( function ( index, i ) {
+			var origin;
+
 			do {
 				origin = self.locateOrigin( index++ );
 			} while ( origin == null && index < self.str.length );
@@ -79,6 +134,22 @@ MagicString.prototype = {
 		});
 
 		return this;
+
+		function isExcluded ( index ) {
+			var i = exclusions.length, range;
+
+			while ( i-- ) {
+				range = exclusions[i];
+
+				if ( range[1] < index ) {
+					return false;
+				}
+
+				if ( range[0] <= index ) {
+					return true;
+				}
+			}
+		}
 	},
 
 	// get current location of character in original string

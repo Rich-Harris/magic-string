@@ -1,5 +1,9 @@
 # changelog
 
+## 0.1.5
+
+* `s.indent({ exclude: [ x, y ] })` prevents lines between (original) characters `x` and `y` from being indented. Multiple exclusion ranges are also supported (e.g. `exclude: [[a, b], [c, d]]`)
+
 ## 0.1.4
 
 * `s.locate()` doesn't throw out-of-bound error if index is equal to original string's length

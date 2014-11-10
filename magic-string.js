@@ -1,23 +1,23 @@
 (function (global, factory) {
-	
-		'use strict';
-	
-		if (typeof define === 'function' && define.amd) {
-			// export as AMD
-			define(['vlq'], factory);
-		} else if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
-			// node/browserify
-			module.exports = factory(require('vlq'));
-		} else {
-			// browser global
-			global.MagicString = factory(global.vlq);
-		}
-	
-	}(typeof window !== 'undefined' ? window : this, function (vlq__default) {
-	
-		'use strict';
-	
-		function guess_indent__guessIndent ( code ) {
+
+	'use strict';
+
+	if (typeof define === 'function' && define.amd) {
+		// export as AMD
+		define(['vlq'], factory);
+	} else if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
+		// node/browserify
+		module.exports = factory(require('vlq'));
+	} else {
+		// browser global
+		global.MagicString = factory(global.vlq);
+	}
+
+}(typeof window !== 'undefined' ? window : this, function (vlq__default) {
+
+	'use strict';
+
+function guess_indent__guessIndent ( code ) {
 		var lines, tabbed, spaced, min;
 	
 		lines = code.split( '\n' );
@@ -46,8 +46,8 @@
 		return new Array( min + 1 ).join( ' ' );
 	}
 	var guess_indent__default = guess_indent__guessIndent;
-	
-	function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
+
+function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 		var lineStart,
 			locations,
 			lines,
@@ -173,8 +173,8 @@
 	
 		throw new Error( 'Character out of bounds' );
 	}
-	
-	var magic_string__MagicString = function ( string ) {
+
+var magic_string__MagicString = function ( string ) {
 		this.original = this.str = string;
 		this.mappings = magic_string__initMappings( string.length );
 	
@@ -227,23 +227,78 @@
 			return map;
 		},
 	
-		indent: function ( indentStr ) {
+		indent: function ( indentStr, options ) {
 			var self = this,
 				mappings = this.mappings,
 				pattern = /\n/g,
 				match,
 				inserts = [ 0 ],
-				i;
+				i,
+				exclusions,
+				lastEnd;
+	
+			if ( typeof indentStr === 'object' ) {
+				options = indentStr;
+				indentStr = undefined;
+			}
 	
 			indentStr = indentStr !== undefined ? indentStr : this.indentStr;
 	
-			while ( match = pattern.exec( this.str ) ) {
-				inserts.push( match.index + 1 );
+			options = options || {};
+	
+			// Process exclusion ranges
+			if ( options.exclude ) {
+				exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
+	
+				exclusions = exclusions.map( function ( range ) {
+					var rangeStart, rangeEnd;
+	
+					rangeStart = self.locate( range[0] );
+					rangeEnd = self.locate( range[1] );
+	
+					if ( rangeStart === null || rangeEnd === null ) {
+						throw new Error( 'Cannot use indices of replaced characters as exclusion ranges' );
+					}
+	
+					return [ rangeStart, rangeEnd ];
+				});
+	
+				exclusions.sort( function ( a, b ) {
+					return a[0] - b[0];
+				});
+	
+				// check for overlaps
+				lastEnd = -1;
+				exclusions.forEach( function ( range ) {
+					if ( range[0] < lastEnd ) {
+						throw new Error( 'Exclusion ranges cannot overlap' );
+					}
+	
+					lastEnd = range[1];
+				});
 			}
 	
-			this.str = indentStr + this.str.replace( pattern, '\n' + indentStr );
+			if ( !exclusions ) {
+				while ( match = pattern.exec( this.str ) ) {
+					inserts.push( match.index + 1 );
+				}
+	
+				this.str = indentStr + this.str.replace( pattern, '\n' + indentStr );
+			} else {
+				while ( match = pattern.exec( this.str ) ) {
+					if ( !isExcluded( match.index ) ) {
+						inserts.push( match.index + 1 );
+					}
+				}
+	
+				this.str = indentStr + this.str.replace( pattern, function ( match, index ) {
+					return isExcluded( index ) ? match : '\n' + indentStr;
+				});
+			}
 	
 			inserts.forEach( function ( index, i ) {
+				var origin;
+	
 				do {
 					origin = self.locateOrigin( index++ );
 				} while ( origin == null && index < self.str.length );
@@ -252,6 +307,22 @@
 			});
 	
 			return this;
+	
+			function isExcluded ( index ) {
+				var i = exclusions.length, range;
+	
+				while ( i-- ) {
+					range = exclusions[i];
+	
+					if ( range[1] < index ) {
+						return false;
+					}
+	
+					if ( range[0] <= index ) {
+						return true;
+					}
+				}
+			}
 		},
 	
 		// get current location of character in original string
@@ -405,7 +476,7 @@
 	}
 	
 	var magic_string__default = magic_string__MagicString;
-	
-	return magic_string__default;
+
+return magic_string__default;
 
 }));
