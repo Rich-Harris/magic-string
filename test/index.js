@@ -1,6 +1,17 @@
 var assert = require( 'assert' ),
 	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
-	MagicString = require( '../' );
+	MagicString;
+
+before( function () {
+	return require( '../gobblefile' ).build({
+		dest: '.tmp',
+		force: true
+	}).then( function () {
+		MagicString = require( '../.tmp/magic-string' );
+	}).catch( function ( err ) {
+		console.log( 'Error building library:', err );
+	});
+});
 
 describe( 'MagicString$append', function () {
 	it( 'should append content', function () {

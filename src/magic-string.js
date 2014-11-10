@@ -1,5 +1,5 @@
-var guessIndent = require( './guessIndent' ),
-	encodeMappings = require( './encodeMappings' );
+import guessIndent from './guess-indent';
+import encodeMappings from './encode-mappings';
 
 var MagicString = function ( string ) {
 	this.original = this.str = string;
@@ -231,5 +231,4 @@ function blank ( mappings, start, i ) {
 	}
 }
 
-module.exports = MagicString;
-
+export default MagicString;
