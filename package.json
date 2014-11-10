@@ -22,7 +22,7 @@
   "scripts": {
     "test": "mocha",
     "build": "mocha; cp .tmp/magic-string.js magic-string.js",
-    "prepublish": "build"
+    "prepublish": "npm run build"
   },
   "files": [
     "magic-string.js",
