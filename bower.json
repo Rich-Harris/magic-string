@@ -1,0 +1,27 @@
+{
+  "name": "magic-string",
+  "author": "Rich Harris",
+  "version": "0.1.6",
+  "repository": "https://github.com/rich-harris/magic-string",
+  "main": "magic-string.js",
+  "license": "MIT",
+  "dependencies": {
+    "vlq": "^0.1.0"
+  },
+  "keywords": [
+    "string",
+    "string manipulation",
+    "sourcemap",
+    "templating",
+    "transpilation"
+  ],
+  "ignore": [
+    ".*",
+    "*.json",
+    "example",
+    "node_modules",
+    "sandbox",
+    "src",
+    "test"
+  ]
+}

@@ -17,7 +17,7 @@
 
 	'use strict';
 
-function guess_indent__guessIndent ( code ) {
+	function guess_indent__guessIndent ( code ) {
 		var lines, tabbed, spaced, min;
 	
 		lines = code.split( '\n' );
@@ -47,7 +47,7 @@ function guess_indent__guessIndent ( code ) {
 	}
 	var guess_indent__default = guess_indent__guessIndent;
 
-function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
+	function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 		var lineStart,
 			locations,
 			lines,
@@ -174,7 +174,7 @@ function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 		throw new Error( 'Character out of bounds' );
 	}
 
-var magic_string__MagicString = function ( string ) {
+	var magic_string__MagicString = function ( string ) {
 		this.original = this.str = string;
 		this.mappings = magic_string__initMappings( string.length );
 	
@@ -477,6 +477,6 @@ var magic_string__MagicString = function ( string ) {
 	
 	var magic_string__default = magic_string__MagicString;
 
-return magic_string__default;
+	return magic_string__default;
 
 }));
