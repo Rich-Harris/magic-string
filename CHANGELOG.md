@@ -1,5 +1,9 @@
 # changelog
 
+## 0.1.8
+
+* Sourcemaps generated with `s.generateMap()` have a `toUrl()` method that generates a DataURI
+
 ## 0.1.7
 
 * Implement `s.insert( index, content )` - roughly equivalent to `s.replace( index, index, content )`

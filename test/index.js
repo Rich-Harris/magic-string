@@ -63,6 +63,9 @@ describe( 'MagicString$generateMap', function () {
 		assert.deepEqual( map.sources, [ 'content.md' ]);
 		assert.deepEqual( map.sourcesContent, [ 'abcdefghijkl' ]);
 
+		assert.equal( map.toString(), '{"version":3,"file":"content.md.map","sources":["content.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAO,CAAC,CAAC"}' );
+		assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY29udGVudC5tZC5tYXAiLCJzb3VyY2VzIjpbImNvbnRlbnQubWQiXSwic291cmNlc0NvbnRlbnQiOlsiYWJjZGVmZ2hpamtsIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsQ0FBQyxDQUFPLENBQUMsQ0FBQyJ9' );
+
 		smc = new SourceMapConsumer( map );
 
 		loc = smc.originalPositionFor({ line: 1, column: 0 });

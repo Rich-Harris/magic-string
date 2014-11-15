@@ -1,5 +1,6 @@
 import guessIndent from './guess-indent';
 import encodeMappings from './encode-mappings';
+import btoa from './btoa';
 
 var MagicString = function ( string ) {
 	this.original = this.str = string;
@@ -44,10 +45,18 @@ MagicString.prototype = {
 			mappings: encoded
 		};
 
-		Object.defineProperty( map, 'toString', {
-			enumerable: false,
-			value: function () {
-				return JSON.stringify( map );
+		Object.defineProperties( map, {
+			toString: {
+				enumerable: false,
+				value: function () {
+					return JSON.stringify( map );
+				}
+			},
+			toUrl: {
+				enumerable: false,
+				value: function () {
+					return 'data:application/json;charset=utf-8;base64,' + btoa( this.toString() );
+				}
 			}
 		});
 

@@ -60,6 +60,15 @@ Generates a [version 3 sourcemap](https://docs.google.com/document/d/1U1RGAehQwR
 
 The `names` property of the source map is not currently populated.
 
+The returned sourcemap has two (non-enumerable) methods attached for convenience:
+
+* `toString` - returns the equivalent of `JSON.stringify(map)`
+* `toUrl` - returns a DataURI containing the sourcemap. Useful for doing this sort of thing:
+
+```js
+code += '\n//# sourceMappingURL=' + map.toUrl();
+```
+
 ### s.indent( prefix )
 
 Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the indentation will be guessed from the original content, falling back to a single tab character. Returns `this`.

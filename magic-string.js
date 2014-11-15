@@ -17,7 +17,7 @@
 
 	'use strict';
 
-function guess_indent__guessIndent ( code ) {
+	function guessIndent__guessIndent ( code ) {
 		var lines, tabbed, spaced, min;
 	
 		lines = code.split( '\n' );
@@ -45,9 +45,9 @@ function guess_indent__guessIndent ( code ) {
 	
 		return new Array( min + 1 ).join( ' ' );
 	}
-	var guess_indent__default = guess_indent__guessIndent;
+	var guessIndent__default = guessIndent__guessIndent;
 
-function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
+	function encodeMappings__encodeMappings ( original, str, mappings, hires ) {
 		var lineStart,
 			locations,
 			lines,
@@ -66,10 +66,10 @@ function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 			return start;
 		});
 	
-		inverseMappings = encode_mappings__invert( str, mappings );
+		inverseMappings = encodeMappings__invert( str, mappings );
 	
-		lines = str.split( '\n' ).map( function ( line, lineIndex ) {
-			var segments, segment, len, char, origin, lastOrigin, i, sourceCodeLine, sourceCodeColumn, location;
+		lines = str.split( '\n' ).map( function ( line ) {
+			var segments, len, char, origin, lastOrigin, i, location;
 	
 			segments = [];
 	
@@ -94,7 +94,7 @@ function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 					if ( !hires && ( origin === lastOrigin + 1 ) ) {
 						// do nothing
 					} else {
-						location = encode_mappings__getLocation( locations, origin );
+						location = encodeMappings__getLocation( locations, origin );
 	
 						segments.push({
 							generatedCodeColumn: i,
@@ -135,10 +135,10 @@ function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 	
 		return encoded;
 	}
-	var encode_mappings__default = encode_mappings__encodeMappings;
+	var encodeMappings__default = encodeMappings__encodeMappings;
 	
 	
-	function encode_mappings__invert ( str, mappings ) {
+	function encodeMappings__invert ( str, mappings ) {
 		var inverted = new Uint32Array( str.length ), i;
 	
 		// initialise everything to -1
@@ -158,8 +158,8 @@ function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 		return inverted;
 	}
 	
-	function encode_mappings__getLocation ( locations, char ) {
-		var i, len = locations.length;
+	function encodeMappings__getLocation ( locations, char ) {
+		var i;
 	
 		i = locations.length;
 		while ( i-- ) {
@@ -174,11 +174,25 @@ function encode_mappings__encodeMappings ( original, str, mappings, hires ) {
 		throw new Error( 'Character out of bounds' );
 	}
 
-var magic_string__MagicString = function ( string ) {
+	var btoa___btoa;
+	
+	if ( typeof window !== 'undefined' && typeof window.btoa === 'function' ) {
+		btoa___btoa = window.btoa;
+	} else if ( typeof Buffer === 'function' ) {
+		btoa___btoa = function ( str ) {
+			return new Buffer( str ).toString( 'base64' );
+		};
+	} else {
+		throw new Error( 'Unsupported environment' );
+	}
+	
+	var btoa__default = btoa___btoa;
+
+	var magic_string__MagicString = function ( string ) {
 		this.original = this.str = string;
 		this.mappings = magic_string__initMappings( string.length );
 	
-		this.indentStr = guess_indent__default( string );
+		this.indentStr = guessIndent__default( string );
 	};
 	
 	magic_string__MagicString.prototype = {
@@ -206,7 +220,7 @@ var magic_string__MagicString = function ( string ) {
 	
 			options = options || {};
 	
-			encoded = encode_mappings__default( this.original, this.str, this.mappings, options.hires );
+			encoded = encodeMappings__default( this.original, this.str, this.mappings, options.hires );
 	
 			map = {
 				version: 3,
@@ -217,10 +231,18 @@ var magic_string__MagicString = function ( string ) {
 				mappings: encoded
 			};
 	
-			Object.defineProperty( map, 'toString', {
-				enumerable: false,
-				value: function () {
-					return JSON.stringify( map );
+			Object.defineProperties( map, {
+				toString: {
+					enumerable: false,
+					value: function () {
+						return JSON.stringify( map );
+					}
+				},
+				toUrl: {
+					enumerable: false,
+					value: function () {
+						return 'data:application/json;charset=utf-8;base64,' + btoa__default( this.toString() );
+					}
 				}
 			});
 	
@@ -233,7 +255,6 @@ var magic_string__MagicString = function ( string ) {
 				pattern = /\n/g,
 				match,
 				inserts = [ 0 ],
-				i,
 				exclusions,
 				lastEnd;
 	
@@ -296,12 +317,12 @@ var magic_string__MagicString = function ( string ) {
 				});
 			}
 	
-			inserts.forEach( function ( index, i ) {
+			inserts.forEach( function ( index ) {
 				var origin;
 	
 				do {
 					origin = self.locateOrigin( index++ );
-				} while ( origin == null && index < self.str.length );
+				} while ( origin === null && index < self.str.length );
 	
 				magic_string__adjust( mappings, origin, indentStr.length );
 			});
@@ -323,6 +344,18 @@ var magic_string__MagicString = function ( string ) {
 					}
 				}
 			}
+		},
+	
+		insert: function ( index, content ) {
+			if ( index === 0 ) {
+				this.prepend( content );
+			} else if ( index === this.original.length ) {
+				this.append( content );
+			} else {
+				this.replace( index, index, content );
+			}
+	
+			return this;
 		},
 	
 		// get current location of character in original string
@@ -366,7 +399,7 @@ var magic_string__MagicString = function ( string ) {
 		},
 	
 		replace: function ( start, end, content ) {
-			var i, len, firstChar, lastChar, d;
+			var firstChar, lastChar, d;
 	
 			firstChar = this.locate( start );
 			lastChar = this.locate( end - 1 );
@@ -477,6 +510,6 @@ var magic_string__MagicString = function ( string ) {
 	
 	var magic_string__default = magic_string__MagicString;
 
-return magic_string__default;
+	return magic_string__default;
 
 }));
