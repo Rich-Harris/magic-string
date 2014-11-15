@@ -1,6 +1,17 @@
 var assert = require( 'assert' ),
 	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
-	MagicString = require( '../' );
+	MagicString;
+
+before( function () {
+	return require( '../gobblefile' ).build({
+		dest: '.tmp',
+		force: true
+	}).then( function () {
+		MagicString = require( '../.tmp/magic-string' );
+	}).catch( function ( err ) {
+		console.log( 'Error building library:', err );
+	});
+});
 
 describe( 'MagicString$append', function () {
 	it( 'should append content', function () {
@@ -103,6 +114,16 @@ describe( 'MagicString$indent', function () {
 		assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
 	});
 
+	it( 'should prevent excluded characters from being indented', function () {
+		var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+		s.indent( '  ', { exclude: [ 7, 15 ] });
+		assert.equal( s.toString(), '  abc\n  def\nghi\njkl' );
+
+		s.indent( '>>', { exclude: [ 7, 15 ] });
+		assert.equal( s.toString(), '>>  abc\n>>  def\nghi\njkl' );
+	});
+
 	it( 'should return this', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 		assert.strictEqual( s.indent(), s );
@@ -142,7 +163,7 @@ describe( 'MagicString$locate', function () {
 		var s = new MagicString( 'abcdefghijkl' );
 
 		assert.throws( function () { s.locate( -1 ); });
-		assert.throws( function () { s.locate( 12 ); });
+		assert.throws( function () { s.locate( 13 ); });
 	});
 
 	it( 'should correctly locate characters in a string with characters removed', function () {
@@ -318,6 +339,13 @@ describe( 'MagicString$replace', function () {
 
 		s.replace( 6, 12, 'yes' );
 		assert.equal( s.toString(), 'abcdefyes' );
+	});
+
+	it( 'should replace characters at the end of the original string', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.replace( 12, 12, '<<<' );
+		assert.equal( s.toString(), 'abcdefghijkl<<<' );
 	});
 
 	it( 'should return this', function () {

@@ -1,4 +1,4 @@
-module.exports = function guessIndent ( code ) {
+export default function guessIndent ( code ) {
 	var lines, tabbed, spaced, min;
 
 	lines = code.split( '\n' );
@@ -25,4 +25,4 @@ module.exports = function guessIndent ( code ) {
 	}, Infinity );
 
 	return new Array( min + 1 ).join( ' ' );
-};
+}

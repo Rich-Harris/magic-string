@@ -1,6 +1,6 @@
-var vlq = require( 'vlq' );
+import vlq from 'vlq';
 
-module.exports = function encodeMappings ( original, str, mappings, hires ) {
+export default function encodeMappings ( original, str, mappings, hires ) {
 	var lineStart,
 		locations,
 		lines,
@@ -22,7 +22,7 @@ module.exports = function encodeMappings ( original, str, mappings, hires ) {
 	inverseMappings = invert( str, mappings );
 
 	lines = str.split( '\n' ).map( function ( line, lineIndex ) {
-		var segments, segment, len, char, origin, lastOrigin, i, sourceCodeLine, sourceCodeColumn;
+		var segments, segment, len, char, origin, lastOrigin, i, sourceCodeLine, sourceCodeColumn, location;
 
 		segments = [];
 
@@ -87,7 +87,7 @@ module.exports = function encodeMappings ( original, str, mappings, hires ) {
 	}).join( ';' );
 
 	return encoded;
-};
+}
 
 
 function invert ( str, mappings ) {
