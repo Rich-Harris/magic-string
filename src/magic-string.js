@@ -60,7 +60,6 @@ MagicString.prototype = {
 			pattern = /\n/g,
 			match,
 			inserts = [ 0 ],
-			i,
 			exclusions,
 			lastEnd;
 
@@ -123,12 +122,12 @@ MagicString.prototype = {
 			});
 		}
 
-		inserts.forEach( function ( index, i ) {
+		inserts.forEach( function ( index ) {
 			var origin;
 
 			do {
 				origin = self.locateOrigin( index++ );
-			} while ( origin == null && index < self.str.length );
+			} while ( origin === null && index < self.str.length );
 
 			adjust( mappings, origin, indentStr.length );
 		});
@@ -205,7 +204,7 @@ MagicString.prototype = {
 	},
 
 	replace: function ( start, end, content ) {
-		var i, len, firstChar, lastChar, d;
+		var firstChar, lastChar, d;
 
 		firstChar = this.locate( start );
 		lastChar = this.locate( end - 1 );

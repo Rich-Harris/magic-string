@@ -21,8 +21,8 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 
 	inverseMappings = invert( str, mappings );
 
-	lines = str.split( '\n' ).map( function ( line, lineIndex ) {
-		var segments, segment, len, char, origin, lastOrigin, i, sourceCodeLine, sourceCodeColumn, location;
+	lines = str.split( '\n' ).map( function ( line ) {
+		var segments, len, char, origin, lastOrigin, i, location;
 
 		segments = [];
 
@@ -111,7 +111,7 @@ function invert ( str, mappings ) {
 }
 
 function getLocation ( locations, char ) {
-	var i, len = locations.length;
+	var i;
 
 	i = locations.length;
 	while ( i-- ) {
