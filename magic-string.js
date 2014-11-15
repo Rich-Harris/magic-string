@@ -252,11 +252,14 @@
 		indent: function ( indentStr, options ) {
 			var self = this,
 				mappings = this.mappings,
+				reverseMappings = magic_string__reverse( mappings, this.str.length ),
 				pattern = /\n/g,
 				match,
 				inserts = [ 0 ],
+				adjustments,
 				exclusions,
-				lastEnd;
+				lastEnd,
+				i;
 	
 			if ( typeof indentStr === 'object' ) {
 				options = indentStr;
@@ -317,15 +320,22 @@
 				});
 			}
 	
-			inserts.forEach( function ( index ) {
+			adjustments = inserts.map( function ( index ) {
 				var origin;
 	
 				do {
-					origin = self.locateOrigin( index++ );
-				} while ( origin === null && index < self.str.length );
+					origin = reverseMappings[ index++ ];
+				} while ( !~origin && index < self.str.length );
 	
-				magic_string__adjust( mappings, origin, indentStr.length );
+				return origin;
 			});
+	
+			i = adjustments.length;
+			lastEnd = this.mappings.length;
+			while ( i-- ) {
+				magic_string__adjust( self.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
+				lastEnd = adjustments[i];
+			}
 	
 			return this;
 	
@@ -389,7 +399,7 @@
 	
 		prepend: function ( content ) {
 			this.str = content + this.str;
-			magic_string__adjust( this.mappings, 0, content.length );
+			magic_string__adjust( this.mappings, 0, this.mappings.length, content.length );
 			return this;
 		},
 	
@@ -413,7 +423,7 @@
 			d = content.length - ( lastChar + 1 - firstChar );
 	
 			magic_string__blank( this.mappings, start, end );
-			magic_string__adjust( this.mappings, end, d );
+			magic_string__adjust( this.mappings, end, this.mappings.length, d );
 			return this;
 		},
 	
@@ -454,7 +464,7 @@
 						}
 					}
 	
-					magic_string__adjust( self.mappings, adjustmentStart, -length );
+					magic_string__adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
 	
 					return '';
 				})
@@ -483,8 +493,8 @@
 		}
 	};
 	
-	function magic_string__adjust ( mappings, start, d ) {
-		var i = mappings.length;
+	function magic_string__adjust ( mappings, start, end, d ) {
+		var i = end;
 		while ( i-- > start ) {
 			if ( ~mappings[i] ) {
 				mappings[i] += d;
@@ -506,6 +516,27 @@
 		while ( i-- > start ) {
 			mappings[i] = -1;
 		}
+	}
+	
+	function magic_string__reverse ( mappings, i ) {
+		var result, location;
+	
+		result = new Uint32Array( i );
+	
+		while ( i-- ) {
+			result[i] = -1;
+		}
+	
+		i = mappings.length;
+		while ( i-- ) {
+			location = mappings[i];
+	
+			if ( ~location ) {
+				result[ location ] = i;
+			}
+		}
+	
+		return result;
 	}
 	
 	var magic_string__default = magic_string__MagicString;

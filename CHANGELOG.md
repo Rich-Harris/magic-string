@@ -1,5 +1,9 @@
 # changelog
 
+## 0.1.9
+
+* Better performance when indenting large chunks of code
+
 ## 0.1.8
 
 * Sourcemaps generated with `s.generateMap()` have a `toUrl()` method that generates a DataURI

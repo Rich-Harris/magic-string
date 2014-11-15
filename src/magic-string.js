@@ -66,11 +66,14 @@ MagicString.prototype = {
 	indent: function ( indentStr, options ) {
 		var self = this,
 			mappings = this.mappings,
+			reverseMappings = reverse( mappings, this.str.length ),
 			pattern = /\n/g,
 			match,
 			inserts = [ 0 ],
+			adjustments,
 			exclusions,
-			lastEnd;
+			lastEnd,
+			i;
 
 		if ( typeof indentStr === 'object' ) {
 			options = indentStr;
@@ -131,15 +134,22 @@ MagicString.prototype = {
 			});
 		}
 
-		inserts.forEach( function ( index ) {
+		adjustments = inserts.map( function ( index ) {
 			var origin;
 
 			do {
-				origin = self.locateOrigin( index++ );
-			} while ( origin === null && index < self.str.length );
+				origin = reverseMappings[ index++ ];
+			} while ( !~origin && index < self.str.length );
 
-			adjust( mappings, origin, indentStr.length );
+			return origin;
 		});
+
+		i = adjustments.length;
+		lastEnd = this.mappings.length;
+		while ( i-- ) {
+			adjust( self.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
+			lastEnd = adjustments[i];
+		}
 
 		return this;
 
@@ -203,7 +213,7 @@ MagicString.prototype = {
 
 	prepend: function ( content ) {
 		this.str = content + this.str;
-		adjust( this.mappings, 0, content.length );
+		adjust( this.mappings, 0, this.mappings.length, content.length );
 		return this;
 	},
 
@@ -227,7 +237,7 @@ MagicString.prototype = {
 		d = content.length - ( lastChar + 1 - firstChar );
 
 		blank( this.mappings, start, end );
-		adjust( this.mappings, end, d );
+		adjust( this.mappings, end, this.mappings.length, d );
 		return this;
 	},
 
@@ -268,7 +278,7 @@ MagicString.prototype = {
 					}
 				}
 
-				adjust( self.mappings, adjustmentStart, -length );
+				adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
 
 				return '';
 			})
@@ -297,8 +307,8 @@ MagicString.prototype = {
 	}
 };
 
-function adjust ( mappings, start, d ) {
-	var i = mappings.length;
+function adjust ( mappings, start, end, d ) {
+	var i = end;
 	while ( i-- > start ) {
 		if ( ~mappings[i] ) {
 			mappings[i] += d;
@@ -320,6 +330,27 @@ function blank ( mappings, start, i ) {
 	while ( i-- > start ) {
 		mappings[i] = -1;
 	}
+}
+
+function reverse ( mappings, i ) {
+	var result, location;
+
+	result = new Uint32Array( i );
+
+	while ( i-- ) {
+		result[i] = -1;
+	}
+
+	i = mappings.length;
+	while ( i-- ) {
+		location = mappings[i];
+
+		if ( ~location ) {
+			result[ location ] = i;
+		}
+	}
+
+	return result;
 }
 
 export default MagicString;
