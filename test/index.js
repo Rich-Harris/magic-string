@@ -109,6 +109,27 @@ describe( 'MagicString$indent', function () {
 	});
 });
 
+describe( 'MagicString$insert', function () {
+	it( 'should insert characters in the correct location', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+
+		s.insert( 0, '>>>' );
+		s.insert( 6, '***' );
+		s.insert( 12, '<<<' );
+
+		assert.equal( s.toString(), '>>>abcdef***ghijkl<<<' );
+		assert.equal( s.locate( 0 ), 3 );
+		assert.equal( s.locate( 5 ), 8 );
+		assert.equal( s.locate( 6 ), 12 );
+		assert.equal( s.locate( 11 ), 17 );
+	});
+
+	it( 'should return this', function () {
+		var s = new MagicString( 'abcdefghijkl' );
+		assert.strictEqual( s.insert( 0, 'a' ), s );
+	});
+});
+
 describe( 'MagicString$locate', function () {
 	it( 'should correctly locate characters in an unmodified string', function () {
 		var s = new MagicString( 'abcdefghijkl' );
