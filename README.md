@@ -64,6 +64,10 @@ The `names` property of the source map is not currently populated.
 
 Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the indentation will be guessed from the original content, falling back to a single tab character. Returns `this`.
 
+### s.insert( index, content )
+
+Inserts the specified `content` at the `index` in the original string. Returns `this`.
+
 ### s.locate( index )
 
 Finds the location, in the generated string, of the character at `index` in the original string. Returns `null` if the character in question has been removed or replaced.

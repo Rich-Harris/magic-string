@@ -1,5 +1,9 @@
 # changelog
 
+## 0.1.7
+
+* Implement `s.insert( index, content )` - roughly equivalent to `s.replace( index, index, content )`
+
 ## 0.1.6
 
 * Version bump for npm's benefit

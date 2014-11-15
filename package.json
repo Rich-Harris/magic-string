@@ -1,7 +1,7 @@
 {
   "name": "magic-string",
   "author": "Rich Harris",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "repository": "https://github.com/rich-harris/magic-string",
   "main": "magic-string.js",
   "license": "MIT",
