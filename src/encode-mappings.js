@@ -31,8 +31,8 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 			char = i + charOffset;
 			origin = inverseMappings[ char ];
 
-			if ( origin === -1 ) {
-				if ( lastOrigin === -1 ) {
+			if ( !~origin ) {
+				if ( !~lastOrigin ) {
 					// do nothing
 				} else {
 					segments.push({

@@ -1,5 +1,9 @@
 # changelog
 
+## 0.1.10
+
+* Fix sourcemap encoding
+
 ## 0.1.9
 
 * Better performance when indenting large chunks of code

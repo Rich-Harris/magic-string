@@ -84,6 +84,26 @@ describe( 'MagicString$generateMap', function () {
 		assert.equal( loc.line, 1 );
 		assert.equal( loc.column, 10 );
 	});
+
+	it( 'should generate a correct sourcemap for indented content', function () {
+		var s, map, smc, generatedLoc, originLoc;
+
+		s = new MagicString( 'var answer = 42;\nconsole.log("the answer is %s", answer);' );
+
+		s.prepend( "'use strict';\n\n" );
+		s.indent( '\t' ).prepend( '(function () {\n' ).append( '\n}).call(global);' );
+
+		map = s.generateMap({
+			includeContent: true,
+			hires: true
+		});
+
+		smc = new SourceMapConsumer( map );
+
+		originLoc = smc.originalPositionFor({ line: 5, column: 1 });
+		assert.equal( originLoc.line, 2 );
+		assert.equal( originLoc.column, 0 );
+	});
 });
 
 describe( 'MagicString$indent', function () {
