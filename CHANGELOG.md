@@ -1,5 +1,9 @@
 # changelog
 
+## 0.2.1
+
+* Minor fix for `bundle.indent()`
+
 ## 0.2.0
 
 * Implement `MagicString.Bundle` for concatenating magic strings
