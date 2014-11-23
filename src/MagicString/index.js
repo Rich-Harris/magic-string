@@ -1,6 +1,7 @@
-import guessIndent from './guess-indent';
-import encodeMappings from './encode-mappings';
-import btoa from './btoa';
+import Bundle from '../Bundle';
+import SourceMap from '../SourceMap';
+import guessIndent from './guessIndent';
+import encodeMappings from './encodeMappings';
 
 var MagicString = function ( string ) {
 	this.original = this.str = string;
@@ -30,37 +31,21 @@ MagicString.prototype = {
 	},
 
 	generateMap: function ( options ) {
-		var map, encoded;
+		var map;
 
 		options = options || {};
 
-		encoded = encodeMappings( this.original, this.str, this.mappings, options.hires );
-
-		map = {
-			version: 3,
+		return new SourceMap({
 			file: options.file,
 			sources: [ options.source ],
-			sourcesContent: options.includeContent ? [ this.original ] : [],
+			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names: [],
-			mappings: encoded
-		};
-
-		Object.defineProperties( map, {
-			toString: {
-				enumerable: false,
-				value: function () {
-					return JSON.stringify( map );
-				}
-			},
-			toUrl: {
-				enumerable: false,
-				value: function () {
-					return 'data:application/json;charset=utf-8;base64,' + btoa( this.toString() );
-				}
-			}
+			mappings: this.getMappings( options.hires, 0 )
 		});
+	},
 
-		return map;
+	getMappings: function ( hires, sourceIndex, offsets ) {
+		return encodeMappings( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
 	},
 
 	indent: function ( indentStr, options ) {
@@ -259,53 +244,65 @@ MagicString.prototype = {
 	},
 
 	trim: function () {
+		return this.trimStart().trimEnd();
+	},
+
+	trimEnd: function () {
 		var self = this;
 
-		this.str = this.str
-			.replace( /^\s+/, function ( leading ) {
-				var length = leading.length, i, chars = [], adjustmentStart = 0;
+		this.str = this.str.replace( /\s+$/, function ( trailing, index, str ) {
+			var strLength = str.length,
+				length = trailing.length,
+				i,
+				chars = [];
 
-				i = length;
-				while ( i-- ) {
-					chars.push( self.locateOrigin( i ) );
+			i = strLength;
+			while ( i-- > strLength - length ) {
+				chars.push( self.locateOrigin( i ) );
+			}
+
+			i = chars.length;
+			while ( i-- ) {
+				if ( chars[i] !== null ) {
+					self.mappings[ chars[i] ] = -1;
 				}
+			}
 
-				i = chars.length;
-				while ( i-- ) {
-					if ( chars[i] !== null ) {
-						self.mappings[ chars[i] ] = -1;
-						adjustmentStart += 1;
-					}
+			return '';
+		});
+
+		return this;
+	},
+
+	trimStart: function () {
+		var self = this;
+
+		this.str = this.str.replace( /^\s+/, function ( leading ) {
+			var length = leading.length, i, chars = [], adjustmentStart = 0;
+
+			i = length;
+			while ( i-- ) {
+				chars.push( self.locateOrigin( i ) );
+			}
+
+			i = chars.length;
+			while ( i-- ) {
+				if ( chars[i] !== null ) {
+					self.mappings[ chars[i] ] = -1;
+					adjustmentStart += 1;
 				}
+			}
 
-				adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
+			adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
 
-				return '';
-			})
-			.replace( /\s+$/, function ( trailing, index, str ) {
-				var strLength = str.length,
-					length = trailing.length,
-					i,
-					chars = [];
-
-				i = strLength;
-				while ( i-- > strLength - length ) {
-					chars.push( self.locateOrigin( i ) );
-				}
-
-				i = chars.length;
-				while ( i-- ) {
-					if ( chars[i] !== null ) {
-						self.mappings[ chars[i] ] = -1;
-					}
-				}
-
-				return '';
-			});
+			return '';
+		});
 
 		return this;
 	}
 };
+
+MagicString.Bundle = Bundle;
 
 function adjust ( mappings, start, end, d ) {
 	var i = end;

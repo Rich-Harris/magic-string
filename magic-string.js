@@ -17,6 +17,199 @@
 
 	'use strict';
 
+	var btoa___btoa;
+	
+	if ( typeof window !== 'undefined' && typeof window.btoa === 'function' ) {
+		btoa___btoa = window.btoa;
+	} else if ( typeof Buffer === 'function' ) {
+		btoa___btoa = function ( str ) {
+			return new Buffer( str ).toString( 'base64' );
+		};
+	} else {
+		throw new Error( 'Unsupported environment' );
+	}
+	
+	var btoa__default = btoa___btoa;
+
+	var SourceMap__SourceMap = function ( properties ) {
+		this.version = 3;
+	
+		this.file           = properties.file;
+		this.sources        = properties.sources;
+		this.sourcesContent = properties.sourcesContent;
+		this.names          = properties.names;
+		this.mappings       = properties.mappings;
+	};
+	
+	SourceMap__SourceMap.prototype = {
+		toString: function () {
+			return JSON.stringify( this );
+		},
+	
+		toUrl: function () {
+			return 'data:application/json;charset=utf-8;base64,' + btoa__default( this.toString() );
+		}
+	};
+	
+	var SourceMap__default = SourceMap__SourceMap;
+
+	var Bundle__Bundle = function ( options ) {
+		options = options || {};
+	
+		this.intro = options.intro || '';
+		this.outro = options.outro || '';
+		this.separator = 'separator' in options ? options.separator : '\n';
+	
+		this.sources = [];
+	};
+	
+	Bundle__Bundle.prototype = {
+		addSource: function ( source ) {
+			this.sources.push( source );
+			return this;
+		},
+	
+		append: function ( str ) {
+			this.outro += str;
+			return this;
+		},
+	
+		clone: function () {
+			var bundle = new Bundle__Bundle({
+				intro: this.intro,
+				outro: this.outro,
+				separator: this.separator
+			});
+	
+			this.sources.forEach( function ( source ) {
+				bundle.addSource({
+					filename: source.filename,
+					content: source.content.clone()
+				});
+			});
+	
+			return bundle;
+		},
+	
+		generateMap: function ( options ) {
+			var offsets = {}, encoded, encodingSeparator;
+	
+			encodingSeparator = Bundle__getSemis( this.separator );
+	
+			encoded = (
+				Bundle__getSemis( this.intro ) +
+				this.sources.map( function ( source, sourceIndex) {
+					return source.content.getMappings( options.hires, sourceIndex, offsets );
+				}).join( encodingSeparator ) +
+				Bundle__getSemis( this.outro )
+			);
+	
+			return new SourceMap__default({
+				file: options.file,
+				sources: this.sources.map( Bundle__getFilename ),
+				sourcesContent: this.sources.map( function ( source ) {
+					return options.includeContent ? source.content.original : null;
+				}),
+				names: [],
+				mappings: encoded
+			});
+		},
+	
+		getIndentString: function () {
+			var indentStringCounts = {};
+	
+			this.sources.forEach( function ( source ) {
+				var indentStr = source.content.indentStr;
+	
+				if ( !indentStringCounts[ indentStr ] ) indentStringCounts[ indentStr ] = 0;
+				indentStringCounts[ indentStr ] += 1;
+			});
+	
+			return ( Object.keys( indentStringCounts ).sort( function ( a, b ) {
+				return indentStringCounts[a] - indentStringCounts[b];
+			})[0] ) || '\t';
+		},
+	
+		indent: function ( indentStr ) {
+			if ( !indentStr ) {
+				indentStr = this.getIndentString();
+			}
+	
+			this.sources.forEach( function ( source ) {
+				source.content.indent( indentStr );
+			});
+	
+			this.intro = indentStr + this.intro.replace( /\n/g, '\n' + indentStr );
+			this.outro = this.outro.replace( /\n/g, '\n' + indentStr );
+	
+			return this;
+		},
+	
+		prepend: function ( str ) {
+			this.intro = str + this.intro;
+			return this;
+		},
+	
+		toString: function () {
+			return this.intro + this.sources.map( Bundle__stringify ).join( this.separator ) + this.outro;
+		},
+	
+		trim: function () {
+			var i, source;
+	
+			this.intro = this.intro.replace( /^\s+/, '' );
+			this.outro = this.outro.replace( /\s+$/, '' );
+	
+			// trim start
+			if ( !this.intro ) {
+				i = 0;
+				do {
+					source = this.sources[i];
+	
+					if ( !source ) {
+						this.outro = this.outro.replace( /^\s+/, '' );
+						break;
+					}
+	
+					source.content.trimStart();
+					i += 1;
+				} while ( source.content.str === '' );
+			}
+	
+			// trim end
+			if ( !this.outro ) {
+				i = this.sources.length - 1;
+				do {
+					source = this.sources[i];
+	
+					if ( !source ) {
+						this.intro = this.intro.replace( /\s+$/, '' );
+						break;
+					}
+	
+					source.content.trimEnd();
+					i -= 1;
+				} while ( source.content.str === '' );
+			}
+	
+			return this;
+		}
+	};
+	
+	var Bundle__default = Bundle__Bundle;
+	
+	function Bundle__stringify ( source ) {
+		return source.content.toString();
+	}
+	
+	function Bundle__getFilename ( source ) {
+		return source.filename;
+	}
+	
+	function Bundle__getSemis ( str ) {
+		return new Array( str.split( '\n' ).length ).join( ';' );
+	}
+
 	function guessIndent__guessIndent ( code ) {
 		var lines, tabbed, spaced, min;
 	
@@ -47,15 +240,14 @@
 	}
 	var guessIndent__default = guessIndent__guessIndent;
 
-	function encodeMappings__encodeMappings ( original, str, mappings, hires ) {
+	function encodeMappings__encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
 		var lineStart,
 			locations,
 			lines,
 			encoded,
 			inverseMappings,
 			charOffset = 0,
-			sourceCodeLine,
-			sourceCodeColumn;
+			firstSegment = true;
 	
 		// store locations, for fast lookup
 		lineStart = 0;
@@ -98,6 +290,7 @@
 	
 						segments.push({
 							generatedCodeColumn: i,
+							sourceIndex: sourceIndex,
 							sourceCodeLine: location.line,
 							sourceCodeColumn: location.column
 						});
@@ -111,8 +304,11 @@
 			return segments;
 		});
 	
-		sourceCodeLine = 0;
-		sourceCodeColumn = 0;
+		offsets = offsets || {};
+	
+		offsets.sourceIndex = offsets.sourceIndex || 0;
+		offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
+		offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 	
 		encoded = lines.map( function ( segments ) {
 			var generatedCodeColumn = 0;
@@ -120,14 +316,17 @@
 			return segments.map( function ( segment ) {
 				var arr = [
 					segment.generatedCodeColumn - generatedCodeColumn,
-					0,
-					segment.sourceCodeLine - sourceCodeLine,
-					segment.sourceCodeColumn - sourceCodeColumn
+					segment.sourceIndex - offsets.sourceIndex,
+					segment.sourceCodeLine - offsets.sourceCodeLine,
+					segment.sourceCodeColumn - offsets.sourceCodeColumn
 				];
 	
 				generatedCodeColumn = segment.generatedCodeColumn;
-				sourceCodeLine = segment.sourceCodeLine;
-				sourceCodeColumn = segment.sourceCodeColumn;
+				offsets.sourceIndex = segment.sourceIndex;
+				offsets.sourceCodeLine = segment.sourceCodeLine;
+				offsets.sourceCodeColumn = segment.sourceCodeColumn;
+	
+				firstSegment = false;
 	
 				return vlq__default.encode( arr );
 			}).join( ',' );
@@ -174,28 +373,14 @@
 		throw new Error( 'Character out of bounds' );
 	}
 
-	var btoa___btoa;
-	
-	if ( typeof window !== 'undefined' && typeof window.btoa === 'function' ) {
-		btoa___btoa = window.btoa;
-	} else if ( typeof Buffer === 'function' ) {
-		btoa___btoa = function ( str ) {
-			return new Buffer( str ).toString( 'base64' );
-		};
-	} else {
-		throw new Error( 'Unsupported environment' );
-	}
-	
-	var btoa__default = btoa___btoa;
-
-	var magic_string__MagicString = function ( string ) {
+	var index__MagicString = function ( string ) {
 		this.original = this.str = string;
-		this.mappings = magic_string__initMappings( string.length );
+		this.mappings = index__initMappings( string.length );
 	
 		this.indentStr = guessIndent__default( string );
 	};
 	
-	magic_string__MagicString.prototype = {
+	index__MagicString.prototype = {
 		append: function ( content ) {
 			this.str += content;
 			return this;
@@ -204,7 +389,7 @@
 		clone: function () {
 			var clone, i;
 	
-			clone = new magic_string__MagicString( this.original );
+			clone = new index__MagicString( this.original );
 			clone.str = this.str;
 	
 			i = clone.mappings.length;
@@ -216,43 +401,27 @@
 		},
 	
 		generateMap: function ( options ) {
-			var map, encoded;
+			var map;
 	
 			options = options || {};
 	
-			encoded = encodeMappings__default( this.original, this.str, this.mappings, options.hires );
-	
-			map = {
-				version: 3,
+			return new SourceMap__default({
 				file: options.file,
 				sources: [ options.source ],
-				sourcesContent: options.includeContent ? [ this.original ] : [],
+				sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 				names: [],
-				mappings: encoded
-			};
-	
-			Object.defineProperties( map, {
-				toString: {
-					enumerable: false,
-					value: function () {
-						return JSON.stringify( map );
-					}
-				},
-				toUrl: {
-					enumerable: false,
-					value: function () {
-						return 'data:application/json;charset=utf-8;base64,' + btoa__default( this.toString() );
-					}
-				}
+				mappings: this.getMappings( options.hires, 0 )
 			});
+		},
 	
-			return map;
+		getMappings: function ( hires, sourceIndex, offsets ) {
+			return encodeMappings__default( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
 		},
 	
 		indent: function ( indentStr, options ) {
 			var self = this,
 				mappings = this.mappings,
-				reverseMappings = magic_string__reverse( mappings, this.str.length ),
+				reverseMappings = index__reverse( mappings, this.str.length ),
 				pattern = /\n/g,
 				match,
 				inserts = [ 0 ],
@@ -333,7 +502,7 @@
 			i = adjustments.length;
 			lastEnd = this.mappings.length;
 			while ( i-- ) {
-				magic_string__adjust( self.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
+				index__adjust( self.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
 				lastEnd = adjustments[i];
 			}
 	
@@ -399,7 +568,7 @@
 	
 		prepend: function ( content ) {
 			this.str = content + this.str;
-			magic_string__adjust( this.mappings, 0, this.mappings.length, content.length );
+			index__adjust( this.mappings, 0, this.mappings.length, content.length );
 			return this;
 		},
 	
@@ -422,8 +591,8 @@
 	
 			d = content.length - ( lastChar + 1 - firstChar );
 	
-			magic_string__blank( this.mappings, start, end );
-			magic_string__adjust( this.mappings, end, this.mappings.length, d );
+			index__blank( this.mappings, start, end );
+			index__adjust( this.mappings, end, this.mappings.length, d );
 			return this;
 		},
 	
@@ -445,55 +614,67 @@
 		},
 	
 		trim: function () {
+			return this.trimStart().trimEnd();
+		},
+	
+		trimEnd: function () {
 			var self = this;
 	
-			this.str = this.str
-				.replace( /^\s+/, function ( leading ) {
-					var length = leading.length, i, chars = [], adjustmentStart = 0;
+			this.str = this.str.replace( /\s+$/, function ( trailing, index, str ) {
+				var strLength = str.length,
+					length = trailing.length,
+					i,
+					chars = [];
 	
-					i = length;
-					while ( i-- ) {
-						chars.push( self.locateOrigin( i ) );
+				i = strLength;
+				while ( i-- > strLength - length ) {
+					chars.push( self.locateOrigin( i ) );
+				}
+	
+				i = chars.length;
+				while ( i-- ) {
+					if ( chars[i] !== null ) {
+						self.mappings[ chars[i] ] = -1;
 					}
+				}
 	
-					i = chars.length;
-					while ( i-- ) {
-						if ( chars[i] !== null ) {
-							self.mappings[ chars[i] ] = -1;
-							adjustmentStart += 1;
-						}
+				return '';
+			});
+	
+			return this;
+		},
+	
+		trimStart: function () {
+			var self = this;
+	
+			this.str = this.str.replace( /^\s+/, function ( leading ) {
+				var length = leading.length, i, chars = [], adjustmentStart = 0;
+	
+				i = length;
+				while ( i-- ) {
+					chars.push( self.locateOrigin( i ) );
+				}
+	
+				i = chars.length;
+				while ( i-- ) {
+					if ( chars[i] !== null ) {
+						self.mappings[ chars[i] ] = -1;
+						adjustmentStart += 1;
 					}
+				}
 	
-					magic_string__adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
+				index__adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
 	
-					return '';
-				})
-				.replace( /\s+$/, function ( trailing, index, str ) {
-					var strLength = str.length,
-						length = trailing.length,
-						i,
-						chars = [];
-	
-					i = strLength;
-					while ( i-- > strLength - length ) {
-						chars.push( self.locateOrigin( i ) );
-					}
-	
-					i = chars.length;
-					while ( i-- ) {
-						if ( chars[i] !== null ) {
-							self.mappings[ chars[i] ] = -1;
-						}
-					}
-	
-					return '';
-				});
+				return '';
+			});
 	
 			return this;
 		}
 	};
 	
-	function magic_string__adjust ( mappings, start, end, d ) {
+	index__MagicString.Bundle = Bundle__default;
+	
+	function index__adjust ( mappings, start, end, d ) {
 		var i = end;
 		while ( i-- > start ) {
 			if ( ~mappings[i] ) {
@@ -502,7 +683,7 @@
 		}
 	}
 	
-	function magic_string__initMappings ( i ) {
+	function index__initMappings ( i ) {
 		var mappings = new Uint32Array( i );
 	
 		while ( i-- ) {
@@ -512,13 +693,13 @@
 		return mappings;
 	}
 	
-	function magic_string__blank ( mappings, start, i ) {
+	function index__blank ( mappings, start, i ) {
 		while ( i-- > start ) {
 			mappings[i] = -1;
 		}
 	}
 	
-	function magic_string__reverse ( mappings, i ) {
+	function index__reverse ( mappings, i ) {
 		var result, location;
 	
 		result = new Uint32Array( i );
@@ -539,8 +720,8 @@
 		return result;
 	}
 	
-	var magic_string__default = magic_string__MagicString;
+	var index__default = index__MagicString;
 
-	return magic_string__default;
+	return index__default;
 
 }));

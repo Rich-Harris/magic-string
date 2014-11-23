@@ -1,14 +1,13 @@
 import vlq from 'vlq';
 
-export default function encodeMappings ( original, str, mappings, hires ) {
+export default function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
 	var lineStart,
 		locations,
 		lines,
 		encoded,
 		inverseMappings,
 		charOffset = 0,
-		sourceCodeLine,
-		sourceCodeColumn;
+		firstSegment = true;
 
 	// store locations, for fast lookup
 	lineStart = 0;
@@ -51,6 +50,7 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 
 					segments.push({
 						generatedCodeColumn: i,
+						sourceIndex: sourceIndex,
 						sourceCodeLine: location.line,
 						sourceCodeColumn: location.column
 					});
@@ -64,8 +64,11 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 		return segments;
 	});
 
-	sourceCodeLine = 0;
-	sourceCodeColumn = 0;
+	offsets = offsets || {};
+
+	offsets.sourceIndex = offsets.sourceIndex || 0;
+	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
+	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 
 	encoded = lines.map( function ( segments ) {
 		var generatedCodeColumn = 0;
@@ -73,14 +76,17 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 		return segments.map( function ( segment ) {
 			var arr = [
 				segment.generatedCodeColumn - generatedCodeColumn,
-				0,
-				segment.sourceCodeLine - sourceCodeLine,
-				segment.sourceCodeColumn - sourceCodeColumn
+				segment.sourceIndex - offsets.sourceIndex,
+				segment.sourceCodeLine - offsets.sourceCodeLine,
+				segment.sourceCodeColumn - offsets.sourceCodeColumn
 			];
 
 			generatedCodeColumn = segment.generatedCodeColumn;
-			sourceCodeLine = segment.sourceCodeLine;
-			sourceCodeColumn = segment.sourceCodeColumn;
+			offsets.sourceIndex = segment.sourceIndex;
+			offsets.sourceCodeLine = segment.sourceCodeLine;
+			offsets.sourceCodeColumn = segment.sourceCodeColumn;
+
+			firstSegment = false;
 
 			return vlq.encode( arr );
 		}).join( ',' );

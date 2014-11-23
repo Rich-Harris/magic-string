@@ -105,6 +105,40 @@ Returns the content of the generated string that corresponds to the slice betwee
 
 Returns the generated string.
 
+## Bundling
+
+To concatenate several sources, use `MagicString.Bundle`:
+
+```js
+var bundle = new MagicString.Bundle();
+
+bundle.addSource({
+  filename: 'foo.js',
+  content: new MagicString( 'var answer = 42;' ).indent()
+});
+
+bundle.addSource({
+  filename: 'bar.js',
+  content: new MagicString( 'console.log( answer )' ).indent()
+});
+
+bundle.indent()
+  .prepend( '(function () {\n' )
+  .append( '}());' );
+
+bundle.toString();
+// (function () {
+//   var answer = 42;
+//   console.log( answer );
+// }());
+
+// options are as per `s.generateMap()` above
+var map = bundle.generateMap({
+  file: 'bundle.js',
+  includeContent: true,
+  hires: true
+});
+
 ## License
 
 MIT
