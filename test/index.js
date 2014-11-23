@@ -429,7 +429,50 @@ describe( 'MagicString.Bundle', function () {
 			var b = new MagicString.Bundle(),
 				source = new MagicString( 'abcdefghijkl' );
 
-			assert.strictEqual( b.addSource( source ), b );
+			assert.strictEqual( b.addSource({ content: source }), b );
+		});
+	});
+
+	describe( 'append', function () {
+		it( 'should append content', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({ content: new MagicString( '*' ) });
+
+			b.append( '123' ).append( '456' );
+			assert.equal( b.toString(), '*123456' );
+		});
+
+		it( 'should return this', function () {
+			var b = new MagicString.Bundle();
+			assert.strictEqual( b.append( 'x' ), b );
+		});
+	});
+
+	describe( 'clone', function () {
+		it( 'should clone a bundle', function () {
+			var b = new MagicString.Bundle(),
+				s1 = new MagicString( 'abcdef' ),
+				s2 = new MagicString( 'ghijkl' ),
+				clone;
+
+			b
+			.addSource({
+				content: s1
+			})
+			.addSource({
+				content: s2
+			})
+			.prepend( '>>>' )
+			.append( '<<<' );
+
+			clone = b.clone();
+
+			assert.equal( clone.toString(), '>>>abcdef\nghijkl<<<' );
+
+			s1.replace( 2, 4, 'XX' );
+			assert.equal( b.toString(), '>>>abXXef\nghijkl<<<' );
+			assert.equal( clone.toString(), '>>>abcdef\nghijkl<<<' );
 		});
 	});
 
@@ -487,5 +530,75 @@ describe( 'MagicString.Bundle', function () {
 		});
 	});
 
-	// TODO tests for append, clone, indent, prepend, trim
+	describe( 'indent', function () {
+		it( 'should indent a bundle', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({ content: new MagicString( 'abcdef' ) });
+			b.addSource({ content: new MagicString( 'ghijkl' ) });
+
+			b.indent().prepend( '>>>\n' ).append( '\n<<<' );
+			assert.equal( b.toString(), '>>>\n\tabcdef\n\tghijkl\n<<<' );
+		});
+
+		it( 'should return this', function () {
+			var b = new MagicString.Bundle();
+			assert.strictEqual( b.indent(), b );
+		});
+	});
+
+	describe( 'prepend', function () {
+		it( 'should append content', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({ content: new MagicString( '*' ) });
+
+			b.prepend( '123' ).prepend( '456' );
+			assert.equal( b.toString(), '456123*' );
+		});
+
+		it( 'should return this', function () {
+			var b = new MagicString.Bundle();
+			assert.strictEqual( b.prepend( 'x' ), b );
+		});
+	});
+
+	describe( 'trim', function () {
+		it( 'should trim bundle', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({
+				content: new MagicString( '   abcdef   ' )
+			});
+
+			b.addSource({
+				content: new MagicString( '   ghijkl   ' )
+			});
+
+			b.trim();
+			assert.equal( b.toString(), 'abcdef   \n   ghijkl' );
+		});
+
+		it( 'should handle funky edge cases', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({
+				content: new MagicString( '   abcdef   ' )
+			});
+
+			b.addSource({
+				content: new MagicString( '   x   ' )
+			});
+
+			b.prepend( '\n>>>\n' ).append( '   ' );
+
+			b.trim();
+			assert.equal( b.toString(), '>>>\n   abcdef   \n   x' );
+		});
+
+		it( 'should return this', function () {
+			var b = new MagicString.Bundle();
+			assert.strictEqual( b.trim(), b );
+		});
+	});
 });
