@@ -12,6 +12,10 @@ var Bundle = function ( options ) {
 
 Bundle.prototype = {
 	addSource: function ( source ) {
+		if ( typeof source !== 'object' || !source.content ) {
+			throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
+		}
+
 		this.sources.push( source );
 		return this;
 	},
@@ -86,8 +90,8 @@ Bundle.prototype = {
 			source.content.indent( indentStr );
 		});
 
-		this.intro = indentStr + this.intro.replace( /\n/g, '\n' + indentStr );
-		this.outro = this.outro.replace( /\n/g, '\n' + indentStr );
+		this.intro = ( this.intro ? indentStr : '' ) + this.intro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );
+		this.outro = this.outro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );
 
 		return this;
 	},
