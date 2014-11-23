@@ -1,4 +1,5 @@
 import SourceMap from '../SourceMap';
+import getRelativePath from '../utils/getRelativePath';
 
 var Bundle = function ( options ) {
 	options = options || {};
@@ -56,8 +57,10 @@ Bundle.prototype = {
 		);
 
 		return new SourceMap({
-			file: options.file,
-			sources: this.sources.map( getFilename ),
+			file: options.file.split( '/' ).pop(),
+			sources: this.sources.map( function ( source ) {
+				return getRelativePath( options.file, source.filename );
+			}),
 			sourcesContent: this.sources.map( function ( source ) {
 				return options.includeContent ? source.content.original : null;
 			}),
@@ -151,10 +154,6 @@ export default Bundle;
 
 function stringify ( source ) {
 	return source.content.toString();
-}
-
-function getFilename ( source ) {
-	return source.filename;
 }
 
 function getSemis ( str ) {

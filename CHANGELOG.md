@@ -1,5 +1,9 @@
 # changelog
 
+## 0.2.2
+
+* Make `sources` paths in sourcemaps relative to `options.file`
+
 ## 0.2.1
 
 * Minor fix for `bundle.indent()`

@@ -2,6 +2,7 @@ import Bundle from '../Bundle';
 import SourceMap from '../SourceMap';
 import guessIndent from './guessIndent';
 import encodeMappings from './encodeMappings';
+import getRelativePath from '../utils/getRelativePath';
 
 var MagicString = function ( string ) {
 	this.original = this.str = string;
@@ -31,13 +32,11 @@ MagicString.prototype = {
 	},
 
 	generateMap: function ( options ) {
-		var map;
-
 		options = options || {};
 
 		return new SourceMap({
-			file: options.file,
-			sources: [ options.source ],
+			file: ( options.file ? options.file.split( '/' ).pop() : null ),
+			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names: [],
 			mappings: this.getMappings( options.hires, 0 )

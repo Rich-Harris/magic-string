@@ -53,6 +53,32 @@
 	
 	var SourceMap__default = SourceMap__SourceMap;
 
+	function getRelativePath__getRelativePath ( from, to ) {
+		var fromParts, toParts, i;
+	
+		fromParts = from.split( '/' );
+		toParts = to.split( '/' );
+	
+		fromParts.pop(); // get dirname
+	
+		while ( fromParts[0] === toParts[0] ) {
+			fromParts.shift();
+			toParts.shift();
+		}
+	
+		if ( fromParts.length ) {
+			i = fromParts.length;
+			while ( i-- ) fromParts[i] = '..';
+		}
+	
+		return fromParts.concat( toParts ).join( '/' );
+		// } else {
+		// 	toParts.unshift( '.' );
+		// 	return toParts.join( '/' );
+		// }
+	}
+	var getRelativePath__default = getRelativePath__getRelativePath;
+
 	var Bundle__Bundle = function ( options ) {
 		options = options || {};
 	
@@ -65,6 +91,10 @@
 	
 	Bundle__Bundle.prototype = {
 		addSource: function ( source ) {
+			if ( typeof source !== 'object' || !source.content ) {
+				throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
+			}
+	
 			this.sources.push( source );
 			return this;
 		},
@@ -105,8 +135,10 @@
 			);
 	
 			return new SourceMap__default({
-				file: options.file,
-				sources: this.sources.map( Bundle__getFilename ),
+				file: options.file.split( '/' ).pop(),
+				sources: this.sources.map( function ( source ) {
+					return getRelativePath__default( options.file, source.filename );
+				}),
 				sourcesContent: this.sources.map( function ( source ) {
 					return options.includeContent ? source.content.original : null;
 				}),
@@ -139,8 +171,8 @@
 				source.content.indent( indentStr );
 			});
 	
-			this.intro = indentStr + this.intro.replace( /\n/g, '\n' + indentStr );
-			this.outro = this.outro.replace( /\n/g, '\n' + indentStr );
+			this.intro = ( this.intro ? indentStr : '' ) + this.intro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );
+			this.outro = this.outro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );
 	
 			return this;
 		},
@@ -200,10 +232,6 @@
 	
 	function Bundle__stringify ( source ) {
 		return source.content.toString();
-	}
-	
-	function Bundle__getFilename ( source ) {
-		return source.filename;
 	}
 	
 	function Bundle__getSemis ( str ) {
@@ -401,13 +429,11 @@
 		},
 	
 		generateMap: function ( options ) {
-			var map;
-	
 			options = options || {};
 	
 			return new SourceMap__default({
-				file: options.file,
-				sources: [ options.source ],
+				file: ( options.file ? options.file.split( '/' ).pop() : null ),
+				sources: [ options.source ? getRelativePath__default( options.file || '', options.source ) : null ],
 				sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 				names: [],
 				mappings: this.getMappings( options.hires, 0 )
