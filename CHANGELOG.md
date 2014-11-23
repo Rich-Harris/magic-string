@@ -1,5 +1,9 @@
 # changelog
 
+## 0.2.3
+
+* Fixes edge case with bundle sourcemaps
+
 ## 0.2.2
 
 * Make `sources` paths in sourcemaps relative to `options.file`

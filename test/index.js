@@ -528,6 +528,52 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.column, 1 );
 			assert.equal( loc.source, 'bar.js' );
 		});
+
+		it( 'should handle edge case with intro content', function () {
+			var b, map, smc;
+
+			b = new MagicString.Bundle();
+
+			b.addSource({
+				filename: 'foo.js',
+				content: new MagicString( 'var answer = 42;' )
+			});
+
+			b.addSource({
+				filename: 'bar.js',
+				content: new MagicString( 'console.log( answer );' )
+			});
+
+			b.indent().prepend( '(function () {\n' ).append( '\n}());' );
+
+			map = b.generateMap({
+				file: 'bundle.js',
+				includeContent: true,
+				hires: true
+			});
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 2, column: 1 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'foo.js' );
+
+			loc = smc.originalPositionFor({ line: 2, column: 2 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 1 );
+			assert.equal( loc.source, 'foo.js' );
+
+			loc = smc.originalPositionFor({ line: 3, column: 1 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'bar.js' );
+
+			loc = smc.originalPositionFor({ line: 3, column: 2 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 1 );
+			assert.equal( loc.source, 'bar.js' );
+		});
 	});
 
 	describe( 'indent', function () {

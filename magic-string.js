@@ -304,6 +304,7 @@
 					} else {
 						segments.push({
 							generatedCodeColumn: i,
+							sourceIndex: sourceIndex,
 							sourceCodeLine: 0,
 							sourceCodeColumn: 0
 						});
