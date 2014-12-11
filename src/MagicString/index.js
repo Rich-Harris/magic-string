@@ -1,5 +1,8 @@
-import guessIndent from './guess-indent';
-import encodeMappings from './encode-mappings';
+import Bundle from '../Bundle';
+import SourceMap from '../SourceMap';
+import guessIndent from './guessIndent';
+import encodeMappings from './encodeMappings';
+import getRelativePath from '../utils/getRelativePath';
 
 var MagicString = function ( string ) {
 	this.original = this.str = string;
@@ -29,40 +32,32 @@ MagicString.prototype = {
 	},
 
 	generateMap: function ( options ) {
-		var map, encoded;
-
 		options = options || {};
 
-		encoded = encodeMappings( this.original, this.str, this.mappings, options.hires );
-
-		map = {
-			version: 3,
-			file: options.file,
-			sources: [ options.source ],
-			sourcesContent: options.includeContent ? [ this.original ] : [],
+		return new SourceMap({
+			file: ( options.file ? options.file.split( '/' ).pop() : null ),
+			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
+			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names: [],
-			mappings: encoded
-		};
-
-		Object.defineProperty( map, 'toString', {
-			enumerable: false,
-			value: function () {
-				return JSON.stringify( map );
-			}
+			mappings: this.getMappings( options.hires, 0 )
 		});
+	},
 
-		return map;
+	getMappings: function ( hires, sourceIndex, offsets ) {
+		return encodeMappings( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
 	},
 
 	indent: function ( indentStr, options ) {
 		var self = this,
 			mappings = this.mappings,
+			reverseMappings = reverse( mappings, this.str.length ),
 			pattern = /\n/g,
 			match,
 			inserts = [ 0 ],
-			i,
+			adjustments,
 			exclusions,
-			lastEnd;
+			lastEnd,
+			i;
 
 		if ( typeof indentStr === 'object' ) {
 			options = indentStr;
@@ -123,15 +118,22 @@ MagicString.prototype = {
 			});
 		}
 
-		inserts.forEach( function ( index, i ) {
+		adjustments = inserts.map( function ( index ) {
 			var origin;
 
 			do {
-				origin = self.locateOrigin( index++ );
-			} while ( origin == null && index < self.str.length );
+				origin = reverseMappings[ index++ ];
+			} while ( !~origin && index < self.str.length );
 
-			adjust( mappings, origin, indentStr.length );
+			return origin;
 		});
+
+		i = adjustments.length;
+		lastEnd = this.mappings.length;
+		while ( i-- ) {
+			adjust( self.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
+			lastEnd = adjustments[i];
+		}
 
 		return this;
 
@@ -150,6 +152,18 @@ MagicString.prototype = {
 				}
 			}
 		}
+	},
+
+	insert: function ( index, content ) {
+		if ( index === 0 ) {
+			this.prepend( content );
+		} else if ( index === this.original.length ) {
+			this.append( content );
+		} else {
+			this.replace( index, index, content );
+		}
+
+		return this;
 	},
 
 	// get current location of character in original string
@@ -183,7 +197,7 @@ MagicString.prototype = {
 
 	prepend: function ( content ) {
 		this.str = content + this.str;
-		adjust( this.mappings, 0, content.length );
+		adjust( this.mappings, 0, this.mappings.length, content.length );
 		return this;
 	},
 
@@ -193,7 +207,7 @@ MagicString.prototype = {
 	},
 
 	replace: function ( start, end, content ) {
-		var i, len, firstChar, lastChar, d;
+		var firstChar, lastChar, d;
 
 		firstChar = this.locate( start );
 		lastChar = this.locate( end - 1 );
@@ -207,7 +221,7 @@ MagicString.prototype = {
 		d = content.length - ( lastChar + 1 - firstChar );
 
 		blank( this.mappings, start, end );
-		adjust( this.mappings, end, d );
+		adjust( this.mappings, end, this.mappings.length, d );
 		return this;
 	},
 
@@ -229,56 +243,68 @@ MagicString.prototype = {
 	},
 
 	trim: function () {
+		return this.trimStart().trimEnd();
+	},
+
+	trimEnd: function () {
 		var self = this;
 
-		this.str = this.str
-			.replace( /^\s+/, function ( leading ) {
-				var length = leading.length, i, chars = [], adjustmentStart = 0;
+		this.str = this.str.replace( /\s+$/, function ( trailing, index, str ) {
+			var strLength = str.length,
+				length = trailing.length,
+				i,
+				chars = [];
 
-				i = length;
-				while ( i-- ) {
-					chars.push( self.locateOrigin( i ) );
+			i = strLength;
+			while ( i-- > strLength - length ) {
+				chars.push( self.locateOrigin( i ) );
+			}
+
+			i = chars.length;
+			while ( i-- ) {
+				if ( chars[i] !== null ) {
+					self.mappings[ chars[i] ] = -1;
 				}
+			}
 
-				i = chars.length;
-				while ( i-- ) {
-					if ( chars[i] !== null ) {
-						self.mappings[ chars[i] ] = -1;
-						adjustmentStart += 1;
-					}
+			return '';
+		});
+
+		return this;
+	},
+
+	trimStart: function () {
+		var self = this;
+
+		this.str = this.str.replace( /^\s+/, function ( leading ) {
+			var length = leading.length, i, chars = [], adjustmentStart = 0;
+
+			i = length;
+			while ( i-- ) {
+				chars.push( self.locateOrigin( i ) );
+			}
+
+			i = chars.length;
+			while ( i-- ) {
+				if ( chars[i] !== null ) {
+					self.mappings[ chars[i] ] = -1;
+					adjustmentStart += 1;
 				}
+			}
 
-				adjust( self.mappings, adjustmentStart, -length );
+			adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
 
-				return '';
-			})
-			.replace( /\s+$/, function ( trailing, index, str ) {
-				var strLength = str.length,
-					length = trailing.length,
-					i,
-					chars = [];
-
-				i = strLength;
-				while ( i-- > strLength - length ) {
-					chars.push( self.locateOrigin( i ) );
-				}
-
-				i = chars.length;
-				while ( i-- ) {
-					if ( chars[i] !== null ) {
-						self.mappings[ chars[i] ] = -1;
-					}
-				}
-
-				return '';
-			});
+			return '';
+		});
 
 		return this;
 	}
 };
 
-function adjust ( mappings, start, d ) {
-	var i = mappings.length;
+MagicString.Bundle = Bundle;
+
+function adjust ( mappings, start, end, d ) {
+	var i = end;
 	while ( i-- > start ) {
 		if ( ~mappings[i] ) {
 			mappings[i] += d;
@@ -300,6 +326,27 @@ function blank ( mappings, start, i ) {
 	while ( i-- > start ) {
 		mappings[i] = -1;
 	}
+}
+
+function reverse ( mappings, i ) {
+	var result, location;
+
+	result = new Uint32Array( i );
+
+	while ( i-- ) {
+		result[i] = -1;
+	}
+
+	i = mappings.length;
+	while ( i-- ) {
+		location = mappings[i];
+
+		if ( ~location ) {
+			result[ location ] = i;
+		}
+	}
+
+	return result;
 }
 
 export default MagicString;

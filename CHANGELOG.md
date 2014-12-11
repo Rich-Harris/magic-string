@@ -1,5 +1,37 @@
 # changelog
 
+## 0.2.3
+
+* Fixes edge case with bundle sourcemaps
+
+## 0.2.2
+
+* Make `sources` paths in sourcemaps relative to `options.file`
+
+## 0.2.1
+
+* Minor fix for `bundle.indent()`
+
+## 0.2.0
+
+* Implement `MagicString.Bundle` for concatenating magic strings
+
+## 0.1.10
+
+* Fix sourcemap encoding
+
+## 0.1.9
+
+* Better performance when indenting large chunks of code
+
+## 0.1.8
+
+* Sourcemaps generated with `s.generateMap()` have a `toUrl()` method that generates a DataURI
+
+## 0.1.7
+
+* Implement `s.insert( index, content )` - roughly equivalent to `s.replace( index, index, content )`
+
 ## 0.1.6
 
 * Version bump for npm's benefit

@@ -2,7 +2,7 @@
 
 Suppose you have some source code. You want to make some light modifications to it - replacing a few characters here and there, wrapping it with a header and footer, etc - and ideally you'd like to generate a source map at the end of it. You've thought about using something like [recast](https://github.com/benjamn/recast) (which allows you to generate an AST from some JavaScript, manipulate it, and reprint it with a sourcemap without losing your comments and formatting), but it seems like overkill for your needs (or maybe the source code isn't JavaScript).
 
-Your requirements are, frankly, rather niche. But they're requirements that I also have, and for which I made magic-string. It's a small, fast utility for manipulating strings.
+Your requirements are, frankly, rather niche. But they're requirements that I also have, and for which I made magic-string. It's a small, fast utility for manipulating strings and generating sourcemaps.
 
 ## Installation
 
@@ -60,9 +60,22 @@ Generates a [version 3 sourcemap](https://docs.google.com/document/d/1U1RGAehQwR
 
 The `names` property of the source map is not currently populated.
 
+The returned sourcemap has two (non-enumerable) methods attached for convenience:
+
+* `toString` - returns the equivalent of `JSON.stringify(map)`
+* `toUrl` - returns a DataURI containing the sourcemap. Useful for doing this sort of thing:
+
+```js
+code += '\n//# sourceMappingURL=' + map.toUrl();
+```
+
 ### s.indent( prefix )
 
 Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the indentation will be guessed from the original content, falling back to a single tab character. Returns `this`.
+
+### s.insert( index, content )
+
+Inserts the specified `content` at the `index` in the original string. Returns `this`.
 
 ### s.locate( index )
 
@@ -91,6 +104,40 @@ Returns the content of the generated string that corresponds to the slice betwee
 ### s.toString()
 
 Returns the generated string.
+
+## Bundling
+
+To concatenate several sources, use `MagicString.Bundle`:
+
+```js
+var bundle = new MagicString.Bundle();
+
+bundle.addSource({
+  filename: 'foo.js',
+  content: new MagicString( 'var answer = 42;' ).indent()
+});
+
+bundle.addSource({
+  filename: 'bar.js',
+  content: new MagicString( 'console.log( answer )' ).indent()
+});
+
+bundle.indent()
+  .prepend( '(function () {\n' )
+  .append( '}());' );
+
+bundle.toString();
+// (function () {
+//   var answer = 42;
+//   console.log( answer );
+// }());
+
+// options are as per `s.generateMap()` above
+var map = bundle.generateMap({
+  file: 'bundle.js',
+  includeContent: true,
+  hires: true
+});
 
 ## License
 

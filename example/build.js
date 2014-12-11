@@ -30,4 +30,6 @@ fs.readFile( 'app.source.js', function ( err, result ) {
 
 	fs.writeFile( 'app.js', transpiled );
 	fs.writeFile( 'app.js.map', map );
+
+	fs.writeFile( 'app.inlinemap.js', transpiled + '\n//#sourceMappingURL=' + map.toUrl() );
 });

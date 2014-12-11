@@ -1,14 +1,13 @@
 import vlq from 'vlq';
 
-export default function encodeMappings ( original, str, mappings, hires ) {
+export default function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
 	var lineStart,
 		locations,
 		lines,
 		encoded,
 		inverseMappings,
 		charOffset = 0,
-		sourceCodeLine,
-		sourceCodeColumn;
+		firstSegment = true;
 
 	// store locations, for fast lookup
 	lineStart = 0;
@@ -21,8 +20,8 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 
 	inverseMappings = invert( str, mappings );
 
-	lines = str.split( '\n' ).map( function ( line, lineIndex ) {
-		var segments, segment, len, char, origin, lastOrigin, i, sourceCodeLine, sourceCodeColumn, location;
+	lines = str.split( '\n' ).map( function ( line ) {
+		var segments, len, char, origin, lastOrigin, i, location;
 
 		segments = [];
 
@@ -31,12 +30,13 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 			char = i + charOffset;
 			origin = inverseMappings[ char ];
 
-			if ( origin === -1 ) {
-				if ( lastOrigin === -1 ) {
+			if ( !~origin ) {
+				if ( !~lastOrigin ) {
 					// do nothing
 				} else {
 					segments.push({
 						generatedCodeColumn: i,
+						sourceIndex: sourceIndex,
 						sourceCodeLine: 0,
 						sourceCodeColumn: 0
 					});
@@ -51,6 +51,7 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 
 					segments.push({
 						generatedCodeColumn: i,
+						sourceIndex: sourceIndex,
 						sourceCodeLine: location.line,
 						sourceCodeColumn: location.column
 					});
@@ -64,8 +65,11 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 		return segments;
 	});
 
-	sourceCodeLine = 0;
-	sourceCodeColumn = 0;
+	offsets = offsets || {};
+
+	offsets.sourceIndex = offsets.sourceIndex || 0;
+	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
+	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 
 	encoded = lines.map( function ( segments ) {
 		var generatedCodeColumn = 0;
@@ -73,14 +77,17 @@ export default function encodeMappings ( original, str, mappings, hires ) {
 		return segments.map( function ( segment ) {
 			var arr = [
 				segment.generatedCodeColumn - generatedCodeColumn,
-				0,
-				segment.sourceCodeLine - sourceCodeLine,
-				segment.sourceCodeColumn - sourceCodeColumn
+				segment.sourceIndex - offsets.sourceIndex,
+				segment.sourceCodeLine - offsets.sourceCodeLine,
+				segment.sourceCodeColumn - offsets.sourceCodeColumn
 			];
 
 			generatedCodeColumn = segment.generatedCodeColumn;
-			sourceCodeLine = segment.sourceCodeLine;
-			sourceCodeColumn = segment.sourceCodeColumn;
+			offsets.sourceIndex = segment.sourceIndex;
+			offsets.sourceCodeLine = segment.sourceCodeLine;
+			offsets.sourceCodeColumn = segment.sourceCodeColumn;
+
+			firstSegment = false;
 
 			return vlq.encode( arr );
 		}).join( ',' );
@@ -111,7 +118,7 @@ function invert ( str, mappings ) {
 }
 
 function getLocation ( locations, char ) {
-	var i, len = locations.length;
+	var i;
 
 	i = locations.length;
 	while ( i-- ) {
