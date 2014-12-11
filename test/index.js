@@ -148,6 +148,16 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '>>  abc\n>>  def\nghi\njkl' );
 		});
 
+		it( 'should not add characters to empty lines', function () {
+			var s = new MagicString( 'abc\ndef\n\nghi\njkl' );
+
+			s.indent();
+			assert.equal( s.toString(), '\tabc\n\tdef\n\n\tghi\n\tjkl' );
+
+			s.indent();
+			assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\n\t\tghi\n\t\tjkl' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent(), s );

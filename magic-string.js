@@ -449,7 +449,7 @@
 			var self = this,
 				mappings = this.mappings,
 				reverseMappings = index__reverse( mappings, this.str.length ),
-				pattern = /\n/g,
+				pattern = /\n(.)/g,
 				match,
 				inserts = [ 0 ],
 				adjustments,
@@ -503,7 +503,7 @@
 					inserts.push( match.index + 1 );
 				}
 	
-				this.str = indentStr + this.str.replace( pattern, '\n' + indentStr );
+				this.str = indentStr + this.str.replace( pattern, '\n' + indentStr + '$1' );
 			} else {
 				while ( match = pattern.exec( this.str ) ) {
 					if ( !isExcluded( match.index ) ) {
@@ -511,8 +511,8 @@
 					}
 				}
 	
-				this.str = indentStr + this.str.replace( pattern, function ( match, index ) {
-					return isExcluded( index ) ? match : '\n' + indentStr;
+				this.str = indentStr + this.str.replace( pattern, function ( match, $1, index ) {
+					return isExcluded( index ) ? match : '\n' + indentStr + $1;
 				});
 			}
 	

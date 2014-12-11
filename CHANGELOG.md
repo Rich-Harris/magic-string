@@ -1,5 +1,9 @@
 # changelog
 
+## 0.2.4
+
+* Empty lines are not indented
+
 ## 0.2.3
 
 * Fixes edge case with bundle sourcemaps
