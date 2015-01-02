@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "gobble": "^0.6.10",
-    "gobble-esperanto-bundle": "^0.1.2",
+    "gobble-esperanto-bundle": "^0.1.3",
     "source-map": "^0.1.40"
   },
   "keywords": [
