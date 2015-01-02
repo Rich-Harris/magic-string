@@ -8,7 +8,7 @@ export default function guessIndent ( code ) {
 	});
 
 	spaced = lines.filter( function ( line ) {
-		return /^ +/.test( line );
+		return /^ {2,}/.test( line );
 	});
 
 	// More lines tabbed than spaced? Assume tabs, and

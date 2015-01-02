@@ -69,9 +69,11 @@ The returned sourcemap has two (non-enumerable) methods attached for convenience
 code += '\n//# sourceMappingURL=' + map.toUrl();
 ```
 
-### s.indent( prefix )
+### s.indent( prefix[, options] )
 
 Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the indentation will be guessed from the original content, falling back to a single tab character. Returns `this`.
+
+The `options` argument can have an `exclude` property, which is an array of `[start, end]` character ranges. These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
 
 ### s.insert( index, content )
 
@@ -114,15 +116,19 @@ var bundle = new MagicString.Bundle();
 
 bundle.addSource({
   filename: 'foo.js',
-  content: new MagicString( 'var answer = 42;' ).indent()
+  content: new MagicString( 'var answer = 42;' )
 });
 
 bundle.addSource({
   filename: 'bar.js',
-  content: new MagicString( 'console.log( answer )' ).indent()
+  content: new MagicString( 'console.log( answer )' )
 });
 
-bundle.indent()
+// Advanced: a source can include an `indentExclusionRanges` property
+// alongside `filename` and `content`. This will be passed to `s.indent()`
+// - see documentation above
+
+bundle.indent() // optionally, pass an indent string, otherwise it will be guessed
   .prepend( '(function () {\n' )
   .append( '}());' );
 
@@ -138,6 +144,7 @@ var map = bundle.generateMap({
   includeContent: true,
   hires: true
 });
+```
 
 ## License
 

@@ -90,7 +90,7 @@ Bundle.prototype = {
 		}
 
 		this.sources.forEach( function ( source ) {
-			source.content.indent( indentStr );
+			source.content.indent( indentStr, { exclude: source.indentExclusionRanges });
 		});
 
 		this.intro = ( this.intro ? indentStr : '' ) + this.intro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );

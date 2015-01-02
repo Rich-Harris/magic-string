@@ -1,5 +1,10 @@
 # changelog
 
+## 0.2.5
+
+* Single spaces are ignored when guessing indentation - experience shows these are more likely to be e.g. JSDoc comments than actual indentation
+* `bundle.addSource()` can take an `indentExclusionRanges` option
+
 ## 0.2.4
 
 * Empty lines are not indented

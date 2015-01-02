@@ -128,6 +128,13 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
 		});
 
+		it( 'should disregard single-space indentation when auto-indenting', function () {
+			var s = new MagicString( 'abc\n/**\n *comment\n */' );
+
+			s.indent();
+			assert.equal( s.toString(), '\tabc\n\t/**\n\t *comment\n\t */' );
+		});
+
 		it( 'should indent content using the supplied indent string', function () {
 			var s = new MagicString( 'abc\ndef\nghi\njkl' );
 
@@ -595,6 +602,21 @@ describe( 'MagicString.Bundle', function () {
 
 			b.indent().prepend( '>>>\n' ).append( '\n<<<' );
 			assert.equal( b.toString(), '>>>\n\tabcdef\n\tghijkl\n<<<' );
+		});
+
+		it( 'should respect indent exclusion ranges', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({
+				content: new MagicString( 'abc\ndef\nghi\njkl' ),
+				indentExclusionRanges: [ 7, 15 ]
+			});
+
+			b.indent( '  ' );
+			assert.equal( b.toString(), '  abc\n  def\nghi\njkl' );
+
+			b.indent( '>>' );
+			assert.equal( b.toString(), '>>  abc\n>>  def\nghi\njkl' );
 		});
 
 		it( 'should return this', function () {
