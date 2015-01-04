@@ -17,8 +17,4 @@ export default function getRelativePath ( from, to ) {
 	}
 
 	return fromParts.concat( toParts ).join( '/' );
-	// } else {
-	// 	toParts.unshift( '.' );
-	// 	return toParts.join( '/' );
-	// }
 }

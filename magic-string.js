@@ -70,10 +70,6 @@
 		}
 
 		return fromParts.concat( toParts ).join( '/' );
-		// } else {
-		// 	toParts.unshift( '.' );
-		// 	return toParts.join( '/' );
-		// }
 	}
 
 	var Bundle = function ( options ) {
