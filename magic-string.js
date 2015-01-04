@@ -51,8 +51,6 @@
 		}
 	};
 
-	var SourceMap__default = SourceMap;
-
 	function getRelativePath ( from, to ) {
 		var fromParts, toParts, i;
 
@@ -227,7 +225,7 @@
 		}
 	};
 
-	var Bundle__default = Bundle;
+
 
 	function stringify ( source ) {
 		return source.content.toString();
@@ -700,6 +698,9 @@
 
 	function adjust ( mappings, start, end, d ) {
 		var i = end;
+
+		if ( !d ) return; // replacement is same length as replaced string
+
 		while ( i-- > start ) {
 			if ( ~mappings[i] ) {
 				mappings[i] += d;
