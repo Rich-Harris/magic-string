@@ -93,8 +93,8 @@ Bundle.prototype = {
 			source.content.indent( indentStr, { exclude: source.indentExclusionRanges });
 		});
 
-		this.intro = ( this.intro ? indentStr : '' ) + this.intro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );
-		this.outro = this.outro.replace( /\n(.+)/g, ( '\n' + indentStr + '$1' ) );
+		this.intro = this.intro.replace( /^[^\n]/gm, indentStr + '$&' );
+		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
 
 		return this;
 	},

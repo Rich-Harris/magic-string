@@ -95,6 +95,7 @@ describe( 'MagicString', function () {
 			s.indent( '\t' ).prepend( '(function () {\n' ).append( '\n}).call(global);' );
 
 			map = s.generateMap({
+				source: 'input.md',
 				includeContent: true,
 				hires: true
 			});
@@ -156,13 +157,13 @@ describe( 'MagicString', function () {
 		});
 
 		it( 'should not add characters to empty lines', function () {
-			var s = new MagicString( 'abc\ndef\n\nghi\njkl' );
+			var s = new MagicString( '\n\nabc\ndef\n\nghi\njkl' );
 
 			s.indent();
-			assert.equal( s.toString(), '\tabc\n\tdef\n\n\tghi\n\tjkl' );
+			assert.equal( s.toString(), '\n\n\tabc\n\tdef\n\n\tghi\n\tjkl' );
 
 			s.indent();
-			assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\n\t\tghi\n\t\tjkl' );
+			assert.equal( s.toString(), '\n\n\t\tabc\n\t\tdef\n\n\t\tghi\n\t\tjkl' );
 		});
 
 		it( 'should return this', function () {
@@ -558,7 +559,7 @@ describe( 'MagicString.Bundle', function () {
 
 			b.addSource({
 				filename: 'bar.js',
-				content: new MagicString( 'console.log( answer );' )
+				content: new MagicString( '\nconsole.log( answer );' )
 			});
 
 			b.indent().prepend( '(function () {\n' ).append( '\n}());' );
@@ -581,13 +582,13 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.column, 1 );
 			assert.equal( loc.source, 'foo.js' );
 
-			loc = smc.originalPositionFor({ line: 3, column: 1 });
-			assert.equal( loc.line, 1 );
+			loc = smc.originalPositionFor({ line: 4, column: 1 });
+			assert.equal( loc.line, 2 );
 			assert.equal( loc.column, 0 );
 			assert.equal( loc.source, 'bar.js' );
 
-			loc = smc.originalPositionFor({ line: 3, column: 2 });
-			assert.equal( loc.line, 1 );
+			loc = smc.originalPositionFor({ line: 4, column: 2 });
+			assert.equal( loc.line, 2 );
 			assert.equal( loc.column, 1 );
 			assert.equal( loc.source, 'bar.js' );
 		});

@@ -51,9 +51,9 @@ MagicString.prototype = {
 		var self = this,
 			mappings = this.mappings,
 			reverseMappings = reverse( mappings, this.str.length ),
-			pattern = /\n(.)/g,
+			pattern = /^[^\n]/gm,
 			match,
-			inserts = [ 0 ],
+			inserts = [],
 			adjustments,
 			exclusions,
 			lastEnd,
@@ -102,19 +102,19 @@ MagicString.prototype = {
 
 		if ( !exclusions ) {
 			while ( match = pattern.exec( this.str ) ) {
-				inserts.push( match.index + 1 );
+				inserts.push( match.index );
 			}
 
-			this.str = indentStr + this.str.replace( pattern, '\n' + indentStr + '$1' );
+			this.str = this.str.replace( pattern, indentStr + '$&' );
 		} else {
 			while ( match = pattern.exec( this.str ) ) {
-				if ( !isExcluded( match.index ) ) {
-					inserts.push( match.index + 1 );
+				if ( !isExcluded( match.index - 1 ) ) {
+					inserts.push( match.index );
 				}
 			}
 
-			this.str = indentStr + this.str.replace( pattern, function ( match, $1, index ) {
-				return isExcluded( index ) ? match : '\n' + indentStr + $1;
+			this.str = this.str.replace( pattern, function ( match, index ) {
+				return isExcluded( index - 1 ) ? match : indentStr + match;
 			});
 		}
 
