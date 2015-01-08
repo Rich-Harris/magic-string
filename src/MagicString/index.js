@@ -242,14 +242,19 @@ MagicString.prototype = {
 		return this.str;
 	},
 
-	trim: function () {
-		return this.trimStart().trimEnd();
+	trimLines: function() {
+		return this.trim('[\\r\\n]');
 	},
 
-	trimEnd: function () {
-		var self = this;
+	trim: function (charType) {
+		return this.trimStart(charType).trimEnd(charType);
+	},
 
-		this.str = this.str.replace( /\s+$/, function ( trailing, index, str ) {
+	trimEnd: function (charType) {
+		var self = this;
+		var rx = new RegExp((charType || '\\s') + '+$');
+
+		this.str = this.str.replace( rx, function ( trailing, index, str ) {
 			var strLength = str.length,
 				length = trailing.length,
 				i,
@@ -273,10 +278,11 @@ MagicString.prototype = {
 		return this;
 	},
 
-	trimStart: function () {
+	trimStart: function (charType) {
 		var self = this;
+		var rx = new RegExp('^' + (charType || '\\s') + '+');
 
-		this.str = this.str.replace( /^\s+/, function ( leading ) {
+		this.str = this.str.replace( rx, function ( leading ) {
 			var length = leading.length, i, chars = [], adjustmentStart = 0;
 
 			i = length;

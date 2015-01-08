@@ -108,20 +108,26 @@ Bundle.prototype = {
 		return this.intro + this.sources.map( stringify ).join( this.separator ) + this.outro;
 	},
 
-	trim: function () {
-		var i, source;
+	trimLines: function () {
+		return this.trim('[\\r\\n]');
+	},
 
-		this.intro = this.intro.replace( /^\s+/, '' );
-		this.outro = this.outro.replace( /\s+$/, '' );
+	trim: function (charType) {
+		return this.trimStart(charType).trimEnd(charType);
+	},
 
-		// trim start
+	trimStart: function (charType) {
+		var rx = new RegExp('^' + (charType || '\\s') + '+');
+		this.intro = this.intro.replace( rx, '' );
+
 		if ( !this.intro ) {
-			i = 0;
+			var source;
+			var i = 0;
 			do {
 				source = this.sources[i];
 
 				if ( !source ) {
-					this.outro = this.outro.replace( /^\s+/, '' );
+					this.outro = this.outro.replace( rx, '' );
 					break;
 				}
 
@@ -130,18 +136,25 @@ Bundle.prototype = {
 			} while ( source.content.str === '' );
 		}
 
-		// trim end
+		return this;
+	},
+
+	trimEnd: function(charType) {
+		var rx = new RegExp((charType || '\\s') + '+$');
+		this.outro = this.outro.replace( rx, '' );
+
 		if ( !this.outro ) {
-			i = this.sources.length - 1;
+			var source;
+			var i = this.sources.length - 1;
 			do {
 				source = this.sources[i];
 
 				if ( !source ) {
-					this.intro = this.intro.replace( /\s+$/, '' );
+					this.intro = this.intro.replace( rx, '' );
 					break;
 				}
 
-				source.content.trimEnd();
+				source.content.trimEnd(charType);
 				i -= 1;
 			} while ( source.content.str === '' );
 		}

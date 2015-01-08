@@ -95,6 +95,7 @@ describe( 'MagicString', function () {
 			s.indent( '\t' ).prepend( '(function () {\n' ).append( '\n}).call(global);' );
 
 			map = s.generateMap({
+				source: 'input.md',
 				includeContent: true,
 				hires: true
 			});
@@ -436,6 +437,15 @@ describe( 'MagicString', function () {
 		it( 'should return this', function () {
 			var s = new MagicString( '  abcdefghijkl  ' );
 			assert.strictEqual( s.trim(), s );
+		});
+	});
+
+	describe( 'trimLines', function () {
+		it( 'should trim original content', function () {
+			var s = new MagicString( '\n\n   abcdefghijkl   \n\n' );
+
+			s.trimLines();
+			assert.equal( s.toString(), '   abcdefghijkl   ' );
 		});
 	});
 });
