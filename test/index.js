@@ -108,6 +108,18 @@ describe( 'MagicString', function () {
 		});
 	});
 
+	describe( 'getIndentString', function () {
+		it( 'should guess the indent string', function () {
+			var s = new MagicString( 'abc\n  def\nghi' );
+			assert.equal( s.getIndentString(), '  ' );
+		});
+
+		it( 'should return a tab if no lines are indented', function () {
+			var s = new MagicString( 'abc\ndef\nghi' );
+			assert.equal( s.getIndentString(), '\t' );
+		});
+	});
+
 	describe( 'indent', function () {
 		it( 'should indent content with a single tab character by default', function () {
 			var s = new MagicString( 'abc\ndef\nghi\njkl' );
@@ -612,6 +624,17 @@ describe( 'MagicString.Bundle', function () {
 
 			b.indent().prepend( '>>>\n' ).append( '\n<<<' );
 			assert.equal( b.toString(), '>>>\n\tabcdef\n\tghijkl\n<<<' );
+		});
+
+		it( 'should ignore non-indented sources when guessing indentation', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource({ content: new MagicString( 'abcdef' ) });
+			b.addSource({ content: new MagicString( 'ghijkl' ) });
+			b.addSource({ content: new MagicString( '  mnopqr' ) });
+
+			b.indent();
+			assert.equal( b.toString(), '  abcdef\n  ghijkl\n    mnopqr' );
 		});
 
 		it( 'should respect indent exclusion ranges', function () {

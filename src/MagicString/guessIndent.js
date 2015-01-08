@@ -11,6 +11,10 @@ export default function guessIndent ( code ) {
 		return /^ {2,}/.test( line );
 	});
 
+	if ( tabbed.length === 0 && spaced.length === 0 ) {
+		return null;
+	}
+
 	// More lines tabbed than spaced? Assume tabs, and
 	// default to tabs in the case of a tie (or nothing
 	// to go on)

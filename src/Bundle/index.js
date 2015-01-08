@@ -75,6 +75,8 @@ Bundle.prototype = {
 		this.sources.forEach( function ( source ) {
 			var indentStr = source.content.indentStr;
 
+			if ( indentStr === null ) return;
+
 			if ( !indentStringCounts[ indentStr ] ) indentStringCounts[ indentStr ] = 0;
 			indentStringCounts[ indentStr ] += 1;
 		});

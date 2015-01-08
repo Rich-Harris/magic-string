@@ -1,8 +1,21 @@
 (function (global, factory) {
-	typeof define === 'function' && define.amd ? define(['vlq'], factory) :
-	typeof exports === 'object' ? module.exports = factory(require('vlq')) :
-	global.MagicString = factory(global.vlq)
-}(this, function (vlq__default) { 'use strict';
+
+	'use strict';
+
+	if (typeof define === 'function' && define.amd) {
+		// export as AMD
+		define(['vlq'], factory);
+	} else if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
+		// node/browserify
+		module.exports = factory(require('vlq'));
+	} else {
+		// browser global
+		global.MagicString = factory(global.vlq);
+	}
+
+}(typeof window !== 'undefined' ? window : this, function (vlq__default) {
+
+	'use strict';
 
 	var _btoa;
 
@@ -133,6 +146,8 @@
 			this.sources.forEach( function ( source ) {
 				var indentStr = source.content.indentStr;
 
+				if ( indentStr === null ) return;
+
 				if ( !indentStringCounts[ indentStr ] ) indentStringCounts[ indentStr ] = 0;
 				indentStringCounts[ indentStr ] += 1;
 			});
@@ -243,6 +258,10 @@
 		spaced = lines.filter( function ( line ) {
 			return /^ {2,}/.test( line );
 		});
+
+		if ( tabbed.length === 0 && spaced.length === 0 ) {
+			return null;
+		}
 
 		// More lines tabbed than spaced? Assume tabs, and
 		// default to tabs in the case of a tie (or nothing
@@ -432,6 +451,10 @@
 			});
 		},
 
+		getIndentString: function () {
+			return this.indentStr === null ? '\t' : this.indentStr;
+		},
+
 		getMappings: function ( hires, sourceIndex, offsets ) {
 			return encodeMappings( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
 		},
@@ -453,7 +476,7 @@
 				indentStr = undefined;
 			}
 
-			indentStr = indentStr !== undefined ? indentStr : this.indentStr;
+			indentStr = indentStr !== undefined ? indentStr : ( this.indentStr || '\t' );
 
 			options = options || {};
 

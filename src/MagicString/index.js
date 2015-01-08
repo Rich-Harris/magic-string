@@ -43,6 +43,10 @@ MagicString.prototype = {
 		});
 	},
 
+	getIndentString: function () {
+		return this.indentStr === null ? '\t' : this.indentStr;
+	},
+
 	getMappings: function ( hires, sourceIndex, offsets ) {
 		return encodeMappings( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
 	},
@@ -64,7 +68,7 @@ MagicString.prototype = {
 			indentStr = undefined;
 		}
 
-		indentStr = indentStr !== undefined ? indentStr : this.indentStr;
+		indentStr = indentStr !== undefined ? indentStr : ( this.indentStr || '\t' );
 
 		options = options || {};
 
