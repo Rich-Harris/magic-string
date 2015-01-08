@@ -107,6 +107,22 @@ Returns the content of the generated string that corresponds to the slice betwee
 
 Returns the generated string.
 
+### s.trim([ charType ])
+
+Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start and end. Returns `this`.
+
+### s.trimStart([ charType ])
+
+Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start. Returns `this`.
+
+### s.trimEnd([ charType ])
+
+Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the end. Returns `this`.
+
+### s.trimLines()
+
+Removes empty lines from the start and end. Returns `this`.
+
 ## Bundling
 
 To concatenate several sources, use `MagicString.Bundle`:
