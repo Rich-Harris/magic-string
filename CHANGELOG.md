@@ -1,5 +1,10 @@
 # changelog
 
+## 0.3.0
+
+* Breaking change - `source.indentStr` is `null` if no lines are indented. Use `source.getIndentString()` for the old behaviour (guess, and if no lines are indented, return `\t`)
+* `bundle.getIndentString()` ignores sources with no indented lines when guessing indentation ([#3](https://github.com/Rich-Harris/magic-string/issues/3))
+
 ## 0.2.7
 
 * `source.trimLines()` removes empty lines from start/end of source, leaving other whitespace untouched
