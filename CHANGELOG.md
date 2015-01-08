@@ -1,5 +1,10 @@
 # changelog
 
+## 0.2.7
+
+* `source.trimLines()` removes empty lines from start/end of source, leaving other whitespace untouched
+* Indentation is not added to an empty source
+
 ## 0.2.6
 
 * Performance improvement - adjustments are only made when necessary
