@@ -6,13 +6,24 @@ Your requirements are, frankly, rather niche. But they're requirements that I al
 
 ## Installation
 
-Currently, magic-string only works in node.js (this will likely change in future):
+magic-string works in both node.js and browser environments. For node, install with npm:
 
 ```bash
 npm i magic-string
 ```
 
+To use in browser, you'll need to make [vlq](https://github.com/Rich-Harris/vlq) available:
+
+```html
+<script src='vlq.js'></script>
+<script src='magic-string.js'></script>
+```
+
+(Both libraries also work with various module systems, if you prefer that sort of thing.)
+
 ## Usage
+
+These examples assume you're in node.js, or something similar:
 
 ```js
 var MagicString = require( 'magic-string' );
