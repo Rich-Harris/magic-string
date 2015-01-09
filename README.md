@@ -12,7 +12,7 @@ magic-string works in both node.js and browser environments. For node, install w
 npm i magic-string
 ```
 
-To use in browser, you'll need to make [vlq](https://github.com/Rich-Harris/vlq) available:
+To use in browser, you'll need to make [vlq](https://github.com/Rich-Harris/vlq) available. Add it, along with [magic-string.js](https://raw.githubusercontent.com/Rich-Harris/magic-string/master/magic-string.js), to your page:
 
 ```html
 <script src='vlq.js'></script>
