@@ -1,21 +1,8 @@
 (function (global, factory) {
-
-	'use strict';
-
-	if (typeof define === 'function' && define.amd) {
-		// export as AMD
-		define(['vlq'], factory);
-	} else if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
-		// node/browserify
-		module.exports = factory(require('vlq'));
-	} else {
-		// browser global
-		global.MagicString = factory(global.vlq);
-	}
-
-}(typeof window !== 'undefined' ? window : this, function (vlq__default) {
-
-	'use strict';
+	typeof define === 'function' && define.amd ? define(['vlq'], factory) :
+	typeof exports === 'object' ? module.exports = factory(require('vlq')) :
+	global.MagicString = factory(global.vlq)
+}(this, function (vlq__default) { 'use strict';
 
 	var _btoa;
 
