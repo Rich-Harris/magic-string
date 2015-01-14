@@ -164,7 +164,14 @@ MagicString.prototype = {
 		} else if ( index === this.original.length ) {
 			this.append( content );
 		} else {
-			this.replace( index, index, content );
+			var mapped = this.locate(index);
+
+			if ( mapped === null ) {
+				throw new Error( 'Cannot insert at replaced character index: ' + index );
+			}
+
+			this.str = this.str.substr( 0, mapped ) + content + this.str.substr( mapped );
+			adjust( this.mappings, index, this.mappings.length, content.length );
 		}
 
 		return this;
@@ -218,6 +225,13 @@ MagicString.prototype = {
 
 		if ( firstChar === null || lastChar === null ) {
 			throw new Error( 'Cannot replace the same content twice' );
+		}
+
+		if ( firstChar > lastChar + 1 ) {
+			throw new Error(
+				'BUG! First character mapped to a position after the last character: ' +
+				'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
+			);
 		}
 
 		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
