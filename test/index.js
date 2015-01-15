@@ -203,6 +203,12 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.insert( 0, 'a' ), s );
 		});
+
+		it( 'should insert repeatedly at the same position correctly', function () {
+			var s = new MagicString( 'ab' );
+			assert.equal( s.insert(1, '1').toString(), 'a1b' );
+			assert.equal( s.insert(1, '2').toString(), 'a12b' );
+		});
 	});
 
 	describe( 'locate', function () {
