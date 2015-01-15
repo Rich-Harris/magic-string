@@ -1,5 +1,9 @@
 # changelog
 
+## 0.3.1
+
+* Fixes a bug whereby multiple insertions at the same location would cause text to repeat ([#5](https://github.com/Rich-Harris/magic-string/issues/5))
+
 ## 0.3.0
 
 * Breaking change - `source.indentStr` is `null` if no lines are indented. Use `source.getIndentString()` for the old behaviour (guess, and if no lines are indented, return `\t`)
