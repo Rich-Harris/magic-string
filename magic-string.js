@@ -1,8 +1,8 @@
 (function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('vlq')) :
 	typeof define === 'function' && define.amd ? define(['vlq'], factory) :
-	typeof exports === 'object' ? module.exports = factory(require('vlq')) :
 	global.MagicString = factory(global.vlq)
-}(this, function (vlq__default) { 'use strict';
+}(this, function (vlq) { 'use strict';
 
 	var _btoa;
 
@@ -355,7 +355,7 @@
 
 				firstSegment = false;
 
-				return vlq__default.encode( arr );
+				return vlq.encode( arr );
 			}).join( ',' );
 		}).join( ';' );
 
@@ -559,7 +559,14 @@
 			} else if ( index === this.original.length ) {
 				this.append( content );
 			} else {
-				this.replace( index, index, content );
+				var mapped = this.locate(index);
+
+				if ( mapped === null ) {
+					throw new Error( 'Cannot insert at replaced character index: ' + index );
+				}
+
+				this.str = this.str.substr( 0, mapped ) + content + this.str.substr( mapped );
+				adjust( this.mappings, index, this.mappings.length, content.length );
 			}
 
 			return this;
@@ -613,6 +620,13 @@
 
 			if ( firstChar === null || lastChar === null ) {
 				throw new Error( 'Cannot replace the same content twice' );
+			}
+
+			if ( firstChar > lastChar + 1 ) {
+				throw new Error(
+					'BUG! First character mapped to a position after the last character: ' +
+					'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
+				);
 			}
 
 			this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
