@@ -10,6 +10,7 @@ before( function () {
 		MagicString = require( '../.tmp/dist/magic-string.deps' );
 	}).catch( function ( err ) {
 		console.log( 'Error building library:', err );
+		throw err;
 	});
 });
 
