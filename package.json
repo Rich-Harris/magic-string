@@ -2,16 +2,19 @@
   "name": "magic-string",
   "description": "Modify strings, generate sourcemaps",
   "author": "Rich Harris",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "repository": "https://github.com/rich-harris/magic-string",
-  "main": "magic-string.js",
+  "main": "dist/magic-string.js",
+  "jsnext:main": "src/Magic-String/index.js",
   "license": "MIT",
   "dependencies": {
-    "vlq": "^0.1.0"
+    "vlq": "^0.2.0"
   },
   "devDependencies": {
+    "es6-promise": "^2.0.1",
     "gobble": "^0.6.10",
     "gobble-esperanto-bundle": "^0.1.4",
+    "resolve": "^1.1.0",
     "source-map": "^0.1.40"
   },
   "keywords": [
@@ -23,7 +26,7 @@
   ],
   "scripts": {
     "test": "mocha",
-    "build": "mocha; cp .tmp/magic-string.js magic-string.js",
+    "build": "mocha; mkdir -p dist; rm -rf dist/*; cp .tmp/dist/* dist",
     "prepublish": "npm run build"
   },
   "files": [

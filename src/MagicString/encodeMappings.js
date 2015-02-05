@@ -1,4 +1,4 @@
-import vlq from 'vlq';
+import encode from 'utils/encode';
 
 export default function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
 	var lineStart,
@@ -89,7 +89,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourceI
 
 			firstSegment = false;
 
-			return vlq.encode( arr );
+			return encode( arr );
 		}).join( ',' );
 	}).join( ';' );
 

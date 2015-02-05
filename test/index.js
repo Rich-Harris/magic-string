@@ -7,7 +7,7 @@ before( function () {
 		dest: '.tmp',
 		force: true
 	}).then( function () {
-		MagicString = require( '../.tmp/magic-string' );
+		MagicString = require( '../.tmp/dist/magic-string.deps' );
 	}).catch( function ( err ) {
 		console.log( 'Error building library:', err );
 	});

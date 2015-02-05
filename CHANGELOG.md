@@ -1,5 +1,9 @@
 # changelog
 
+## 0.4.0
+
+* Using experimental Esperanto feature ([esperantojs/esperanto#68](https://github.com/esperantojs/esperanto/issues/68)) to generate version with `vlq` dependency included
+
 ## 0.3.1
 
 * Fixes a bug whereby multiple insertions at the same location would cause text to repeat ([#5](https://github.com/Rich-Harris/magic-string/issues/5))

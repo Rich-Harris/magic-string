@@ -266,6 +266,8 @@
 		return new Array( min + 1 ).join( ' ' );
 	}
 
+	var encode = vlq.encode;
+
 	function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
 		var lineStart,
 			locations,
@@ -355,7 +357,7 @@
 
 				firstSegment = false;
 
-				return vlq.encode( arr );
+				return encode( arr );
 			}).join( ',' );
 		}).join( ';' );
 
@@ -776,4 +778,3 @@
 	return index;
 
 }));
-//# sourceMappingURL=./magic-string.js.map
