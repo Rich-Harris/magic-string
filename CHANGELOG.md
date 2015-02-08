@@ -1,5 +1,9 @@
 # changelog
 
+## 0.4.1
+
+* Includes correct files in npm package (d'oh)
+
 ## 0.4.0
 
 * Using experimental Esperanto feature ([esperantojs/esperanto#68](https://github.com/esperantojs/esperanto/issues/68)) to generate version with `vlq` dependency included
