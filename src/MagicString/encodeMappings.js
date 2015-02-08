@@ -1,4 +1,4 @@
-import encode from 'utils/encode';
+import encode from '../utils/encode';
 
 export default function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
 	var lineStart,
