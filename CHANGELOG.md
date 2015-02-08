@@ -1,5 +1,10 @@
 # changelog
 
+## 0.4.2
+
+* Fix typo in package.json (d'oh again)
+* Use only relative paths for internal modules - makes bundling with dependents (i.e. esperanto) possible
+
 ## 0.4.1
 
 * Includes correct files in npm package (d'oh)
