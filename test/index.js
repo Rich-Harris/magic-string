@@ -179,6 +179,16 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\n\n\t\tabc\n\t\tdef\n\n\t\tghi\n\t\tjkl' );
 		});
 
+		it( 'should not add characters to empty lines, even on Windows', function () {
+			var s = new MagicString( '\r\n\r\nabc\r\ndef\r\n\r\nghi\r\njkl' );
+
+			s.indent();
+			assert.equal( s.toString(), '\r\n\r\n\tabc\r\n\tdef\r\n\r\n\tghi\r\n\tjkl' );
+
+			s.indent();
+			assert.equal( s.toString(), '\r\n\r\n\t\tabc\r\n\t\tdef\r\n\r\n\t\tghi\r\n\t\tjkl' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent(), s );
