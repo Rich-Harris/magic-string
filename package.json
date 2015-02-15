@@ -14,6 +14,7 @@
     "es6-promise": "^2.0.1",
     "gobble": "^0.6.10",
     "gobble-esperanto-bundle": "^0.1.4",
+    "mocha": "^2.1.0",
     "resolve": "^1.1.0",
     "source-map": "^0.1.40"
   },
@@ -26,7 +27,7 @@
   ],
   "scripts": {
     "test": "mocha",
-    "build": "mocha; mkdir -p dist; rm -rf dist/*; cp .tmp/dist/* dist",
+    "build": "sh ./scripts/build.sh",
     "prepublish": "npm run build"
   },
   "files": [
