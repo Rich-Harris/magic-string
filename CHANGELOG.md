@@ -1,8 +1,12 @@
 # changelog
 
+## 0.4.4
+
+* Another Windows fix, this time for file paths when bundling
+
 ## 0.4.3
 
-Handle Windows-style CRLF newlines when determining whether a line is empty
+* Handle Windows-style CRLF newlines when determining whether a line is empty
 
 ## 0.4.2
 
