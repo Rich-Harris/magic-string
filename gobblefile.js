@@ -17,7 +17,7 @@ module.exports = gobble([
 		// need a named import - the batteries-included version below doesn't
 		// need this fix
 		transform: function ( source, path ) {
-			if ( /utils\/encode.js$/.test( path ) ) {
+			if ( /utils[\/\\]encode.js$/.test( path ) ) {
 				return "import vlq from 'vlq';\nexport default vlq.encode;";
 			}
 

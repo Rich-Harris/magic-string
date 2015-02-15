@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 npm test
 
 mkdir -p dist
