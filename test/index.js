@@ -585,6 +585,57 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'bar.js' );
 		});
 
+		it( 'should handle Windows-style paths', function () {
+			var b, map, smc;
+
+			b = new MagicString.Bundle();
+
+			b.addSource({
+				filename: 'path\\to\\foo.js',
+				content: new MagicString( 'var answer = 42;' )
+			});
+
+			b.addSource({
+				filename: 'path\\to\\bar.js',
+				content: new MagicString( 'console.log( answer );' )
+			});
+
+			map = b.generateMap({
+				file: 'bundle.js',
+				includeContent: true,
+				hires: true
+			});
+
+			assert.equal( map.version, 3 );
+			assert.equal( map.file, 'bundle.js' );
+			assert.deepEqual( map.sources, [ 'path/to/foo.js', 'path/to/bar.js' ]);
+			assert.deepEqual( map.sourcesContent, [ 'var answer = 42;', 'console.log( answer );' ]);
+
+			assert.equal( map.toString(), '{"version":3,"file":"bundle.js","sources":["path/to/foo.js","path/to/bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}' );
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 1, column: 0 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'path/to/foo.js' );
+
+			loc = smc.originalPositionFor({ line: 1, column: 1 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 1 );
+			assert.equal( loc.source, 'path/to/foo.js' );
+
+			loc = smc.originalPositionFor({ line: 2, column: 0 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'path/to/bar.js' );
+
+			loc = smc.originalPositionFor({ line: 2, column: 1 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 1 );
+			assert.equal( loc.source, 'path/to/bar.js' );
+		});
+
 		it( 'should handle edge case with intro content', function () {
 			var b, map, smc;
 

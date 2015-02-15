@@ -1,8 +1,8 @@
 export default function getRelativePath ( from, to ) {
 	var fromParts, toParts, i;
 
-	fromParts = from.split( '/' );
-	toParts = to.split( '/' );
+	fromParts = from.split( /[\/\\]/ );
+	toParts = to.split( /[\/\\]/ );
 
 	fromParts.pop(); // get dirname
 
