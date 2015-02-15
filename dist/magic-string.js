@@ -452,7 +452,7 @@
 			var self = this,
 				mappings = this.mappings,
 				reverseMappings = reverse( mappings, this.str.length ),
-				pattern = /^[^\n]/gm,
+				pattern = /^[^\r\n]/gm,
 				match,
 				inserts = [],
 				adjustments,
