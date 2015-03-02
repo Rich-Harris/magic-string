@@ -1,5 +1,9 @@
 # changelog
 
+## 0.4.5
+
+* Implement `source.addSourcemapLocation()`
+
 ## 0.4.4
 
 * Another Windows fix, this time for file paths when bundling

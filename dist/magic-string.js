@@ -41,8 +41,8 @@
 	function getRelativePath ( from, to ) {
 		var fromParts, toParts, i;
 
-		fromParts = from.split( '/' );
-		toParts = to.split( '/' );
+		fromParts = from.split( /[\/\\]/ );
+		toParts = to.split( /[\/\\]/ );
 
 		fromParts.pop(); // get dirname
 
@@ -115,7 +115,7 @@
 			);
 
 			return new SourceMap({
-				file: options.file.split( '/' ).pop(),
+				file: options.file.split( /[\/\\]/ ).pop(),
 				sources: this.sources.map( function ( source ) {
 					return getRelativePath( options.file, source.filename );
 				}),
@@ -268,7 +268,7 @@
 
 	var encode = vlq.encode;
 
-	function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
+	function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets ) {
 		var lineStart,
 			locations,
 			lines,
@@ -312,7 +312,7 @@
 				}
 
 				else {
-					if ( !hires && ( origin === lastOrigin + 1 ) ) {
+					if ( !hires && ( origin === lastOrigin + 1 ) && !sourcemapLocations[ origin ] ) {
 						// do nothing
 					} else {
 						location = getLocation( locations, origin );
@@ -405,10 +405,16 @@
 		this.original = this.str = string;
 		this.mappings = initMappings( string.length );
 
+		this.sourcemapLocations = {};
+
 		this.indentStr = guessIndent( string );
 	};
 
 	MagicString.prototype = {
+		addSourcemapLocation: function ( char ) {
+			this.sourcemapLocations[ char ] = true;
+		},
+
 		append: function ( content ) {
 			this.str += content;
 			return this;
@@ -445,7 +451,7 @@
 		},
 
 		getMappings: function ( hires, sourceIndex, offsets ) {
-			return encodeMappings( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
+			return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets );
 		},
 
 		indent: function ( indentStr, options ) {
