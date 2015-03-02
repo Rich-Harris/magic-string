@@ -1,6 +1,6 @@
 import encode from '../utils/encode';
 
-export default function encodeMappings ( original, str, mappings, hires, sourceIndex, offsets ) {
+export default function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets ) {
 	var lineStart,
 		locations,
 		lines,
@@ -44,7 +44,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourceI
 			}
 
 			else {
-				if ( !hires && ( origin === lastOrigin + 1 ) ) {
+				if ( !hires && ( origin === lastOrigin + 1 ) && !sourcemapLocations[ origin ] ) {
 					// do nothing
 				} else {
 					location = getLocation( locations, origin );

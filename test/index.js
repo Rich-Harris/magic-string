@@ -107,6 +107,49 @@ describe( 'MagicString', function () {
 			assert.equal( originLoc.line, 2 );
 			assert.equal( originLoc.column, 0 );
 		});
+
+		it( 'should generate a sourcemap using specified locations', function () {
+			var s, map, smc, loc;
+
+			s = new MagicString( 'abcdefghijkl' );
+
+			s.addSourcemapLocation( 0 );
+			s.addSourcemapLocation( 3 );
+			s.addSourcemapLocation( 10 );
+
+			s.remove( 6, 9 );
+			map = s.generateMap({
+				file: 'output.md',
+				source: 'input.md',
+				includeContent: true
+			});
+
+			assert.equal( map.version, 3 );
+			assert.equal( map.file, 'output.md' );
+			assert.deepEqual( map.sources, [ 'input.md' ]);
+			assert.deepEqual( map.sourcesContent, [ 'abcdefghijkl' ]);
+
+			assert.equal( map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,GAAG,GAAM,CAAC"}' );
+			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsR0FBRyxHQUFNLENBQUMifQ==' );
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 1, column: 0 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+
+			loc = smc.originalPositionFor({ line: 1, column: 3 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 3 );
+
+			loc = smc.originalPositionFor({ line: 1, column: 6 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 9 );
+
+			loc = smc.originalPositionFor({ line: 1, column: 7 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 10 );
+		});
 	});
 
 	describe( 'getIndentString', function () {

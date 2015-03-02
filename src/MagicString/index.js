@@ -8,10 +8,16 @@ var MagicString = function ( string ) {
 	this.original = this.str = string;
 	this.mappings = initMappings( string.length );
 
+	this.sourcemapLocations = {};
+
 	this.indentStr = guessIndent( string );
 };
 
 MagicString.prototype = {
+	addSourcemapLocation: function ( char ) {
+		this.sourcemapLocations[ char ] = true;
+	},
+
 	append: function ( content ) {
 		this.str += content;
 		return this;
@@ -48,7 +54,7 @@ MagicString.prototype = {
 	},
 
 	getMappings: function ( hires, sourceIndex, offsets ) {
-		return encodeMappings( this.original, this.str, this.mappings, hires, sourceIndex, offsets );
+		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets );
 	},
 
 	indent: function ( indentStr, options ) {
