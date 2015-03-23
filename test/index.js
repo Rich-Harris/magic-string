@@ -30,6 +30,14 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.append( 'xyz' ), s );
 		});
+
+		it( 'should throw when given non-string content', function () {
+			var s = new MagicString( '' );
+			assert.throws(
+				function () { s.append( [] ); },
+				TypeError
+			);
+		});
 	});
 
 	describe( 'clone', function () {
@@ -263,6 +271,14 @@ describe( 'MagicString', function () {
 			assert.equal( s.insert(1, '1').toString(), 'a1b' );
 			assert.equal( s.insert(1, '2').toString(), 'a12b' );
 		});
+
+		it( 'should throw when given non-string content', function () {
+			var s = new MagicString( '' );
+			assert.throws(
+				function () { s.insert( 0, [] ); },
+				TypeError
+			);
+		});
 	});
 
 	describe( 'locate', function () {
@@ -465,6 +481,14 @@ describe( 'MagicString', function () {
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.replace( 3, 4, 'D' ), s );
+		});
+
+		it( 'should throw when given non-string content', function () {
+			var s = new MagicString( '' );
+			assert.throws(
+				function () { s.replace( 0, 1, [] ); },
+				TypeError
+			);
 		});
 	});
 
