@@ -13,7 +13,7 @@
 			return new Buffer( str ).toString( 'base64' );
 		};
 	} else {
-		throw new Error( 'Unsupported environment' );
+		throw new Error( 'Unsupported environment: `window.btoa` or `Buffer` should be supported.' );
 	}
 
 	var btoa = _btoa;
@@ -416,6 +416,10 @@
 		},
 
 		append: function ( content ) {
+			if ( typeof content !== 'string' ) {
+				throw new TypeError( 'appended content must be a string' );
+			}
+
 			this.str += content;
 			return this;
 		},
@@ -562,6 +566,10 @@
 		},
 
 		insert: function ( index, content ) {
+			if ( typeof content !== 'string' ) {
+				throw new TypeError( 'inserted content must be a string' );
+			}
+
 			if ( index === 0 ) {
 				this.prepend( content );
 			} else if ( index === this.original.length ) {
@@ -616,11 +624,41 @@
 		},
 
 		remove: function ( start, end ) {
-			this.replace( start, end, '' );
+			var loc, d, i, currentStart, currentEnd;
+
+			if ( start < 0 || end > this.mappings.length ) {
+				throw new Error( 'Character is out of bounds' );
+			}
+
+			d = 0;
+			currentStart = -1;
+			currentEnd = -1;
+			for ( i = start; i < end; i += 1 ) {
+				loc = this.mappings[i];
+
+				if ( loc !== -1 ) {
+					if ( !~currentStart ) {
+						currentStart = loc;
+					}
+
+					currentEnd = loc + 1;
+
+					this.mappings[i] = -1;
+					d += 1;
+				}
+			}
+
+			this.str = this.str.slice( 0, currentStart ) + this.str.slice( currentEnd );
+
+			adjust( this.mappings, end, this.mappings.length, -d );
 			return this;
 		},
 
 		replace: function ( start, end, content ) {
+			if ( typeof content !== 'string' ) {
+				throw new TypeError( 'replacement content must be a string' );
+			}
+
 			var firstChar, lastChar, d;
 
 			firstChar = this.locate( start );

@@ -444,7 +444,7 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'afghi' );
 		});
 
-		it.only( 'should remove overlapping ranges', function () {
+		it( 'should remove overlapping ranges', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 3, 7 ).remove( 5, 9 );

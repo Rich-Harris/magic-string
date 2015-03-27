@@ -1,5 +1,10 @@
 # changelog
 
+## 0.4.6
+
+* Overlapping ranges can be removed
+* Non-string content is rejected ([#9](https://github.com/Rich-Harris/magic-string/pull/9))
+
 ## 0.4.5
 
 * Implement `source.addSourcemapLocation()`
