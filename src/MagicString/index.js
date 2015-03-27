@@ -19,6 +19,10 @@ MagicString.prototype = {
 	},
 
 	append: function ( content ) {
+		if ( typeof content !== 'string' ) {
+			throw new TypeError( 'appended content must be a string' );
+		}
+
 		this.str += content;
 		return this;
 	},
@@ -165,6 +169,10 @@ MagicString.prototype = {
 	},
 
 	insert: function ( index, content ) {
+		if ( typeof content !== 'string' ) {
+			throw new TypeError( 'inserted content must be a string' );
+		}
+
 		if ( index === 0 ) {
 			this.prepend( content );
 		} else if ( index === this.original.length ) {
@@ -224,6 +232,10 @@ MagicString.prototype = {
 	},
 
 	replace: function ( start, end, content ) {
+		if ( typeof content !== 'string' ) {
+			throw new TypeError( 'replacement content must be a string' );
+		}
+
 		var firstChar, lastChar, d;
 
 		firstChar = this.locate( start );
