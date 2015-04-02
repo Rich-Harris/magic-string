@@ -272,6 +272,12 @@ describe( 'MagicString', function () {
 			assert.equal( s.insert(1, '2').toString(), 'a12b' );
 		});
 
+		it( 'should insert repeatedly at the beginning correctly', function () {
+			var s = new MagicString( 'ab' );
+			assert.equal( s.insert(0, '1').toString(), '1ab' );
+			assert.equal( s.insert(0, '2').toString(), '12ab' );
+		});
+
 		it( 'should throw when given non-string content', function () {
 			var s = new MagicString( '' );
 			assert.throws(
@@ -423,8 +429,8 @@ describe( 'MagicString', function () {
 			s.prepend( 'xyz' );
 			assert.equal( s.toString(), 'xyzabcdefghijkl' );
 
-			s.prepend( 'xyz' );
-			assert.equal( s.toString(), 'xyzxyzabcdefghijkl' );
+			s.prepend( '123' );
+			assert.equal( s.toString(), '123xyzabcdefghijkl' );
 		});
 
 		it( 'should return this', function () {
