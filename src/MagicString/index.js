@@ -173,9 +173,7 @@ MagicString.prototype = {
 			throw new TypeError( 'inserted content must be a string' );
 		}
 
-		if ( index === 0 ) {
-			this.prepend( content );
-		} else if ( index === this.original.length ) {
+		if ( index === this.original.length ) {
 			this.append( content );
 		} else {
 			var mapped = this.locate(index);
