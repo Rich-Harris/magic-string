@@ -1,5 +1,9 @@
 # changelog
 
+## 0.4.7
+
+* Repeated insertions at position 0 behave the same as other positions ([#10](https://github.com/Rich-Harris/magic-string/pull/10))
+
 ## 0.4.6
 
 * Overlapping ranges can be removed

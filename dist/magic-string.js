@@ -38,6 +38,8 @@
 		}
 	};
 
+	var _SourceMap = SourceMap;
+
 	function getRelativePath ( from, to ) {
 		var fromParts, toParts, i;
 
@@ -114,7 +116,7 @@
 				getSemis( this.outro )
 			);
 
-			return new SourceMap({
+			return new _SourceMap({
 				file: options.file.split( /[\/\\]/ ).pop(),
 				sources: this.sources.map( function ( source ) {
 					return getRelativePath( options.file, source.filename );
@@ -223,7 +225,7 @@
 		}
 	};
 
-
+	var _Bundle = Bundle;
 
 	function stringify ( source ) {
 		return source.content.toString();
@@ -441,7 +443,7 @@
 		generateMap: function ( options ) {
 			options = options || {};
 
-			return new SourceMap({
+			return new _SourceMap({
 				file: ( options.file ? options.file.split( '/' ).pop() : null ),
 				sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 				sourcesContent: options.includeContent ? [ this.original ] : [ null ],
@@ -570,9 +572,7 @@
 				throw new TypeError( 'inserted content must be a string' );
 			}
 
-			if ( index === 0 ) {
-				this.prepend( content );
-			} else if ( index === this.original.length ) {
+			if ( index === this.original.length ) {
 				this.append( content );
 			} else {
 				var mapped = this.locate(index);
@@ -766,7 +766,7 @@
 		}
 	};
 
-	MagicString.Bundle = Bundle;
+	MagicString.Bundle = _Bundle;
 
 	function adjust ( mappings, start, end, d ) {
 		var i = end;
@@ -817,8 +817,8 @@
 		return result;
 	}
 
-	var index = MagicString;
+	var MagicString_index = MagicString;
 
-	return index;
+	return MagicString_index;
 
 }));
