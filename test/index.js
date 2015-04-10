@@ -1,3 +1,4 @@
+/*global require, before, describe, it, console */
 var assert = require( 'assert' ),
 	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
 	MagicString;
@@ -96,7 +97,7 @@ describe( 'MagicString', function () {
 		});
 
 		it( 'should generate a correct sourcemap for indented content', function () {
-			var s, map, smc, generatedLoc, originLoc;
+			var s, map, smc, originLoc;
 
 			s = new MagicString( 'var answer = 42;\nconsole.log("the answer is %s", answer);' );
 
@@ -456,7 +457,7 @@ describe( 'MagicString', function () {
 			s.remove( 3, 7 ).remove( 5, 9 );
 			assert.equal( s.toString(), 'abcjkl' );
 
-			var s = new MagicString( 'abcdefghijkl' );
+			s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 3, 7 ).remove( 4, 6 );
 			assert.equal( s.toString(), 'abchijkl' );
@@ -619,7 +620,7 @@ describe( 'MagicString.Bundle', function () {
 
 	describe( 'generateMap', function () {
 		it( 'should generate a sourcemap', function () {
-			var b, map, smc;
+			var b, map, smc, loc;
 
 			b = new MagicString.Bundle();
 
@@ -671,7 +672,7 @@ describe( 'MagicString.Bundle', function () {
 		});
 
 		it( 'should handle Windows-style paths', function () {
-			var b, map, smc;
+			var b, map, smc, loc;
 
 			b = new MagicString.Bundle();
 
@@ -722,7 +723,7 @@ describe( 'MagicString.Bundle', function () {
 		});
 
 		it( 'should handle edge case with intro content', function () {
-			var b, map, smc;
+			var b, map, smc, loc;
 
 			b = new MagicString.Bundle();
 
