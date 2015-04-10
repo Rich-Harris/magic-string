@@ -1,6 +1,6 @@
 # changelog
 
-## 0.4.8
+## 0.4.9
 
 * `file` option is optional when generating a bundle sourcemap
 

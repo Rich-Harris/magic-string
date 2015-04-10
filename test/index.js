@@ -773,6 +773,11 @@ describe( 'MagicString.Bundle', function () {
 
 			b = new MagicString.Bundle();
 
+			b.addSource({
+				filename: 'foo.js',
+				content: new MagicString( 'var answer = 42;' )
+			});
+
 			map = b.generateMap({
 				includeContent: true,
 				hires: true
