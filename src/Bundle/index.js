@@ -57,7 +57,7 @@ Bundle.prototype = {
 		);
 
 		return new SourceMap({
-			file: options.file.split( /[\/\\]/ ).pop(),
+			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: this.sources.map( function ( source ) {
 				return getRelativePath( options.file, source.filename );
 			}),

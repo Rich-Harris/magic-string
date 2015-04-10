@@ -767,6 +767,17 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.column, 1 );
 			assert.equal( loc.source, 'bar.js' );
 		});
+
+		it( 'should allow missing file option when generating map', function () {
+			var b, map;
+
+			b = new MagicString.Bundle();
+
+			map = b.generateMap({
+				includeContent: true,
+				hires: true
+			});
+		});
 	});
 
 	describe( 'indent', function () {

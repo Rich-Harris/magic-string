@@ -45,7 +45,7 @@ MagicString.prototype = {
 		options = options || {};
 
 		return new SourceMap({
-			file: ( options.file ? options.file.split( '/' ).pop() : null ),
+			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names: [],
