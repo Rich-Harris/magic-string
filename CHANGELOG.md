@@ -1,5 +1,9 @@
 # changelog
 
+## 0.4.8
+
+* `file` option is optional when generating a bundle sourcemap
+
 ## 0.4.7
 
 * Repeated insertions at position 0 behave the same as other positions ([#10](https://github.com/Rich-Harris/magic-string/pull/10))
