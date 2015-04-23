@@ -563,6 +563,44 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '   abcdefghijkl   ' );
 		});
 	});
+
+	describe( 'generates correct source maps', function () {
+		var fs = require('fs');
+		var validate = require('sourcemap-validator');
+		var path = require('path');
+		var filePath = path.join('./tmp', 'foo-bar.js');
+		var fileSourceMapPath = path.join('./tmp', 'foo-bar.js.map');
+		var map;
+		var string;
+
+		beforeEach(function () {
+			string = new MagicString('function fooBar() {\n}');
+		});
+
+		afterEach(function () {
+			string = null;
+			map = null;
+		});
+
+		it( 'when using prepend', function () {
+			string.prepend('console.log("cool story, bro");');
+
+			map = string.generateMap({
+				source: filePath,
+				file: fileSourceMapPath,
+			});
+
+			fs.writeFileSync(filePath, string.toString());
+			fs.writeFileSync(fileSourceMapPath, map.toString());
+
+			var raw = fs.readFileSync(filePath);
+			var map = fs.readFileSync(fileSourceMapPath);
+
+			assert.doesNotThrow(function () {
+				validate({'foo-bar.js': raw}, raw, map);
+			});
+		});
+	});
 });
 
 describe( 'MagicString.Bundle', function () {
