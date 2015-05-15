@@ -4,6 +4,8 @@ import guessIndent from './guessIndent';
 import encodeMappings from './encodeMappings';
 import getRelativePath from '../utils/getRelativePath';
 
+let warned = false;
+
 class MagicString {
 	constructor ( string ) {
 		this.original = this.str = string;
@@ -218,6 +220,36 @@ class MagicString {
 		return null;
 	}
 
+	overwrite ( start, end, content ) {
+		if ( typeof content !== 'string' ) {
+			throw new TypeError( 'replacement content must be a string' );
+		}
+
+		var firstChar, lastChar, d;
+
+		firstChar = this.locate( start );
+		lastChar = this.locate( end - 1 );
+
+		if ( firstChar === null || lastChar === null ) {
+			throw new Error( 'Cannot replace the same content twice' );
+		}
+
+		if ( firstChar > lastChar + 1 ) {
+			throw new Error(
+				'BUG! First character mapped to a position after the last character: ' +
+				'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
+			);
+		}
+
+		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
+
+		d = content.length - ( lastChar + 1 - firstChar );
+
+		blank( this.mappings, start, end );
+		adjust( this.mappings, end, this.mappings.length, d );
+		return this;
+	}
+
 	prepend ( content ) {
 		this.str = content + this.str;
 		adjust( this.mappings, 0, this.mappings.length, content.length );
@@ -256,33 +288,12 @@ class MagicString {
 	}
 
 	replace ( start, end, content ) {
-		if ( typeof content !== 'string' ) {
-			throw new TypeError( 'replacement content must be a string' );
+		if ( !warned ) {
+			console.warn( 'magicString.replace(...) is deprecated. Use magicString.overwrite(...) instead' );
+			warned = true;
 		}
 
-		var firstChar, lastChar, d;
-
-		firstChar = this.locate( start );
-		lastChar = this.locate( end - 1 );
-
-		if ( firstChar === null || lastChar === null ) {
-			throw new Error( 'Cannot replace the same content twice' );
-		}
-
-		if ( firstChar > lastChar + 1 ) {
-			throw new Error(
-				'BUG! First character mapped to a position after the last character: ' +
-				'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
-			);
-		}
-
-		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
-
-		d = content.length - ( lastChar + 1 - firstChar );
-
-		blank( this.mappings, start, end );
-		adjust( this.mappings, end, this.mappings.length, d );
-		return this;
+		return this.overwrite( start, end, content );
 	}
 
 	slice ( start, end ) {

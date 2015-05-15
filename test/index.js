@@ -46,7 +46,7 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' ),
 				c;
 
-			s.replace( 3, 9, 'XYZ' );
+			s.overwrite( 3, 9, 'XYZ' );
 			c = s.clone();
 
 			assert.notEqual( s, c );
@@ -317,14 +317,14 @@ describe( 'MagicString', function () {
 		it( 'should correctly locate characters in a string with characters replaced', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.replace( 5, 8, 'FGH' );
+			s.overwrite( 5, 8, 'FGH' );
 			assert.equal( s.locate( 0 ), 0 );
 			assert.equal( s.locate( 4 ), 4 );
 			assert.equal( s.locate( 5 ), null );
 			assert.equal( s.locate( 7 ), null );
 			assert.equal( s.locate( 8 ), 8 );
 
-			s.replace( 1, 4, 'X' );
+			s.overwrite( 1, 4, 'X' );
 			assert.equal( s.toString(), 'aXeFGHijkl' );
 			assert.equal( s.locate( 2 ), null );
 			assert.equal( s.locate( 4 ), 2 );
@@ -389,7 +389,7 @@ describe( 'MagicString', function () {
 		it( 'should correctly locate characters in trimmed replaced content', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.replace( 0, 3, '   ' ).replace( 9, 12, '   ' ).trim();
+			s.overwrite( 0, 3, '   ' ).overwrite( 9, 12, '   ' ).trim();
 			assert.equal( s.locate( 0 ), null );
 			assert.equal( s.locate( 2 ), null );
 			assert.equal( s.locate( 3 ), 0 );
@@ -473,39 +473,39 @@ describe( 'MagicString', function () {
 		it( 'should replace characters', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.replace( 5, 8, 'FGH' );
+			s.overwrite( 5, 8, 'FGH' );
 			assert.equal( s.toString(), 'abcdeFGHijkl' );
 		});
 
 		it( 'should throw an error if overlapping replacements are attempted', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.replace( 7, 11, 'xx' );
+			s.overwrite( 7, 11, 'xx' );
 			assert.throws( function () {
-				s.replace( 8, 12, 'yy' );
+				s.overwrite( 8, 12, 'yy' );
 			}, /Cannot replace the same content twice/ );
 			assert.equal( s.toString(), 'abcdefgxxl' );
 
-			s.replace( 6, 12, 'yes' );
+			s.overwrite( 6, 12, 'yes' );
 			assert.equal( s.toString(), 'abcdefyes' );
 		});
 
 		it( 'should replace characters at the end of the original string', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.replace( 12, 12, '<<<' );
+			s.overwrite( 12, 12, '<<<' );
 			assert.equal( s.toString(), 'abcdefghijkl<<<' );
 		});
 
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.replace( 3, 4, 'D' ), s );
+			assert.strictEqual( s.overwrite( 3, 4, 'D' ), s );
 		});
 
 		it( 'should throw when given non-string content', function () {
 			var s = new MagicString( '' );
 			assert.throws(
-				function () { s.replace( 0, 1, [] ); },
+				function () { s.overwrite( 0, 1, [] ); },
 				TypeError
 			);
 		});
@@ -516,9 +516,9 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			assert.equal( s.slice( 3, 9 ), 'defghi' );
-			s.replace( 4, 8, 'XX' );
+			s.overwrite( 4, 8, 'XX' );
 			assert.equal( s.slice( 3, 9 ), 'dXXi' );
-			s.replace( 2, 10, 'ZZ' );
+			s.overwrite( 2, 10, 'ZZ' );
 			assert.equal( s.slice( 1, 11 ), 'bZZk' );
 
 			assert.throws( function () {
@@ -538,7 +538,7 @@ describe( 'MagicString', function () {
 		it( 'should trim replaced content', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.replace( 0, 3, '   ' ).replace( 9, 12, '   ' ).trim();
+			s.overwrite( 0, 3, '   ' ).overwrite( 9, 12, '   ' ).trim();
 			assert.equal( s.toString(), 'defghi' );
 		});
 
@@ -612,7 +612,7 @@ describe( 'MagicString.Bundle', function () {
 
 			assert.equal( clone.toString(), '>>>abcdef\nghijkl<<<' );
 
-			s1.replace( 2, 4, 'XX' );
+			s1.overwrite( 2, 4, 'XX' );
 			assert.equal( b.toString(), '>>>abXXef\nghijkl<<<' );
 			assert.equal( clone.toString(), '>>>abcdef\nghijkl<<<' );
 		});
