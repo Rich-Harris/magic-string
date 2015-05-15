@@ -3,7 +3,7 @@ var path = require( 'path' );
 var resolve = require( 'resolve' );
 var Promise = require( 'es6-promise' ).Promise;
 
-var src = gobble( 'src' );
+var src = gobble( 'src' ).transform( 'babel' );
 
 module.exports = gobble([
 	src.transform( 'esperanto-bundle', {

@@ -13,6 +13,7 @@
   "devDependencies": {
     "es6-promise": "^2.0.1",
     "gobble": "^0.7.10",
+    "gobble-babel": "^5.1.0",
     "gobble-esperanto-bundle": "^0.1.7",
     "mocha": "^2.1.0",
     "resolve": "^1.1.0",

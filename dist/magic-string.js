@@ -38,8 +38,6 @@
 		}
 	};
 
-	var _SourceMap = SourceMap;
-
 	function getRelativePath ( from, to ) {
 		var fromParts, toParts, i;
 
@@ -116,7 +114,7 @@
 				getSemis( this.outro )
 			);
 
-			return new _SourceMap({
+			return new SourceMap({
 				file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 				sources: this.sources.map( function ( source ) {
 					return options.file ? getRelativePath( options.file, source.filename ) : source.filename;
@@ -225,7 +223,7 @@
 		}
 	};
 
-	var _Bundle = Bundle;
+
 
 	function stringify ( source ) {
 		return source.content.toString();
@@ -443,7 +441,7 @@
 		generateMap: function ( options ) {
 			options = options || {};
 
-			return new _SourceMap({
+			return new SourceMap({
 				file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 				sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 				sourcesContent: options.includeContent ? [ this.original ] : [ null ],
@@ -766,7 +764,7 @@
 		}
 	};
 
-	MagicString.Bundle = _Bundle;
+	MagicString.Bundle = Bundle;
 
 	function adjust ( mappings, start, end, d ) {
 		var i = end;
@@ -817,8 +815,8 @@
 		return result;
 	}
 
-	var MagicString_index = MagicString;
+	var index = MagicString;
 
-	return MagicString_index;
+	return index;
 
 }));

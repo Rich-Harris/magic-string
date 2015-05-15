@@ -1,15 +1,8 @@
 export default function guessIndent ( code ) {
-	var lines, tabbed, spaced, min;
+	const lines = code.split( '\n' );
 
-	lines = code.split( '\n' );
-
-	tabbed = lines.filter( function ( line ) {
-		return /^\t+/.test( line );
-	});
-
-	spaced = lines.filter( function ( line ) {
-		return /^ {2,}/.test( line );
-	});
+	const tabbed = lines.filter( line => /^\t+/.test( line ) );
+	const spaced = lines.filter( line => /^ {2,}/.test( line ) );
 
 	if ( tabbed.length === 0 && spaced.length === 0 ) {
 		return null;
@@ -23,7 +16,7 @@ export default function guessIndent ( code ) {
 	}
 
 	// Otherwise, we need to guess the multiple
-	min = spaced.reduce( function ( previous, current ) {
+	const min = spaced.reduce( ( previous, current ) => {
 		var numSpaces = /^ +/.exec( current )[0].length;
 		return Math.min( numSpaces, previous );
 	}, Infinity );

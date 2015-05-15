@@ -1,39 +1,37 @@
 import SourceMap from '../SourceMap';
 import getRelativePath from '../utils/getRelativePath';
 
-var Bundle = function ( options ) {
-	options = options || {};
+class Bundle {
+	constructor ( options = {} ) {
+		this.intro = options.intro || '';
+		this.outro = options.outro || '';
+		this.separator = 'separator' in options ? options.separator : '\n';
 
-	this.intro = options.intro || '';
-	this.outro = options.outro || '';
-	this.separator = 'separator' in options ? options.separator : '\n';
+		this.sources = [];
+	}
 
-	this.sources = [];
-};
-
-Bundle.prototype = {
-	addSource: function ( source ) {
+	addSource ( source ) {
 		if ( typeof source !== 'object' || !source.content ) {
 			throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
 		}
 
 		this.sources.push( source );
 		return this;
-	},
+	}
 
-	append: function ( str ) {
+	append ( str ) {
 		this.outro += str;
 		return this;
-	},
+	}
 
-	clone: function () {
-		var bundle = new Bundle({
+	clone () {
+		const bundle = new Bundle({
 			intro: this.intro,
 			outro: this.outro,
 			separator: this.separator
 		});
 
-		this.sources.forEach( function ( source ) {
+		this.sources.forEach( source => {
 			bundle.addSource({
 				filename: source.filename,
 				content: source.content.clone()
@@ -41,14 +39,14 @@ Bundle.prototype = {
 		});
 
 		return bundle;
-	},
+	}
 
-	generateMap: function ( options ) {
-		var offsets = {}, encoded, encodingSeparator;
+	generateMap ( options ) {
+		const encodingSeparator = getSemis( this.separator );
 
-		encodingSeparator = getSemis( this.separator );
+		let offsets = {};
 
-		encoded = (
+		const encoded = (
 			getSemis( this.intro ) +
 			this.sources.map( function ( source, sourceIndex) {
 				return source.content.getMappings( options.hires, sourceIndex, offsets );
@@ -58,21 +56,21 @@ Bundle.prototype = {
 
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
-			sources: this.sources.map( function ( source ) {
+			sources: this.sources.map( source => {
 				return options.file ? getRelativePath( options.file, source.filename ) : source.filename;
 			}),
-			sourcesContent: this.sources.map( function ( source ) {
+			sourcesContent: this.sources.map( source => {
 				return options.includeContent ? source.content.original : null;
 			}),
 			names: [],
 			mappings: encoded
 		});
-	},
+	}
 
-	getIndentString: function () {
-		var indentStringCounts = {};
+	getIndentString () {
+		let indentStringCounts = {};
 
-		this.sources.forEach( function ( source ) {
+		this.sources.forEach( source => {
 			var indentStr = source.content.indentStr;
 
 			if ( indentStr === null ) return;
@@ -81,17 +79,17 @@ Bundle.prototype = {
 			indentStringCounts[ indentStr ] += 1;
 		});
 
-		return ( Object.keys( indentStringCounts ).sort( function ( a, b ) {
+		return ( Object.keys( indentStringCounts ).sort( ( a, b ) => {
 			return indentStringCounts[a] - indentStringCounts[b];
 		})[0] ) || '\t';
-	},
+	}
 
-	indent: function ( indentStr ) {
+	indent ( indentStr ) {
 		if ( !indentStr ) {
 			indentStr = this.getIndentString();
 		}
 
-		this.sources.forEach( function ( source ) {
+		this.sources.forEach( source => {
 			source.content.indent( indentStr, { exclude: source.indentExclusionRanges });
 		});
 
@@ -99,32 +97,33 @@ Bundle.prototype = {
 		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
 
 		return this;
-	},
+	}
 
-	prepend: function ( str ) {
+	prepend ( str ) {
 		this.intro = str + this.intro;
 		return this;
-	},
+	}
 
-	toString: function () {
+	toString () {
 		return this.intro + this.sources.map( stringify ).join( this.separator ) + this.outro;
-	},
+	}
 
-	trimLines: function () {
+	trimLines () {
 		return this.trim('[\\r\\n]');
-	},
+	}
 
-	trim: function (charType) {
-		return this.trimStart(charType).trimEnd(charType);
-	},
+	trim ( charType ) {
+		return this.trimStart( charType ).trimEnd( charType );
+	}
 
-	trimStart: function (charType) {
-		var rx = new RegExp('^' + (charType || '\\s') + '+');
+	trimStart ( charType ) {
+		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
 		this.intro = this.intro.replace( rx, '' );
 
 		if ( !this.intro ) {
-			var source;
-			var i = 0;
+			let source; // TODO put inside loop if safe
+			let i = 0;
+
 			do {
 				source = this.sources[i];
 
@@ -139,15 +138,16 @@ Bundle.prototype = {
 		}
 
 		return this;
-	},
+	}
 
-	trimEnd: function(charType) {
-		var rx = new RegExp((charType || '\\s') + '+$');
+	trimEnd ( charType ) {
+		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
 		this.outro = this.outro.replace( rx, '' );
 
 		if ( !this.outro ) {
-			var source;
-			var i = this.sources.length - 1;
+			let source;
+			let i = this.sources.length - 1;
+
 			do {
 				source = this.sources[i];
 
@@ -163,7 +163,7 @@ Bundle.prototype = {
 
 		return this;
 	}
-};
+}
 
 export default Bundle;
 

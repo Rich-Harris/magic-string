@@ -4,30 +4,30 @@ import guessIndent from './guessIndent';
 import encodeMappings from './encodeMappings';
 import getRelativePath from '../utils/getRelativePath';
 
-var MagicString = function ( string ) {
-	this.original = this.str = string;
-	this.mappings = initMappings( string.length );
+class MagicString {
+	constructor ( string ) {
+		this.original = this.str = string;
+		this.mappings = initMappings( string.length );
 
-	this.sourcemapLocations = {};
+		this.sourcemapLocations = {};
 
-	this.indentStr = guessIndent( string );
-};
+		this.indentStr = guessIndent( string );
+	}
 
-MagicString.prototype = {
-	addSourcemapLocation: function ( char ) {
+	addSourcemapLocation ( char ) {
 		this.sourcemapLocations[ char ] = true;
-	},
+	}
 
-	append: function ( content ) {
+	append ( content ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'appended content must be a string' );
 		}
 
 		this.str += content;
 		return this;
-	},
+	}
 
-	clone: function () {
+	clone () {
 		var clone, i;
 
 		clone = new MagicString( this.original );
@@ -39,9 +39,9 @@ MagicString.prototype = {
 		}
 
 		return clone;
-	},
+	}
 
-	generateMap: function ( options ) {
+	generateMap ( options ) {
 		options = options || {};
 
 		return new SourceMap({
@@ -51,17 +51,17 @@ MagicString.prototype = {
 			names: [],
 			mappings: this.getMappings( options.hires, 0 )
 		});
-	},
+	}
 
-	getIndentString: function () {
+	getIndentString () {
 		return this.indentStr === null ? '\t' : this.indentStr;
-	},
+	}
 
-	getMappings: function ( hires, sourceIndex, offsets ) {
+	getMappings ( hires, sourceIndex, offsets ) {
 		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets );
-	},
+	}
 
-	indent: function ( indentStr, options ) {
+	indent ( indentStr, options ) {
 		var self = this,
 			mappings = this.mappings,
 			reverseMappings = reverse( mappings, this.str.length ),
@@ -166,9 +166,9 @@ MagicString.prototype = {
 				}
 			}
 		}
-	},
+	}
 
-	insert: function ( index, content ) {
+	insert ( index, content ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'inserted content must be a string' );
 		}
@@ -187,10 +187,10 @@ MagicString.prototype = {
 		}
 
 		return this;
-	},
+	}
 
 	// get current location of character in original string
-	locate: function ( character ) {
+	locate ( character ) {
 		var loc;
 
 		if ( character < 0 || character > this.mappings.length ) {
@@ -199,9 +199,9 @@ MagicString.prototype = {
 
 		loc = this.mappings[ character ];
 		return ~loc ? loc : null;
-	},
+	}
 
-	locateOrigin: function ( character ) {
+	locateOrigin ( character ) {
 		var i;
 
 		if ( character < 0 || character >= this.str.length ) {
@@ -216,15 +216,15 @@ MagicString.prototype = {
 		}
 
 		return null;
-	},
+	}
 
-	prepend: function ( content ) {
+	prepend ( content ) {
 		this.str = content + this.str;
 		adjust( this.mappings, 0, this.mappings.length, content.length );
 		return this;
-	},
+	}
 
-	remove: function ( start, end ) {
+	remove ( start, end ) {
 		var loc, d, i, currentStart, currentEnd;
 
 		if ( start < 0 || end > this.mappings.length ) {
@@ -253,9 +253,9 @@ MagicString.prototype = {
 
 		adjust( this.mappings, end, this.mappings.length, -d );
 		return this;
-	},
+	}
 
-	replace: function ( start, end, content ) {
+	replace ( start, end, content ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'replacement content must be a string' );
 		}
@@ -283,9 +283,9 @@ MagicString.prototype = {
 		blank( this.mappings, start, end );
 		adjust( this.mappings, end, this.mappings.length, d );
 		return this;
-	},
+	}
 
-	slice: function ( start, end ) {
+	slice ( start, end ) {
 		var firstChar, lastChar;
 
 		firstChar = this.locate( start );
@@ -296,21 +296,21 @@ MagicString.prototype = {
 		}
 
 		return this.str.slice( firstChar, lastChar );
-	},
+	}
 
-	toString: function () {
+	toString () {
 		return this.str;
-	},
+	}
 
-	trimLines: function() {
+	trimLines() {
 		return this.trim('[\\r\\n]');
-	},
+	}
 
-	trim: function (charType) {
+	trim (charType) {
 		return this.trimStart(charType).trimEnd(charType);
-	},
+	}
 
-	trimEnd: function (charType) {
+	trimEnd (charType) {
 		var self = this;
 		var rx = new RegExp((charType || '\\s') + '+$');
 
@@ -336,9 +336,9 @@ MagicString.prototype = {
 		});
 
 		return this;
-	},
+	}
 
-	trimStart: function (charType) {
+	trimStart (charType) {
 		var self = this;
 		var rx = new RegExp('^' + (charType || '\\s') + '+');
 
@@ -365,7 +365,7 @@ MagicString.prototype = {
 
 		return this;
 	}
-};
+}
 
 MagicString.Bundle = Bundle;
 
