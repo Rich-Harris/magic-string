@@ -593,11 +593,30 @@ describe( 'MagicString.Bundle', function () {
 
 		it( 'should accept MagicString instance as a single argument', function () {
 			var b = new MagicString.Bundle();
-			var source = new MagicString( 'abcdefghijkl', { filename: 'foo.js' });
+			var array = [];
+			var source = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js',
+				indentExclusionRanges: array
+			});
 
 			b.addSource( source );
-			assert.equal( b.sources[0].content, source );
-			assert.equal( b.sources[0].filename, 'foo.js' );
+			assert.strictEqual( b.sources[0].content, source );
+			assert.strictEqual( b.sources[0].filename, 'foo.js' );
+			assert.strictEqual( b.sources[0].indentExclusionRanges, array );
+		});
+
+		it( 'respects MagicString init options with { content: source }', function () {
+			var b = new MagicString.Bundle();
+			var array = [];
+			var source = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js',
+				indentExclusionRanges: array
+			});
+
+			b.addSource({ content: source });
+			assert.strictEqual( b.sources[0].content, source );
+			assert.strictEqual( b.sources[0].filename, 'foo.js' );
+			assert.strictEqual( b.sources[0].indentExclusionRanges, array );
 		});
 	});
 

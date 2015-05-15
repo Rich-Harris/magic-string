@@ -11,8 +11,10 @@ class MagicString {
 		this.original = this.str = string;
 		this.mappings = initMappings( string.length );
 
-		this.sourcemapLocations = {};
 		this.filename = options.filename;
+		this.indentExclusionRanges = options.indentExclusionRanges;
+
+		this.sourcemapLocations = {};
 
 		this.indentStr = guessIndent( string );
 	}

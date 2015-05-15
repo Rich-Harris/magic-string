@@ -1,6 +1,7 @@
 import MagicString from '../MagicString/index';
 import SourceMap from '../SourceMap';
 import getRelativePath from '../utils/getRelativePath';
+import hasOwnProp from '../utils/hasOwnProp';
 
 class Bundle {
 	constructor ( options = {} ) {
@@ -22,6 +23,9 @@ class Bundle {
 		if ( typeof source !== 'object' || !source.content ) {
 			throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
 		}
+
+		if ( !hasOwnProp.call( source, 'filename' ) ) source.filename = source.content.filename;
+		if ( !hasOwnProp.call( source, 'indentExclusionRanges' ) ) source.indentExclusionRanges = source.content.indentExclusionRanges;
 
 		this.sources.push( source );
 		return this;
