@@ -17,7 +17,6 @@
 	}
 
 	var btoa = _btoa;
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/utils/btoa.js.map
 
 	function SourceMap___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -45,9 +44,6 @@
 		return SourceMap;
 	})();
 
-
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/SourceMap/index.js.map
-
 	function getRelativePath(from, to) {
 		var fromParts = from.split(/[\/\\]/);
 		var toParts = to.split(/[\/\\]/);
@@ -66,10 +62,8 @@
 
 		return fromParts.concat(toParts).join('/');
 	}
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/utils/getRelativePath.js.map
 
 	var hasOwnProp = Object.prototype.hasOwnProperty;
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/utils/hasOwnProp.js.map
 
 	function Bundle___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -258,7 +252,6 @@
 	function getSemis(str) {
 		return new Array(str.split('\n').length).join(';');
 	}
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/Bundle/index.js.map
 
 	function guessIndent(code) {
 		var lines = code.split('\n');
@@ -289,7 +282,6 @@
 
 		return new Array(min + 1).join(' ');
 	}
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/MagicString/guessIndent.js.map
 
 	var encode = vlq.encode;
 
@@ -414,7 +406,6 @@
 	// do nothing
 
 	// do nothing
-	//# sourceMappingURL=/www/magic-string/.gobble-build/01-babel/.cache/MagicString/encodeMappings.js.map
 
 	function MagicString___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -862,6 +853,7 @@
 		return result;
 	}
 
+	return MagicString;
 
-	
+}));
 //# sourceMappingURL=magic-string.js.map

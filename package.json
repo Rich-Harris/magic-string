@@ -14,7 +14,7 @@
     "es6-promise": "^2.0.1",
     "gobble": "^0.10.1",
     "gobble-babel": "^5.1.0",
-    "gobble-esperanto-bundle": "^0.1.7",
+    "gobble-esperanto-bundle": "^0.2.0",
     "mocha": "^2.1.0",
     "resolve": "^1.1.0",
     "source-map": "^0.1.40"

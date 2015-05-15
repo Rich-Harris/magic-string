@@ -1,19 +1,7 @@
 /*global require, before, describe, it, console */
-var assert = require( 'assert' ),
-	SourceMapConsumer = require( 'source-map' ).SourceMapConsumer,
-	MagicString;
-
-before( function () {
-	return require( '../gobblefile' ).build({
-		dest: '.tmp',
-		force: true
-	}).then( function () {
-		MagicString = require( '../.tmp/dist/magic-string.deps' );
-	}).catch( function ( err ) {
-		console.log( 'Error building library:', err );
-		throw err;
-	});
-});
+var assert = require( 'assert' );
+var SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
+var MagicString = require( '../' );
 
 describe( 'MagicString', function () {
 	describe( 'options', function () {
