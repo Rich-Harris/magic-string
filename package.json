@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "es6-promise": "^2.0.1",
-    "gobble": "^0.7.10",
+    "gobble": "^0.10.1",
     "gobble-babel": "^5.1.0",
     "gobble-esperanto-bundle": "^0.1.7",
     "mocha": "^2.1.0",
@@ -28,8 +28,9 @@
   ],
   "scripts": {
     "test": "mocha",
-    "build": "sh ./scripts/build.sh",
-    "prepublish": "npm run build"
+    "pretest": "npm run build",
+    "build": "gobble build -f dist",
+    "prepublish": "npm test"
   },
   "files": [
     "src/*",
