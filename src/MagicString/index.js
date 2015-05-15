@@ -312,6 +312,14 @@ class MagicString {
 		return this.str.slice( firstChar, lastChar );
 	}
 
+	snip ( start, end ) {
+		const clone = this.clone();
+		clone.remove( 0, start );
+		clone.remove( end, clone.original.length );
+
+		return clone;
+	}
+
 	toString () {
 		return this.str;
 	}

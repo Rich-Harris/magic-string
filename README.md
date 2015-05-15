@@ -128,6 +128,10 @@ Removes the characters from `start` to `end` (of the original string, **not** th
 
 Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string. Throws error if the indices are for characters that were already removed.
 
+### s.snip( start, end )
+
+Returns a clone of `s`, with all content before the `start` and `end` characters of the original string removed.
+
 ### s.toString()
 
 Returns the generated string.

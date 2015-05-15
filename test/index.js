@@ -544,6 +544,29 @@ describe( 'MagicString', function () {
 		});
 	});
 
+	describe( 'snip', function () {
+		it( 'should return a clone with content outside `start` and `end` removed', function () {
+			var s = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js'
+			});
+
+			s.overwrite( 6, 9, 'GHI' );
+
+			var snippet = s.snip( 3, 9 );
+			assert.equal( snippet.toString(), 'defGHI' );
+			assert.equal( snippet.locate( 0, 3 ) );
+			assert.equal( snippet.filename, 'foo.js' );
+		});
+
+		it( 'should respect original indices', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			var snippet = s.snip( 3, 9 );
+
+			snippet.overwrite( 6, 9, 'GHI' );
+			assert.equal( snippet.toString(), 'defGHI' );
+		});
+	});
+
 	describe( 'trim', function () {
 		it( 'should trim original content', function () {
 			var s = new MagicString( '   abcdefghijkl   ' );
