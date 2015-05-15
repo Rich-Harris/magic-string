@@ -1,3 +1,4 @@
+import MagicString from '../MagicString/index';
 import SourceMap from '../SourceMap';
 import getRelativePath from '../utils/getRelativePath';
 
@@ -11,6 +12,13 @@ class Bundle {
 	}
 
 	addSource ( source ) {
+		if ( source instanceof MagicString ) {
+			return this.addSource({
+				content: source,
+				filename: source.filename
+			});
+		}
+
 		if ( typeof source !== 'object' || !source.content ) {
 			throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
 		}

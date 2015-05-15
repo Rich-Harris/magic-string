@@ -16,6 +16,16 @@ before( function () {
 });
 
 describe( 'MagicString', function () {
+	describe( 'options', function () {
+		it( 'stores source file information', function () {
+			var s = new MagicString( 'abc', {
+				filename: 'foo.js'
+			});
+
+			assert.equal( s.filename, 'foo.js' );
+		});
+	});
+
 	describe( 'append', function () {
 		it( 'should append content', function () {
 			var s = new MagicString( 'abcdefghijkl' );
@@ -52,6 +62,13 @@ describe( 'MagicString', function () {
 			assert.notEqual( s, c );
 			assert.equal( c.toString(), 'abcXYZjkl' );
 			assert.equal( c.locate( 9 ), 6 );
+		});
+
+		it( 'should clone filename info', function () {
+			var s = new MagicString( 'abcdefghijkl', { filename: 'foo.js' });
+			var c = s.clone();
+
+			assert.equal( c.filename, 'foo.js' );
 		});
 	});
 
@@ -568,10 +585,19 @@ describe( 'MagicString', function () {
 describe( 'MagicString.Bundle', function () {
 	describe( 'addSource', function () {
 		it( 'should return this', function () {
-			var b = new MagicString.Bundle(),
-				source = new MagicString( 'abcdefghijkl' );
+			var b = new MagicString.Bundle();
+			var source = new MagicString( 'abcdefghijkl' );
 
 			assert.strictEqual( b.addSource({ content: source }), b );
+		});
+
+		it( 'should accept MagicString instance as a single argument', function () {
+			var b = new MagicString.Bundle();
+			var source = new MagicString( 'abcdefghijkl', { filename: 'foo.js' });
+
+			b.addSource( source );
+			assert.equal( b.sources[0].content, source );
+			assert.equal( b.sources[0].filename, 'foo.js' );
 		});
 	});
 

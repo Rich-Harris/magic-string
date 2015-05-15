@@ -7,11 +7,12 @@ import getRelativePath from '../utils/getRelativePath';
 let warned = false;
 
 class MagicString {
-	constructor ( string ) {
+	constructor ( string, options = {} ) {
 		this.original = this.str = string;
 		this.mappings = initMappings( string.length );
 
 		this.sourcemapLocations = {};
+		this.filename = options.filename;
 
 		this.indentStr = guessIndent( string );
 	}
@@ -32,7 +33,7 @@ class MagicString {
 	clone () {
 		var clone, i;
 
-		clone = new MagicString( this.original );
+		clone = new MagicString( this.original, { filename: this.filename });
 		clone.str = this.str;
 
 		i = clone.mappings.length;
