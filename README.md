@@ -26,14 +26,14 @@ These examples assume you're in node.js, or something similar:
 
 ```js
 var MagicString = require( 'magic-string' );
-var string = new MagicString( 'problems = 99' );
+var s = new MagicString( 'problems = 99' );
 
-s.replace( 0, 8, 'answer' );
+s.overwrite( 0, 8, 'answer' );
 s.toString(); // 'answer = 99'
 s.locate( 9 ); // 7 - the character originally at index 9 ('=') is now at index 7
 s.locateOrigin( 7 ); // 9
 
-s.replace( 11, 13, '42' ); // character indices always refer to the original string
+s.overwrite( 11, 13, '42' ); // character indices always refer to the original string
 s.toString(); // 'answer = 42'
 
 s.prepend( 'var ' ).append( ';' ); // most methods are chainable
@@ -47,6 +47,17 @@ var map = s.generateMap({
 
 require( 'fs' ).writeFile( 'converted.js', s.toString() );
 require( 'fs' ).writeFile( 'converted.js.map', map.toString() );
+```
+
+You can pass an options argument:
+
+```js
+var s = new MagicString( someCode, {
+  // both these options will be used if you later
+  // call `bundle.addSource( s )` - see below
+  filename: 'foo.js',
+  indentExclusionRanges: [/*...*/]
+});
 ```
 
 ## Methods
@@ -95,11 +106,15 @@ Inserts the specified `content` at the `index` in the original string. Returns `
 
 ### s.locate( index )
 
-Finds the location, in the generated string, of the character at `index` in the original string. Returns `null` if the character in question has been removed or replaced.
+Finds the location, in the generated string, of the character at `index` in the original string. Returns `null` if the character in question has been removed or overwritten.
 
 ### s.locateOrigin( index )
 
-The opposite of `s.locate()`. Returns `null` if the character in question was inserted with `s.append()`, `s.prepend()` or `s.replace()`.
+The opposite of `s.locate()`. Returns `null` if the character in question was inserted with `s.append()`, `s.prepend()` or `s.overwrite()`.
+
+### s.overwrite( start, end, content )
+
+Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
 
 ### s.prepend( content )
 
@@ -108,10 +123,6 @@ Prepends the string with the specified content. Returns `this`.
 ### s.remove( start, end )
 
 Removes the characters from `start` to `end` (of the original string, **not** the generated string). Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `this`.
-
-### s.replace( start, end, content )
-
-Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
 
 ### s.slice( start, end )
 
@@ -174,6 +185,17 @@ var map = bundle.generateMap({
   includeContent: true,
   hires: true
 });
+```
+
+As an alternative syntax, if you a) don't have `filename` or `indentExclusionRanges` options, or b) passed those in when you used `new MagicString(...)`, you can simply pass the `MagicString` instance itself:
+
+```js
+var bundle = new MagicString.Bundle();
+var source = new MagicString( someCode, {
+  filename: 'foo.js'
+});
+
+bundle.addSource( source );
 ```
 
 ## License
