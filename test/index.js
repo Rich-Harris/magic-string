@@ -641,6 +641,15 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '*123456' );
 		});
 
+		it( 'should append content before subsequent sources', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource( new MagicString( '*' ) );
+
+			b.append( '123' ).addSource( new MagicString( '-' ) ).append( '456' );
+			assert.equal( b.toString(), '*123\n-456' );
+		});
+
 		it( 'should return this', function () {
 			var b = new MagicString.Bundle();
 			assert.strictEqual( b.append( 'x' ), b );

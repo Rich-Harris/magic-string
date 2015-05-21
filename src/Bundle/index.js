@@ -7,7 +7,7 @@ class Bundle {
 	constructor ( options = {} ) {
 		this.intro = options.intro || '';
 		this.outro = options.outro || '';
-		this.separator = 'separator' in options ? options.separator : '\n';
+		this.separator = options.separator || '\n';
 
 		this.sources = [];
 	}
@@ -16,7 +16,8 @@ class Bundle {
 		if ( source instanceof MagicString ) {
 			return this.addSource({
 				content: source,
-				filename: source.filename
+				filename: source.filename,
+				separator: this.separator
 			});
 		}
 
@@ -24,15 +25,20 @@ class Bundle {
 			throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
 		}
 
-		if ( !hasOwnProp.call( source, 'filename' ) ) source.filename = source.content.filename;
-		if ( !hasOwnProp.call( source, 'indentExclusionRanges' ) ) source.indentExclusionRanges = source.content.indentExclusionRanges;
+		[ 'filename', 'indentExclusionRanges', 'separator' ].forEach( option => {
+			if ( !hasOwnProp.call( source, option ) ) source[ option ] = source.content[ option ];
+		});
 
 		this.sources.push( source );
 		return this;
 	}
 
-	append ( str ) {
-		this.outro += str;
+	append ( str, options ) {
+		this.addSource({
+			content: new MagicString( str ),
+			separator: ( options && options.separator ) || ''
+		});
+
 		return this;
 	}
 
@@ -46,7 +52,8 @@ class Bundle {
 		this.sources.forEach( source => {
 			bundle.addSource({
 				filename: source.filename,
-				content: source.content.clone()
+				content: source.content.clone(),
+				separator: source.separator
 			});
 		});
 
@@ -69,7 +76,7 @@ class Bundle {
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: this.sources.map( source => {
-				return options.file ? getRelativePath( options.file, source.filename ) : source.filename;
+				return ( options.file && source.filename ) ? getRelativePath( options.file, source.filename ) : source.filename || '';
 			}),
 			sourcesContent: this.sources.map( source => {
 				return options.includeContent ? source.content.original : null;
@@ -117,7 +124,14 @@ class Bundle {
 	}
 
 	toString () {
-		return this.intro + this.sources.map( stringify ).join( this.separator ) + this.outro;
+		const body = this.sources.map( ( source, i ) => {
+			const separator = source.separator !== undefined ? source.separator : this.separator;
+			let str = ( i > 0 ? separator : '' ) + source.content.toString();
+
+			return str;
+		}).join( '' );
+
+		return this.intro + body;
 	}
 
 	trimLines () {
