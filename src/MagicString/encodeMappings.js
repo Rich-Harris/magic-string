@@ -1,31 +1,29 @@
 import encode from '../utils/encode';
 
 export default function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets ) {
-	var lineStart,
-		locations,
-		lines,
-		encoded,
-		inverseMappings,
-		charOffset = 0,
-		firstSegment = true;
-
 	// store locations, for fast lookup
-	lineStart = 0;
-	locations = original.split( '\n' ).map( function ( line ) {
+	let lineStart = 0;
+	const locations = original.split( '\n' ).map( line => {
 		var start = lineStart;
 		lineStart += line.length + 1; // +1 for the newline
 
 		return start;
 	});
 
-	inverseMappings = invert( str, mappings );
+	const inverseMappings = invert( str, mappings );
 
-	lines = str.split( '\n' ).map( function ( line ) {
-		var segments, len, char, origin, lastOrigin, i, location;
+	let charOffset = 0;
+	const lines = str.split( '\n' ).map( line => {
+		let segments = [];
 
-		segments = [];
+		let char; // TODO put these inside loop, once we've determined it's safe to do so transpilation-wise
+		let origin;
+		let lastOrigin;
+		let location;
 
-		len = line.length;
+		let i;
+
+		const len = line.length;
 		for ( i = 0; i < len; i += 1 ) {
 			char = i + charOffset;
 			origin = inverseMappings[ char ];
@@ -71,11 +69,11 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 
-	encoded = lines.map( function ( segments ) {
+	const encoded = lines.map( segments => {
 		var generatedCodeColumn = 0;
 
-		return segments.map( function ( segment ) {
-			var arr = [
+		return segments.map( segment => {
+			const arr = [
 				segment.generatedCodeColumn - generatedCodeColumn,
 				segment.sourceIndex - offsets.sourceIndex,
 				segment.sourceCodeLine - offsets.sourceCodeLine,
@@ -86,8 +84,6 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 			offsets.sourceIndex = segment.sourceIndex;
 			offsets.sourceCodeLine = segment.sourceCodeLine;
 			offsets.sourceCodeColumn = segment.sourceCodeColumn;
-
-			firstSegment = false;
 
 			return encode( arr );
 		}).join( ',' );

@@ -4,33 +4,38 @@ import guessIndent from './guessIndent';
 import encodeMappings from './encodeMappings';
 import getRelativePath from '../utils/getRelativePath';
 
-var MagicString = function ( string ) {
-	this.original = this.str = string;
-	this.mappings = initMappings( string.length );
+let warned = false;
 
-	this.sourcemapLocations = {};
+class MagicString {
+	constructor ( string, options = {} ) {
+		this.original = this.str = string;
+		this.mappings = initMappings( string.length );
 
-	this.indentStr = guessIndent( string );
-};
+		this.filename = options.filename;
+		this.indentExclusionRanges = options.indentExclusionRanges;
 
-MagicString.prototype = {
-	addSourcemapLocation: function ( char ) {
+		this.sourcemapLocations = {};
+
+		this.indentStr = guessIndent( string );
+	}
+
+	addSourcemapLocation ( char ) {
 		this.sourcemapLocations[ char ] = true;
-	},
+	}
 
-	append: function ( content ) {
+	append ( content ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'appended content must be a string' );
 		}
 
 		this.str += content;
 		return this;
-	},
+	}
 
-	clone: function () {
+	clone () {
 		var clone, i;
 
-		clone = new MagicString( this.original );
+		clone = new MagicString( this.original, { filename: this.filename });
 		clone.str = this.str;
 
 		i = clone.mappings.length;
@@ -39,9 +44,9 @@ MagicString.prototype = {
 		}
 
 		return clone;
-	},
+	}
 
-	generateMap: function ( options ) {
+	generateMap ( options ) {
 		options = options || {};
 
 		return new SourceMap({
@@ -51,17 +56,17 @@ MagicString.prototype = {
 			names: [],
 			mappings: this.getMappings( options.hires, 0 )
 		});
-	},
+	}
 
-	getIndentString: function () {
+	getIndentString () {
 		return this.indentStr === null ? '\t' : this.indentStr;
-	},
+	}
 
-	getMappings: function ( hires, sourceIndex, offsets ) {
+	getMappings ( hires, sourceIndex, offsets ) {
 		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets );
-	},
+	}
 
-	indent: function ( indentStr, options ) {
+	indent ( indentStr, options ) {
 		var self = this,
 			mappings = this.mappings,
 			reverseMappings = reverse( mappings, this.str.length ),
@@ -166,9 +171,9 @@ MagicString.prototype = {
 				}
 			}
 		}
-	},
+	}
 
-	insert: function ( index, content ) {
+	insert ( index, content ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'inserted content must be a string' );
 		}
@@ -187,10 +192,10 @@ MagicString.prototype = {
 		}
 
 		return this;
-	},
+	}
 
 	// get current location of character in original string
-	locate: function ( character ) {
+	locate ( character ) {
 		var loc;
 
 		if ( character < 0 || character > this.mappings.length ) {
@@ -199,9 +204,9 @@ MagicString.prototype = {
 
 		loc = this.mappings[ character ];
 		return ~loc ? loc : null;
-	},
+	}
 
-	locateOrigin: function ( character ) {
+	locateOrigin ( character ) {
 		var i;
 
 		if ( character < 0 || character >= this.str.length ) {
@@ -216,15 +221,45 @@ MagicString.prototype = {
 		}
 
 		return null;
-	},
+	}
 
-	prepend: function ( content ) {
+	overwrite ( start, end, content ) {
+		if ( typeof content !== 'string' ) {
+			throw new TypeError( 'replacement content must be a string' );
+		}
+
+		var firstChar, lastChar, d;
+
+		firstChar = this.locate( start );
+		lastChar = this.locate( end - 1 );
+
+		if ( firstChar === null || lastChar === null ) {
+			throw new Error( 'Cannot replace the same content twice' );
+		}
+
+		if ( firstChar > lastChar + 1 ) {
+			throw new Error(
+				'BUG! First character mapped to a position after the last character: ' +
+				'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
+			);
+		}
+
+		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
+
+		d = content.length - ( lastChar + 1 - firstChar );
+
+		blank( this.mappings, start, end );
+		adjust( this.mappings, end, this.mappings.length, d );
+		return this;
+	}
+
+	prepend ( content ) {
 		this.str = content + this.str;
 		adjust( this.mappings, 0, this.mappings.length, content.length );
 		return this;
-	},
+	}
 
-	remove: function ( start, end ) {
+	remove ( start, end ) {
 		var loc, d, i, currentStart, currentEnd;
 
 		if ( start < 0 || end > this.mappings.length ) {
@@ -253,39 +288,18 @@ MagicString.prototype = {
 
 		adjust( this.mappings, end, this.mappings.length, -d );
 		return this;
-	},
+	}
 
-	replace: function ( start, end, content ) {
-		if ( typeof content !== 'string' ) {
-			throw new TypeError( 'replacement content must be a string' );
+	replace ( start, end, content ) {
+		if ( !warned ) {
+			console.warn( 'magicString.replace(...) is deprecated. Use magicString.overwrite(...) instead' );
+			warned = true;
 		}
 
-		var firstChar, lastChar, d;
+		return this.overwrite( start, end, content );
+	}
 
-		firstChar = this.locate( start );
-		lastChar = this.locate( end - 1 );
-
-		if ( firstChar === null || lastChar === null ) {
-			throw new Error( 'Cannot replace the same content twice' );
-		}
-
-		if ( firstChar > lastChar + 1 ) {
-			throw new Error(
-				'BUG! First character mapped to a position after the last character: ' +
-				'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
-			);
-		}
-
-		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
-
-		d = content.length - ( lastChar + 1 - firstChar );
-
-		blank( this.mappings, start, end );
-		adjust( this.mappings, end, this.mappings.length, d );
-		return this;
-	},
-
-	slice: function ( start, end ) {
+	slice ( start, end ) {
 		var firstChar, lastChar;
 
 		firstChar = this.locate( start );
@@ -296,21 +310,29 @@ MagicString.prototype = {
 		}
 
 		return this.str.slice( firstChar, lastChar );
-	},
+	}
 
-	toString: function () {
+	snip ( start, end ) {
+		const clone = this.clone();
+		clone.remove( 0, start );
+		clone.remove( end, clone.original.length );
+
+		return clone;
+	}
+
+	toString () {
 		return this.str;
-	},
+	}
 
-	trimLines: function() {
+	trimLines() {
 		return this.trim('[\\r\\n]');
-	},
+	}
 
-	trim: function (charType) {
+	trim (charType) {
 		return this.trimStart(charType).trimEnd(charType);
-	},
+	}
 
-	trimEnd: function (charType) {
+	trimEnd (charType) {
 		var self = this;
 		var rx = new RegExp((charType || '\\s') + '+$');
 
@@ -336,9 +358,9 @@ MagicString.prototype = {
 		});
 
 		return this;
-	},
+	}
 
-	trimStart: function (charType) {
+	trimStart (charType) {
 		var self = this;
 		var rx = new RegExp('^' + (charType || '\\s') + '+');
 
@@ -365,7 +387,7 @@ MagicString.prototype = {
 
 		return this;
 	}
-};
+}
 
 MagicString.Bundle = Bundle;
 

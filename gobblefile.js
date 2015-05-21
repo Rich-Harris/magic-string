@@ -3,15 +3,14 @@ var path = require( 'path' );
 var resolve = require( 'resolve' );
 var Promise = require( 'es6-promise' ).Promise;
 
-var src = gobble( 'src' );
+var src = gobble( 'src' ).transform( 'babel' );
 
 module.exports = gobble([
 	src.transform( 'esperanto-bundle', {
 		entry: 'MagicString/index',
-		dest: 'dist/magic-string',
+		dest: 'magic-string',
 		type: 'umd',
 		name: 'MagicString',
-		sourceMap: false,
 
 		// this works around the fact that we're NOT using strict mode, but we
 		// need a named import - the batteries-included version below doesn't
@@ -28,10 +27,9 @@ module.exports = gobble([
 	// version with deps (i.e. vlq) included
 	src.transform( 'esperanto-bundle', {
 		entry: 'MagicString/index',
-		dest: 'dist/magic-string.deps',
+		dest: 'magic-string.deps',
 		type: 'umd',
 		name: 'MagicString',
-		sourceMap: false,
 		resolvePath: function ( importee, importer ) {
 			return new Promise( function ( fulfil, reject ) {
 				var callback = function ( err, result ) {
