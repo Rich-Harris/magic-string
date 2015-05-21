@@ -7,7 +7,7 @@ class Bundle {
 	constructor ( options = {} ) {
 		this.intro = options.intro || '';
 		this.outro = options.outro || '';
-		this.separator = options.separator || '\n';
+		this.separator = options.separator !== undefined ? options.separator : '\n';
 
 		this.sources = [];
 	}

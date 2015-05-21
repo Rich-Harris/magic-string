@@ -947,4 +947,33 @@ describe( 'MagicString.Bundle', function () {
 			assert.strictEqual( b.trim(), b );
 		});
 	});
+
+	describe( 'toString', function () {
+		it( 'should separate with a newline by default', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource( new MagicString( 'abc' ) );
+			b.addSource( new MagicString( 'def' ) );
+
+			assert.strictEqual( b.toString(), 'abc\ndef' );
+		});
+
+		it( 'should accept separator option', function () {
+			var b = new MagicString.Bundle({ separator: '==' });
+
+			b.addSource( new MagicString( 'abc' ) );
+			b.addSource( new MagicString( 'def' ) );
+
+			assert.strictEqual( b.toString(), 'abc==def' );
+		});
+
+		it( 'should accept empty string separator option', function () {
+			var b = new MagicString.Bundle({ separator: '' });
+
+			b.addSource( new MagicString( 'abc' ) );
+			b.addSource( new MagicString( 'def' ) );
+
+			assert.strictEqual( b.toString(), 'abcdef' );
+		});
+	});
 });
