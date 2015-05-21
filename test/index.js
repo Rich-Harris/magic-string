@@ -887,6 +887,16 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '>>  abc\n>>  def\nghi\njkl' );
 		});
 
+		it( 'does not indent sources with no preceding newline, i.e. append()', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource( new MagicString( 'abcdef' ) );
+			b.addSource( new MagicString( 'ghijkl' ) );
+
+			b.prepend( '>>>' ).append( '<<<' ).indent();
+			assert.equal( b.toString(), '>>>abcdef\n\tghijkl<<<' );
+		});
+
 		it( 'should return this', function () {
 			var b = new MagicString.Bundle();
 			assert.strictEqual( b.indent(), b );

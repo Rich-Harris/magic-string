@@ -108,11 +108,23 @@ class Bundle {
 			indentStr = this.getIndentString();
 		}
 
-		this.sources.forEach( source => {
-			source.content.indent( indentStr, { exclude: source.indentExclusionRanges });
+		let trailingNewline = !this.intro || ( this.intro.slice( 0, -1 ) === '\n' );
+
+		this.sources.forEach( ( source, i ) => {
+			const separator = source.separator !== undefined ? source.separator : this.separator;
+			const indentStart = trailingNewline || ( i > 0 && /\r?\n$/.test( separator ) );
+
+			source.content.indent( indentStr, {
+				exclude: source.indentExclusionRanges,
+				indentStart//: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+			});
+
+			trailingNewline = source.content.str.slice( 0, -1 ) === '\n';
 		});
 
-		this.intro = this.intro.replace( /^[^\n]/gm, indentStr + '$&' );
+		this.intro = this.intro.replace( /^[^\n]/gm, ( match, index ) => {
+			return index > 0 ? indentStr + match : match;
+		});
 		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
 
 		return this;
@@ -131,7 +143,7 @@ class Bundle {
 			return str;
 		}).join( '' );
 
-		return this.intro + body;
+		return this.intro + body + this.outro;
 	}
 
 	trimLines () {

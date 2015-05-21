@@ -119,21 +119,25 @@ class MagicString {
 			});
 		}
 
+		const indentStart = options.indentStart !== false;
+
 		if ( !exclusions ) {
-			while ( match = pattern.exec( this.str ) ) {
-				inserts.push( match.index );
-			}
-
-			this.str = this.str.replace( pattern, indentStr + '$&' );
-		} else {
-			while ( match = pattern.exec( this.str ) ) {
-				if ( !isExcluded( match.index - 1 ) ) {
-					inserts.push( match.index );
+			this.str = this.str.replace( pattern, ( match, index ) => {
+				if ( !indentStart && index === 0 ) {
+					return match;
 				}
-			}
 
-			this.str = this.str.replace( pattern, function ( match, index ) {
-				return isExcluded( index - 1 ) ? match : indentStr + match;
+				inserts.push( index );
+				return indentStr + match;
+			});
+		} else {
+			this.str = this.str.replace( pattern, ( match, index ) => {
+				if ( ( !indentStart && index === 0 ) || isExcluded( index - 1 ) ) {
+					return match;
+				}
+
+				inserts.push( index );
+				return indentStr + match;
 			});
 		}
 
