@@ -75,7 +75,7 @@
 
 			this.intro = options.intro || '';
 			this.outro = options.outro || '';
-			this.separator = options.separator || '\n';
+			this.separator = options.separator !== undefined ? options.separator : '\n';
 
 			this.sources = [];
 		}
@@ -168,15 +168,29 @@
 		};
 
 		Bundle.prototype.indent = function indent(indentStr) {
+			var _this = this;
+
 			if (!indentStr) {
 				indentStr = this.getIndentString();
 			}
 
-			this.sources.forEach(function (source) {
-				source.content.indent(indentStr, { exclude: source.indentExclusionRanges });
+			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
+
+			this.sources.forEach(function (source, i) {
+				var separator = source.separator !== undefined ? source.separator : _this.separator;
+				var indentStart = trailingNewline || i > 0 && /\r?\n$/.test(separator);
+
+				source.content.indent(indentStr, {
+					exclude: source.indentExclusionRanges,
+					indentStart: indentStart //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+				});
+
+				trailingNewline = source.content.str.slice(0, -1) === '\n';
 			});
 
-			this.intro = this.intro.replace(/^[^\n]/gm, indentStr + '$&');
+			this.intro = this.intro.replace(/^[^\n]/gm, function (match, index) {
+				return index > 0 ? indentStr + match : match;
+			});
 			this.outro = this.outro.replace(/^[^\n]/gm, indentStr + '$&');
 
 			return this;
@@ -188,16 +202,16 @@
 		};
 
 		Bundle.prototype.toString = function toString() {
-			var _this = this;
+			var _this2 = this;
 
 			var body = this.sources.map(function (source, i) {
-				var separator = source.separator !== undefined ? source.separator : _this.separator;
+				var separator = source.separator !== undefined ? source.separator : _this2.separator;
 				var str = (i > 0 ? separator : '') + source.content.toString();
 
 				return str;
 			}).join('');
 
-			return this.intro + body;
+			return this.intro + body + this.outro;
 		};
 
 		Bundle.prototype.trimLines = function trimLines() {
@@ -628,21 +642,25 @@
 				});
 			}
 
+			var indentStart = options.indentStart !== false;
+
 			if (!exclusions) {
-				while (match = pattern.exec(this.str)) {
-					inserts.push(match.index);
-				}
-
-				this.str = this.str.replace(pattern, indentStr + '$&');
-			} else {
-				while (match = pattern.exec(this.str)) {
-					if (!isExcluded(match.index - 1)) {
-						inserts.push(match.index);
-					}
-				}
-
 				this.str = this.str.replace(pattern, function (match, index) {
-					return isExcluded(index - 1) ? match : indentStr + match;
+					if (!indentStart && index === 0) {
+						return match;
+					}
+
+					inserts.push(index);
+					return indentStr + match;
+				});
+			} else {
+				this.str = this.str.replace(pattern, function (match, index) {
+					if (!indentStart && index === 0 || isExcluded(index - 1)) {
+						return match;
+					}
+
+					inserts.push(index);
+					return indentStr + match;
 				});
 			}
 

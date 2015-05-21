@@ -1,5 +1,10 @@
 # changelog
 
+## 0.5.1
+
+* Allow bundle separator to be the empty string
+* Indenting is handled correctly with empty string separator
+
 ## 0.5.0
 
 * `s.replace()` is deprecated in favour of `s.overwrite()` (identical signature)
