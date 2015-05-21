@@ -75,7 +75,7 @@
 
 			this.intro = options.intro || '';
 			this.outro = options.outro || '';
-			this.separator = 'separator' in options ? options.separator : '\n';
+			this.separator = options.separator || '\n';
 
 			this.sources = [];
 		}
@@ -84,7 +84,8 @@
 			if (source instanceof MagicString) {
 				return this.addSource({
 					content: source,
-					filename: source.filename
+					filename: source.filename,
+					separator: this.separator
 				});
 			}
 
@@ -92,15 +93,20 @@
 				throw new Error('bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`');
 			}
 
-			if (!hasOwnProp.call(source, 'filename')) source.filename = source.content.filename;
-			if (!hasOwnProp.call(source, 'indentExclusionRanges')) source.indentExclusionRanges = source.content.indentExclusionRanges;
+			['filename', 'indentExclusionRanges', 'separator'].forEach(function (option) {
+				if (!hasOwnProp.call(source, option)) source[option] = source.content[option];
+			});
 
 			this.sources.push(source);
 			return this;
 		};
 
-		Bundle.prototype.append = function append(str) {
-			this.outro += str;
+		Bundle.prototype.append = function append(str, options) {
+			this.addSource({
+				content: new MagicString(str),
+				separator: options && options.separator || ''
+			});
+
 			return this;
 		};
 
@@ -114,7 +120,8 @@
 			this.sources.forEach(function (source) {
 				bundle.addSource({
 					filename: source.filename,
-					content: source.content.clone()
+					content: source.content.clone(),
+					separator: source.separator
 				});
 			});
 
@@ -133,7 +140,7 @@
 			return new SourceMap({
 				file: options.file ? options.file.split(/[\/\\]/).pop() : null,
 				sources: this.sources.map(function (source) {
-					return options.file ? getRelativePath(options.file, source.filename) : source.filename;
+					return options.file && source.filename ? getRelativePath(options.file, source.filename) : source.filename || '';
 				}),
 				sourcesContent: this.sources.map(function (source) {
 					return options.includeContent ? source.content.original : null;
@@ -181,7 +188,16 @@
 		};
 
 		Bundle.prototype.toString = function toString() {
-			return this.intro + this.sources.map(stringify).join(this.separator) + this.outro;
+			var _this = this;
+
+			var body = this.sources.map(function (source, i) {
+				var separator = source.separator !== undefined ? source.separator : _this.separator;
+				var str = (i > 0 ? separator : '') + source.content.toString();
+
+				return str;
+			}).join('');
+
+			return this.intro + body;
 		};
 
 		Bundle.prototype.trimLines = function trimLines() {

@@ -1,5 +1,12 @@
 # changelog
 
+## 0.5.0
+
+* `s.replace()` is deprecated in favour of `s.overwrite()` (identical signature)
+* `bundle.addSource()` can take a `MagicString` instance as its sole argument, for convenience
+* The `options` in `new MagicString(str, options)` can include `filename` and `indentExclusionRanges` options, which will be used when bundling
+* New method: `s.snip( start, end )`
+
 ## 0.4.9
 
 * `file` option is optional when generating a bundle sourcemap
