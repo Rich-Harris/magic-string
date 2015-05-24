@@ -530,6 +530,17 @@ describe( 'MagicString', function () {
 				s.slice( 2, 10 );
 			});
 		});
+
+		it( 'defaults `end` to the original string length', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			assert.equal( s.slice( 3 ), 'defghijkl' );
+		});
+
+		it( 'allows negative numbers as arguments', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			assert.equal( s.slice( -3 ), 'jkl' );
+			assert.equal( s.slice( 0, -3 ), 'abcdefghi' );
+		});
 	});
 
 	describe( 'snip', function () {
