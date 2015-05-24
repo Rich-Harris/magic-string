@@ -1,5 +1,10 @@
 # changelog
 
+## 0.5.2
+
+* `s.slice()` accepts negative numbers, and the second argument can be omitted (means 'original string length'), just like `String.prototype.slice`
+* More informative error message when trying to overwrite content illegally
+
 ## 0.5.1
 
 * Allow bundle separator to be the empty string

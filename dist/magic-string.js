@@ -679,7 +679,7 @@
 			lastChar = this.locate(end - 1);
 
 			if (firstChar === null || lastChar === null) {
-				throw new Error('Cannot replace the same content twice');
+				throw new Error('Cannot overwrite the same content twice: \'' + this.original.slice(start, end).replace(/\n/g, '\\n') + '\'');
 			}
 
 			if (firstChar > lastChar + 1) {
@@ -741,8 +741,13 @@
 			return this.overwrite(start, end, content);
 		};
 
-		MagicString.prototype.slice = function slice(start, end) {
+		MagicString.prototype.slice = function slice(start) {
+			var end = arguments[1] === undefined ? this.original.length : arguments[1];
+
 			var firstChar, lastChar;
+
+			while (start < 0) start += this.original.length;
+			while (end < 0) end += this.original.length;
 
 			firstChar = this.locate(start);
 			lastChar = this.locate(end - 1) + 1;
