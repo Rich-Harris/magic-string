@@ -488,7 +488,7 @@ describe( 'MagicString', function () {
 			s.overwrite( 7, 11, 'xx' );
 			assert.throws( function () {
 				s.overwrite( 8, 12, 'yy' );
-			}, /Cannot replace the same content twice/ );
+			}, /Cannot overwrite the same content twice: \'ijkl\'/ );
 			assert.equal( s.toString(), 'abcdefgxxl' );
 
 			s.overwrite( 6, 12, 'yes' );

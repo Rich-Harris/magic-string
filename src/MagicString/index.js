@@ -238,7 +238,7 @@ class MagicString {
 		lastChar = this.locate( end - 1 );
 
 		if ( firstChar === null || lastChar === null ) {
-			throw new Error( 'Cannot replace the same content twice' );
+			throw new Error( `Cannot overwrite the same content twice: '${this.original.slice(start, end).replace(/\n/g, '\\n')}'` );
 		}
 
 		if ( firstChar > lastChar + 1 ) {
