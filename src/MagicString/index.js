@@ -303,8 +303,11 @@ class MagicString {
 		return this.overwrite( start, end, content );
 	}
 
-	slice ( start, end ) {
+	slice ( start, end = this.original.length ) {
 		var firstChar, lastChar;
+
+		while ( start < 0 ) start += this.original.length;
+		while ( end < 0 ) end += this.original.length;
 
 		firstChar = this.locate( start );
 		lastChar = this.locate( end - 1 ) + 1;
