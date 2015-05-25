@@ -859,6 +859,57 @@ describe( 'MagicString.Bundle', function () {
 				hires: true
 			});
 		});
+
+		it( 'should handle repeated sources', function () {
+			var b = new MagicString.Bundle();
+
+			var foo = new MagicString( 'var one = 1;\nvar three = 3;', {
+				filename: 'foo.js'
+			});
+
+			var bar = new MagicString( 'var two = 2;\nvar four = 4;', {
+				filename: 'bar.js'
+			});
+
+			b.addSource( foo.snip( 0, 12 ) );
+			b.addSource( bar.snip( 0, 12 ) );
+			b.addSource( foo.snip( 13, 27 ) );
+			b.addSource( bar.snip( 13, 26 ) );
+
+			var code = b.toString();
+			assert.equal( code, 'var one = 1;\nvar two = 2;\nvar three = 3;\nvar four = 4;' );
+
+			var map = b.generateMap({
+				includeContent: true,
+				hires: true
+			});
+
+			assert.equal( map.sources.length, 2 );
+			assert.equal( map.sourcesContent.length, 2 );
+
+			var smc = new SourceMapConsumer( map );
+			var loc;
+
+			loc = smc.originalPositionFor({ line: 1, column: 0 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'foo.js' );
+
+			loc = smc.originalPositionFor({ line: 2, column: 0 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'bar.js' );
+
+			loc = smc.originalPositionFor({ line: 3, column: 0 });
+			assert.equal( loc.line, 2 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'foo.js' );
+
+			loc = smc.originalPositionFor({ line: 4, column: 0 });
+			assert.equal( loc.line, 2 );
+			assert.equal( loc.column, 0 );
+			assert.equal( loc.source, 'bar.js' );
+		});
 	});
 
 	describe( 'indent', function () {

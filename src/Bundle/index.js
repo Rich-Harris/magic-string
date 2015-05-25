@@ -10,6 +10,9 @@ class Bundle {
 		this.separator = options.separator !== undefined ? options.separator : '\n';
 
 		this.sources = [];
+
+		this.uniqueSources = [];
+		this.uniqueSourceIndexByFilename = {};
 	}
 
 	addSource ( source ) {
@@ -28,6 +31,18 @@ class Bundle {
 		[ 'filename', 'indentExclusionRanges', 'separator' ].forEach( option => {
 			if ( !hasOwnProp.call( source, option ) ) source[ option ] = source.content[ option ];
 		});
+
+		if ( source.filename ) {
+			if ( !hasOwnProp.call( this.uniqueSourceIndexByFilename, source.filename ) ) {
+				this.uniqueSourceIndexByFilename[ source.filename ] = this.uniqueSources.length;
+				this.uniqueSources.push({ filename: source.filename, content: source.content.original });
+			} else {
+				const uniqueSource = this.uniqueSources[ this.uniqueSourceIndexByFilename[ source.filename ] ];
+				if ( source.content.original !== uniqueSource.content ) {
+					throw new Error( `Illegal source: same filename (${source.filename}), different contents` );
+				}
+			}
+		}
 
 		this.sources.push( source );
 		return this;
@@ -67,7 +82,14 @@ class Bundle {
 
 		const encoded = (
 			getSemis( this.intro ) +
-			this.sources.map( function ( source, sourceIndex) {
+			this.sources.map( source => {
+				// we don't bother encoding sources without a filename
+				if ( !source.filename ) {
+					return getSemis( source.content.toString() );
+				}
+
+				const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
+
 				return source.content.getMappings( options.hires, sourceIndex, offsets );
 			}).join( encodingSeparator ) +
 			getSemis( this.outro )
@@ -75,11 +97,11 @@ class Bundle {
 
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
-			sources: this.sources.map( source => {
-				return ( options.file && source.filename ) ? getRelativePath( options.file, source.filename ) : source.filename || '';
+			sources: this.uniqueSources.map( source => {
+				return options.file ? getRelativePath( options.file, source.filename ) : source.filename;
 			}),
-			sourcesContent: this.sources.map( source => {
-				return options.includeContent ? source.content.original : null;
+			sourcesContent: this.uniqueSources.map( source => {
+				return options.includeContent ? source.content : null;
 			}),
 			names: [],
 			mappings: encoded
