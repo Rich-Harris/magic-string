@@ -32,6 +32,10 @@ class Bundle {
 			if ( !hasOwnProp.call( source, option ) ) source[ option ] = source.content[ option ];
 		});
 
+		if ( source.separator === undefined ) { // TODO there's a bunch of this sort of thing, needs cleaning up
+			source.separator = this.separator;
+		}
+
 		if ( source.filename ) {
 			if ( !hasOwnProp.call( this.uniqueSourceIndexByFilename, source.filename ) ) {
 				this.uniqueSourceIndexByFilename[ source.filename ] = this.uniqueSources.length;
@@ -76,22 +80,24 @@ class Bundle {
 	}
 
 	generateMap ( options ) {
-		const encodingSeparator = getSemis( this.separator );
-
 		let offsets = {};
 
 		const encoded = (
 			getSemis( this.intro ) +
-			this.sources.map( source => {
+			this.sources.map( ( source, i ) => {
+				const prefix = ( i > 0 ) ? ( getSemis( source.separator ) || ',' ) : '';
+				let mappings;
+
 				// we don't bother encoding sources without a filename
 				if ( !source.filename ) {
-					return getSemis( source.content.toString() );
+					mappings = getSemis( source.content.toString() );
+				} else {
+					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
+					mappings = source.content.getMappings( options.hires, sourceIndex, offsets );
 				}
 
-				const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
-
-				return source.content.getMappings( options.hires, sourceIndex, offsets );
-			}).join( encodingSeparator ) +
+				return prefix + mappings;
+			}).join( '' ) +
 			getSemis( this.outro )
 		);
 
