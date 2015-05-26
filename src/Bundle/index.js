@@ -1,5 +1,5 @@
 import MagicString from '../MagicString/index';
-import SourceMap from '../SourceMap';
+import SourceMap from '../utils/SourceMap';
 import getRelativePath from '../utils/getRelativePath';
 import hasOwnProp from '../utils/hasOwnProp';
 

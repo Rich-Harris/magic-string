@@ -1,5 +1,4 @@
-import Bundle from '../Bundle';
-import SourceMap from '../SourceMap';
+import SourceMap from '../utils/SourceMap';
 import guessIndent from './guessIndent';
 import encodeMappings from './encodeMappings';
 import getRelativePath from '../utils/getRelativePath';
@@ -405,8 +404,6 @@ class MagicString {
 		return this;
 	}
 }
-
-MagicString.Bundle = Bundle;
 
 function adjust ( mappings, start, end, d ) {
 	var i = end;

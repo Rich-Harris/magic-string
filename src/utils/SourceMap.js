@@ -1,4 +1,4 @@
-import btoa from '../utils/btoa';
+import btoa from './btoa';
 
 class SourceMap {
 	constructor ( properties ) {

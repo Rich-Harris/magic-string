@@ -1,4 +1,4 @@
-import encode from '../utils/encode';
+import { encode } from 'vlq';
 
 export default function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets ) {
 	// store locations, for fast lookup
