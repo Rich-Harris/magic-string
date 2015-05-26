@@ -78,6 +78,9 @@
 			this.separator = options.separator !== undefined ? options.separator : '\n';
 
 			this.sources = [];
+
+			this.uniqueSources = [];
+			this.uniqueSourceIndexByFilename = {};
 		}
 
 		Bundle.prototype.addSource = function addSource(source) {
@@ -96,6 +99,23 @@
 			['filename', 'indentExclusionRanges', 'separator'].forEach(function (option) {
 				if (!hasOwnProp.call(source, option)) source[option] = source.content[option];
 			});
+
+			if (source.separator === undefined) {
+				// TODO there's a bunch of this sort of thing, needs cleaning up
+				source.separator = this.separator;
+			}
+
+			if (source.filename) {
+				if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, source.filename)) {
+					this.uniqueSourceIndexByFilename[source.filename] = this.uniqueSources.length;
+					this.uniqueSources.push({ filename: source.filename, content: source.content.original });
+				} else {
+					var uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[source.filename]];
+					if (source.content.original !== uniqueSource.content) {
+						throw new Error('Illegal source: same filename (' + source.filename + '), different contents');
+					}
+				}
+			}
 
 			this.sources.push(source);
 			return this;
@@ -129,21 +149,32 @@
 		};
 
 		Bundle.prototype.generateMap = function generateMap(options) {
-			var encodingSeparator = getSemis(this.separator);
+			var _this = this;
 
 			var offsets = {};
 
-			var encoded = getSemis(this.intro) + this.sources.map(function (source, sourceIndex) {
-				return source.content.getMappings(options.hires, sourceIndex, offsets);
-			}).join(encodingSeparator) + getSemis(this.outro);
+			var encoded = getSemis(this.intro) + this.sources.map(function (source, i) {
+				var prefix = i > 0 ? getSemis(source.separator) || ',' : '';
+				var mappings = undefined;
+
+				// we don't bother encoding sources without a filename
+				if (!source.filename) {
+					mappings = getSemis(source.content.toString());
+				} else {
+					var sourceIndex = _this.uniqueSourceIndexByFilename[source.filename];
+					mappings = source.content.getMappings(options.hires, sourceIndex, offsets);
+				}
+
+				return prefix + mappings;
+			}).join('') + getSemis(this.outro);
 
 			return new SourceMap({
 				file: options.file ? options.file.split(/[\/\\]/).pop() : null,
-				sources: this.sources.map(function (source) {
-					return options.file && source.filename ? getRelativePath(options.file, source.filename) : source.filename || '';
+				sources: this.uniqueSources.map(function (source) {
+					return options.file ? getRelativePath(options.file, source.filename) : source.filename;
 				}),
-				sourcesContent: this.sources.map(function (source) {
-					return options.includeContent ? source.content.original : null;
+				sourcesContent: this.uniqueSources.map(function (source) {
+					return options.includeContent ? source.content : null;
 				}),
 				names: [],
 				mappings: encoded
@@ -168,7 +199,7 @@
 		};
 
 		Bundle.prototype.indent = function indent(indentStr) {
-			var _this = this;
+			var _this2 = this;
 
 			if (!indentStr) {
 				indentStr = this.getIndentString();
@@ -177,7 +208,7 @@
 			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
 
 			this.sources.forEach(function (source, i) {
-				var separator = source.separator !== undefined ? source.separator : _this.separator;
+				var separator = source.separator !== undefined ? source.separator : _this2.separator;
 				var indentStart = trailingNewline || i > 0 && /\r?\n$/.test(separator);
 
 				source.content.indent(indentStr, {
@@ -202,10 +233,10 @@
 		};
 
 		Bundle.prototype.toString = function toString() {
-			var _this2 = this;
+			var _this3 = this;
 
 			var body = this.sources.map(function (source, i) {
-				var separator = source.separator !== undefined ? source.separator : _this2.separator;
+				var separator = source.separator !== undefined ? source.separator : _this3.separator;
 				var str = (i > 0 ? separator : '') + source.content.toString();
 
 				return str;
@@ -565,6 +596,18 @@
 			while (i--) {
 				clone.mappings[i] = this.mappings[i];
 			}
+
+			if (this.indentExclusionRanges) {
+				clone.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ? [this.indentExclusionRanges[0], this.indentExclusionRanges[1]] : this.indentExclusionRanges.map(function (_ref) {
+					var start = _ref[0];
+					var end = _ref[1];
+					return [start, end];
+				});
+			}
+
+			Object.keys(this.sourcemapLocations).forEach(function (loc) {
+				clone.sourcemapLocations[loc] = true;
+			});
 
 			return clone;
 		};

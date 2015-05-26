@@ -1,5 +1,10 @@
 # changelog
 
+## 0.5.3
+
+* Correct sourcemap generation with bundles containing varied separators
+* `s.clone()` clones indent exclusion ranges and sourcemap locations
+
 ## 0.5.2
 
 * `s.slice()` accepts negative numbers, and the second argument can be omitted (means 'original string length'), just like `String.prototype.slice`
