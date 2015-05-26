@@ -58,6 +58,32 @@ describe( 'MagicString', function () {
 
 			assert.equal( c.filename, 'foo.js' );
 		});
+
+		it( 'should clone indentExclusionRanges', function () {
+			var array = [ 3, 6 ];
+			var source = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js',
+				indentExclusionRanges: array
+			});
+
+			var clone = source.clone();
+
+			assert.notStrictEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
+			assert.deepEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
+		});
+
+		it( 'should clone sourcemapLocations', function () {
+			var source = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js'
+			});
+
+			source.addSourcemapLocation( 3 );
+
+			var clone = source.clone();
+
+			assert.notStrictEqual( source.sourcemapLocations, clone.sourcemapLocations );
+			assert.deepEqual( source.sourcemapLocations, clone.sourcemapLocations );
+		});
 	});
 
 	describe( 'generateMap', function () {
