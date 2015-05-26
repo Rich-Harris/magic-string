@@ -1,5 +1,9 @@
 # changelog
 
+## 0.6.0
+
+* Use rollup for bundling, instead of esperanto
+
 ## 0.5.3
 
 * Correct sourcemap generation with bundles containing varied separators

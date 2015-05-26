@@ -1,10 +1,27 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	global.MagicString = factory()
+	global.MagicString = factory();
 }(this, function () { 'use strict';
 
-	var _btoa;
+	function getRelativePath(from, to) {
+		var fromParts = from.split(/[\/\\]/);
+		var toParts = to.split(/[\/\\]/);
+
+		fromParts.pop(); // get dirname
+
+		while (fromParts[0] === toParts[0]) {
+			fromParts.shift();
+			toParts.shift();
+		}
+
+		if (fromParts.length) {
+			var i = fromParts.length;
+			while (i--) fromParts[i] = '..';
+		}
+
+		return fromParts.concat(toParts).join('/');
+	}var _btoa;
 
 	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
 		_btoa = window.btoa;
@@ -16,13 +33,11 @@
 		throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 	}
 
-	var btoa = _btoa;
-
-	function SourceMap___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var btoa = _btoa;function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var SourceMap = (function () {
 		function SourceMap(properties) {
-			SourceMap___classCallCheck(this, SourceMap);
+			__classCallCheck(this, SourceMap);
 
 			this.version = 3;
 
@@ -44,366 +59,59 @@
 		return SourceMap;
 	})();
 
-	function getRelativePath(from, to) {
-		var fromParts = from.split(/[\/\\]/);
-		var toParts = to.split(/[\/\\]/);
-
-		fromParts.pop(); // get dirname
-
-		while (fromParts[0] === toParts[0]) {
-			fromParts.shift();
-			toParts.shift();
-		}
-
-		if (fromParts.length) {
-			var i = fromParts.length;
-			while (i--) fromParts[i] = '..';
-		}
-
-		return fromParts.concat(toParts).join('/');
-	}
-
-	var hasOwnProp = Object.prototype.hasOwnProperty;
-
-	function Bundle___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	var Bundle = (function () {
-		function Bundle() {
-			var options = arguments[0] === undefined ? {} : arguments[0];
-
-			Bundle___classCallCheck(this, Bundle);
-
-			this.intro = options.intro || '';
-			this.outro = options.outro || '';
-			this.separator = options.separator !== undefined ? options.separator : '\n';
-
-			this.sources = [];
-
-			this.uniqueSources = [];
-			this.uniqueSourceIndexByFilename = {};
-		}
-
-		Bundle.prototype.addSource = function addSource(source) {
-			if (source instanceof MagicString) {
-				return this.addSource({
-					content: source,
-					filename: source.filename,
-					separator: this.separator
-				});
-			}
-
-			if (typeof source !== 'object' || !source.content) {
-				throw new Error('bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`');
-			}
-
-			['filename', 'indentExclusionRanges', 'separator'].forEach(function (option) {
-				if (!hasOwnProp.call(source, option)) source[option] = source.content[option];
-			});
-
-			if (source.separator === undefined) {
-				// TODO there's a bunch of this sort of thing, needs cleaning up
-				source.separator = this.separator;
-			}
-
-			if (source.filename) {
-				if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, source.filename)) {
-					this.uniqueSourceIndexByFilename[source.filename] = this.uniqueSources.length;
-					this.uniqueSources.push({ filename: source.filename, content: source.content.original });
-				} else {
-					var uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[source.filename]];
-					if (source.content.original !== uniqueSource.content) {
-						throw new Error('Illegal source: same filename (' + source.filename + '), different contents');
-					}
-				}
-			}
-
-			this.sources.push(source);
-			return this;
-		};
-
-		Bundle.prototype.append = function append(str, options) {
-			this.addSource({
-				content: new MagicString(str),
-				separator: options && options.separator || ''
-			});
-
-			return this;
-		};
-
-		Bundle.prototype.clone = function clone() {
-			var bundle = new Bundle({
-				intro: this.intro,
-				outro: this.outro,
-				separator: this.separator
-			});
-
-			this.sources.forEach(function (source) {
-				bundle.addSource({
-					filename: source.filename,
-					content: source.content.clone(),
-					separator: source.separator
-				});
-			});
-
-			return bundle;
-		};
-
-		Bundle.prototype.generateMap = function generateMap(options) {
-			var _this = this;
-
-			var offsets = {};
-
-			var encoded = getSemis(this.intro) + this.sources.map(function (source, i) {
-				var prefix = i > 0 ? getSemis(source.separator) || ',' : '';
-				var mappings = undefined;
-
-				// we don't bother encoding sources without a filename
-				if (!source.filename) {
-					mappings = getSemis(source.content.toString());
-				} else {
-					var sourceIndex = _this.uniqueSourceIndexByFilename[source.filename];
-					mappings = source.content.getMappings(options.hires, sourceIndex, offsets);
-				}
-
-				return prefix + mappings;
-			}).join('') + getSemis(this.outro);
-
-			return new SourceMap({
-				file: options.file ? options.file.split(/[\/\\]/).pop() : null,
-				sources: this.uniqueSources.map(function (source) {
-					return options.file ? getRelativePath(options.file, source.filename) : source.filename;
-				}),
-				sourcesContent: this.uniqueSources.map(function (source) {
-					return options.includeContent ? source.content : null;
-				}),
-				names: [],
-				mappings: encoded
-			});
-		};
-
-		Bundle.prototype.getIndentString = function getIndentString() {
-			var indentStringCounts = {};
-
-			this.sources.forEach(function (source) {
-				var indentStr = source.content.indentStr;
-
-				if (indentStr === null) return;
-
-				if (!indentStringCounts[indentStr]) indentStringCounts[indentStr] = 0;
-				indentStringCounts[indentStr] += 1;
-			});
-
-			return Object.keys(indentStringCounts).sort(function (a, b) {
-				return indentStringCounts[a] - indentStringCounts[b];
-			})[0] || '\t';
-		};
-
-		Bundle.prototype.indent = function indent(indentStr) {
-			var _this2 = this;
-
-			if (!indentStr) {
-				indentStr = this.getIndentString();
-			}
-
-			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
-
-			this.sources.forEach(function (source, i) {
-				var separator = source.separator !== undefined ? source.separator : _this2.separator;
-				var indentStart = trailingNewline || i > 0 && /\r?\n$/.test(separator);
-
-				source.content.indent(indentStr, {
-					exclude: source.indentExclusionRanges,
-					indentStart: indentStart //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
-				});
-
-				trailingNewline = source.content.str.slice(0, -1) === '\n';
-			});
-
-			this.intro = this.intro.replace(/^[^\n]/gm, function (match, index) {
-				return index > 0 ? indentStr + match : match;
-			});
-			this.outro = this.outro.replace(/^[^\n]/gm, indentStr + '$&');
-
-			return this;
-		};
-
-		Bundle.prototype.prepend = function prepend(str) {
-			this.intro = str + this.intro;
-			return this;
-		};
-
-		Bundle.prototype.toString = function toString() {
-			var _this3 = this;
-
-			var body = this.sources.map(function (source, i) {
-				var separator = source.separator !== undefined ? source.separator : _this3.separator;
-				var str = (i > 0 ? separator : '') + source.content.toString();
-
-				return str;
-			}).join('');
-
-			return this.intro + body + this.outro;
-		};
-
-		Bundle.prototype.trimLines = function trimLines() {
-			return this.trim('[\\r\\n]');
-		};
-
-		Bundle.prototype.trim = function trim(charType) {
-			return this.trimStart(charType).trimEnd(charType);
-		};
-
-		Bundle.prototype.trimStart = function trimStart(charType) {
-			var rx = new RegExp('^' + (charType || '\\s') + '+');
-			this.intro = this.intro.replace(rx, '');
-
-			if (!this.intro) {
-				var source = undefined; // TODO put inside loop if safe
-				var i = 0;
-
-				do {
-					source = this.sources[i];
-
-					if (!source) {
-						this.outro = this.outro.replace(rx, '');
-						break;
-					}
-
-					source.content.trimStart();
-					i += 1;
-				} while (source.content.str === '');
-			}
-
-			return this;
-		};
-
-		Bundle.prototype.trimEnd = function trimEnd(charType) {
-			var rx = new RegExp((charType || '\\s') + '+$');
-			this.outro = this.outro.replace(rx, '');
-
-			if (!this.outro) {
-				var source = undefined;
-				var i = this.sources.length - 1;
-
-				do {
-					source = this.sources[i];
-
-					if (!source) {
-						this.intro = this.intro.replace(rx, '');
-						break;
-					}
-
-					source.content.trimEnd(charType);
-					i -= 1;
-				} while (source.content.str === '');
-			}
-
-			return this;
-		};
-
-		return Bundle;
-	})();
-
-
-
-	function stringify(source) {
-		return source.content.toString();
-	}
-
 	function getSemis(str) {
 		return new Array(str.split('\n').length).join(';');
 	}
 
-	function guessIndent(code) {
-		var lines = code.split('\n');
+	function adjust(mappings, start, end, d) {
+		var i = end;
 
-		var tabbed = lines.filter(function (line) {
-			return /^\t+/.test(line);
-		});
-		var spaced = lines.filter(function (line) {
-			return /^ {2,}/.test(line);
-		});
+		if (!d) return; // replacement is same length as replaced string
 
-		if (tabbed.length === 0 && spaced.length === 0) {
-			return null;
+		while (i-- > start) {
+			if (~mappings[i]) {
+				mappings[i] += d;
+			}
 		}
-
-		// More lines tabbed than spaced? Assume tabs, and
-		// default to tabs in the case of a tie (or nothing
-		// to go on)
-		if (tabbed.length >= spaced.length) {
-			return '\t';
-		}
-
-		// Otherwise, we need to guess the multiple
-		var min = spaced.reduce(function (previous, current) {
-			var numSpaces = /^ +/.exec(current)[0].length;
-			return Math.min(numSpaces, previous);
-		}, Infinity);
-
-		return new Array(min + 1).join(' ');
 	}
 
-	var charToInteger = {};
+	var warned = false;
+
+	function blank(mappings, start, i) {
+		while (i-- > start) {
+			mappings[i] = -1;
+		}
+	}
+
+	function reverse(mappings, i) {
+		var result, location;
+
+		result = new Uint32Array(i);
+
+		while (i--) {
+			result[i] = -1;
+		}
+
+		i = mappings.length;
+		while (i--) {
+			location = mappings[i];
+
+			if (~location) {
+				result[location] = i;
+			}
+		}
+
+		return result;
+	}
+
 	var integerToChar = {};
+
+	var charToInteger = {};
 
 	'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split( '' ).forEach( function ( char, i ) {
 		charToInteger[ char ] = i;
 		integerToChar[ i ] = char;
 	});
-
-	function decode ( string ) {
-		var result = [],
-			len = string.length,
-			i,
-			hasContinuationBit,
-			shift = 0,
-			value = 0,
-			integer,
-			shouldNegate;
-
-		for ( i = 0; i < len; i += 1 ) {
-			integer = charToInteger[ string[i] ];
-
-			if ( integer === undefined ) {
-				throw new Error( 'Invalid character (' + string[i] + ')' );
-			}
-
-			hasContinuationBit = integer & 32;
-
-			integer &= 31;
-			value += integer << shift;
-
-			if ( hasContinuationBit ) {
-				shift += 5;
-			} else {
-				shouldNegate = value & 1;
-				value >>= 1;
-
-				result.push( shouldNegate ? -value : value );
-
-				// reset
-				value = shift = 0;
-			}
-		}
-
-		return result;
-	}
-
-	function encode ( value ) {
-		var result, i;
-
-		if ( typeof value === 'number' ) {
-			result = encodeInteger( value );
-		} else {
-			result = '';
-			for ( i = 0; i < value.length; i += 1 ) {
-				result += encodeInteger( value[i] );
-			}
-		}
-
-		return result;
-	}
 
 	function encodeInteger ( num ) {
 		var result = '', clamped;
@@ -428,7 +136,59 @@
 		return result;
 	}
 
-	var utils_encode = encode;
+	function encode ( value ) {
+		var result;
+
+		if ( typeof value === 'number' ) {
+			result = encodeInteger( value );
+		} else if ( Array.isArray( value ) ) {
+			result = '';
+			value.forEach( function ( num ) {
+				result += encodeInteger( num );
+			});
+		} else {
+			throw new Error( 'vlq.encode accepts an integer or an array of integers' );
+		}
+
+		return result;
+	}
+
+	function getLocation(locations, char) {
+		var i;
+
+		i = locations.length;
+		while (i--) {
+			if (locations[i] <= char) {
+				return {
+					line: i,
+					column: char - locations[i]
+				};
+			}
+		}
+
+		throw new Error('Character out of bounds');
+	}
+
+	function invert(str, mappings) {
+		var inverted = new Uint32Array(str.length),
+		    i;
+
+		// initialise everything to -1
+		i = str.length;
+		while (i--) {
+			inverted[i] = -1;
+		}
+
+		// then apply the actual mappings
+		i = mappings.length;
+		while (i--) {
+			if (~mappings[i]) {
+				inverted[mappings[i]] = i;
+			}
+		}
+
+		return inverted;
+	}
 
 	function encodeMappings(original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets) {
 		// store locations, for fast lookup
@@ -504,63 +264,60 @@
 				offsets.sourceCodeLine = segment.sourceCodeLine;
 				offsets.sourceCodeColumn = segment.sourceCodeColumn;
 
-				return utils_encode(arr);
+				return encode(arr);
 			}).join(',');
 		}).join(';');
 
 		return encoded;
 	}
 
-	function invert(str, mappings) {
-		var inverted = new Uint32Array(str.length),
-		    i;
+	function guessIndent(code) {
+		var lines = code.split('\n');
 
-		// initialise everything to -1
-		i = str.length;
-		while (i--) {
-			inverted[i] = -1;
+		var tabbed = lines.filter(function (line) {
+			return /^\t+/.test(line);
+		});
+		var spaced = lines.filter(function (line) {
+			return /^ {2,}/.test(line);
+		});
+
+		if (tabbed.length === 0 && spaced.length === 0) {
+			return null;
 		}
 
-		// then apply the actual mappings
-		i = mappings.length;
-		while (i--) {
-			if (~mappings[i]) {
-				inverted[mappings[i]] = i;
-			}
+		// More lines tabbed than spaced? Assume tabs, and
+		// default to tabs in the case of a tie (or nothing
+		// to go on)
+		if (tabbed.length >= spaced.length) {
+			return '\t';
 		}
 
-		return inverted;
+		// Otherwise, we need to guess the multiple
+		var min = spaced.reduce(function (previous, current) {
+			var numSpaces = /^ +/.exec(current)[0].length;
+			return Math.min(numSpaces, previous);
+		}, Infinity);
+
+		return new Array(min + 1).join(' ');
 	}
 
-	function getLocation(locations, char) {
-		var i;
+	function initMappings(i) {
+		var mappings = new Uint32Array(i);
 
-		i = locations.length;
 		while (i--) {
-			if (locations[i] <= char) {
-				return {
-					line: i,
-					column: char - locations[i]
-				};
-			}
+			mappings[i] = i;
 		}
 
-		throw new Error('Character out of bounds');
+		return mappings;
 	}
 
-	// do nothing
-
-	// do nothing
-
-	function MagicString___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	var warned = false;
+	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var MagicString = (function () {
 		function MagicString(string) {
 			var options = arguments[1] === undefined ? {} : arguments[1];
 
-			MagicString___classCallCheck(this, MagicString);
+			___classCallCheck(this, MagicString);
 
 			this.original = this.str = string;
 			this.mappings = initMappings(string.length);
@@ -968,58 +725,249 @@
 		return MagicString;
 	})();
 
+	var hasOwnProp = Object.prototype.hasOwnProperty;function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Bundle = (function () {
+		function Bundle() {
+			var options = arguments[0] === undefined ? {} : arguments[0];
+
+			_classCallCheck(this, Bundle);
+
+			this.intro = options.intro || '';
+			this.outro = options.outro || '';
+			this.separator = options.separator !== undefined ? options.separator : '\n';
+
+			this.sources = [];
+
+			this.uniqueSources = [];
+			this.uniqueSourceIndexByFilename = {};
+		}
+
+		Bundle.prototype.addSource = function addSource(source) {
+			if (source instanceof MagicString) {
+				return this.addSource({
+					content: source,
+					filename: source.filename,
+					separator: this.separator
+				});
+			}
+
+			if (typeof source !== 'object' || !source.content) {
+				throw new Error('bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`');
+			}
+
+			['filename', 'indentExclusionRanges', 'separator'].forEach(function (option) {
+				if (!hasOwnProp.call(source, option)) source[option] = source.content[option];
+			});
+
+			if (source.separator === undefined) {
+				// TODO there's a bunch of this sort of thing, needs cleaning up
+				source.separator = this.separator;
+			}
+
+			if (source.filename) {
+				if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, source.filename)) {
+					this.uniqueSourceIndexByFilename[source.filename] = this.uniqueSources.length;
+					this.uniqueSources.push({ filename: source.filename, content: source.content.original });
+				} else {
+					var uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[source.filename]];
+					if (source.content.original !== uniqueSource.content) {
+						throw new Error('Illegal source: same filename (' + source.filename + '), different contents');
+					}
+				}
+			}
+
+			this.sources.push(source);
+			return this;
+		};
+
+		Bundle.prototype.append = function append(str, options) {
+			this.addSource({
+				content: new MagicString(str),
+				separator: options && options.separator || ''
+			});
+
+			return this;
+		};
+
+		Bundle.prototype.clone = function clone() {
+			var bundle = new Bundle({
+				intro: this.intro,
+				outro: this.outro,
+				separator: this.separator
+			});
+
+			this.sources.forEach(function (source) {
+				bundle.addSource({
+					filename: source.filename,
+					content: source.content.clone(),
+					separator: source.separator
+				});
+			});
+
+			return bundle;
+		};
+
+		Bundle.prototype.generateMap = function generateMap(options) {
+			var _this = this;
+
+			var offsets = {};
+
+			var encoded = getSemis(this.intro) + this.sources.map(function (source, i) {
+				var prefix = i > 0 ? getSemis(source.separator) || ',' : '';
+				var mappings = undefined;
+
+				// we don't bother encoding sources without a filename
+				if (!source.filename) {
+					mappings = getSemis(source.content.toString());
+				} else {
+					var sourceIndex = _this.uniqueSourceIndexByFilename[source.filename];
+					mappings = source.content.getMappings(options.hires, sourceIndex, offsets);
+				}
+
+				return prefix + mappings;
+			}).join('') + getSemis(this.outro);
+
+			return new SourceMap({
+				file: options.file ? options.file.split(/[\/\\]/).pop() : null,
+				sources: this.uniqueSources.map(function (source) {
+					return options.file ? getRelativePath(options.file, source.filename) : source.filename;
+				}),
+				sourcesContent: this.uniqueSources.map(function (source) {
+					return options.includeContent ? source.content : null;
+				}),
+				names: [],
+				mappings: encoded
+			});
+		};
+
+		Bundle.prototype.getIndentString = function getIndentString() {
+			var indentStringCounts = {};
+
+			this.sources.forEach(function (source) {
+				var indentStr = source.content.indentStr;
+
+				if (indentStr === null) return;
+
+				if (!indentStringCounts[indentStr]) indentStringCounts[indentStr] = 0;
+				indentStringCounts[indentStr] += 1;
+			});
+
+			return Object.keys(indentStringCounts).sort(function (a, b) {
+				return indentStringCounts[a] - indentStringCounts[b];
+			})[0] || '\t';
+		};
+
+		Bundle.prototype.indent = function indent(indentStr) {
+			var _this2 = this;
+
+			if (!indentStr) {
+				indentStr = this.getIndentString();
+			}
+
+			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
+
+			this.sources.forEach(function (source, i) {
+				var separator = source.separator !== undefined ? source.separator : _this2.separator;
+				var indentStart = trailingNewline || i > 0 && /\r?\n$/.test(separator);
+
+				source.content.indent(indentStr, {
+					exclude: source.indentExclusionRanges,
+					indentStart: indentStart //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+				});
+
+				trailingNewline = source.content.str.slice(0, -1) === '\n';
+			});
+
+			this.intro = this.intro.replace(/^[^\n]/gm, function (match, index) {
+				return index > 0 ? indentStr + match : match;
+			});
+			this.outro = this.outro.replace(/^[^\n]/gm, indentStr + '$&');
+
+			return this;
+		};
+
+		Bundle.prototype.prepend = function prepend(str) {
+			this.intro = str + this.intro;
+			return this;
+		};
+
+		Bundle.prototype.toString = function toString() {
+			var _this3 = this;
+
+			var body = this.sources.map(function (source, i) {
+				var separator = source.separator !== undefined ? source.separator : _this3.separator;
+				var str = (i > 0 ? separator : '') + source.content.toString();
+
+				return str;
+			}).join('');
+
+			return this.intro + body + this.outro;
+		};
+
+		Bundle.prototype.trimLines = function trimLines() {
+			return this.trim('[\\r\\n]');
+		};
+
+		Bundle.prototype.trim = function trim(charType) {
+			return this.trimStart(charType).trimEnd(charType);
+		};
+
+		Bundle.prototype.trimStart = function trimStart(charType) {
+			var rx = new RegExp('^' + (charType || '\\s') + '+');
+			this.intro = this.intro.replace(rx, '');
+
+			if (!this.intro) {
+				var source = undefined; // TODO put inside loop if safe
+				var i = 0;
+
+				do {
+					source = this.sources[i];
+
+					if (!source) {
+						this.outro = this.outro.replace(rx, '');
+						break;
+					}
+
+					source.content.trimStart();
+					i += 1;
+				} while (source.content.str === '');
+			}
+
+			return this;
+		};
+
+		Bundle.prototype.trimEnd = function trimEnd(charType) {
+			var rx = new RegExp((charType || '\\s') + '+$');
+			this.outro = this.outro.replace(rx, '');
+
+			if (!this.outro) {
+				var source = undefined;
+				var i = this.sources.length - 1;
+
+				do {
+					source = this.sources[i];
+
+					if (!source) {
+						this.intro = this.intro.replace(rx, '');
+						break;
+					}
+
+					source.content.trimEnd(charType);
+					i -= 1;
+				} while (source.content.str === '');
+			}
+
+			return this;
+		};
+
+		return Bundle;
+	})();
+
 	MagicString.Bundle = Bundle;
 
-	function adjust(mappings, start, end, d) {
-		var i = end;
+	var index = MagicString;
 
-		if (!d) return; // replacement is same length as replaced string
-
-		while (i-- > start) {
-			if (~mappings[i]) {
-				mappings[i] += d;
-			}
-		}
-	}
-
-	function initMappings(i) {
-		var mappings = new Uint32Array(i);
-
-		while (i--) {
-			mappings[i] = i;
-		}
-
-		return mappings;
-	}
-
-	function blank(mappings, start, i) {
-		while (i-- > start) {
-			mappings[i] = -1;
-		}
-	}
-
-	function reverse(mappings, i) {
-		var result, location;
-
-		result = new Uint32Array(i);
-
-		while (i--) {
-			result[i] = -1;
-		}
-
-		i = mappings.length;
-		while (i--) {
-			location = mappings[i];
-
-			if (~location) {
-				result[location] = i;
-			}
-		}
-
-		return result;
-	}
-
-	return MagicString;
+	return index;
 
 }));
-//# sourceMappingURL=magic-string.deps.js.map
