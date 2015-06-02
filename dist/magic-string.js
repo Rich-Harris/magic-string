@@ -359,6 +359,8 @@
 
 			indentStr = indentStr !== undefined ? indentStr : this.indentStr || '\t';
 
+			if (indentStr === '') return; // noop
+
 			options = options || {};
 
 			// Process exclusion ranges
@@ -812,9 +814,11 @@
 		Bundle.prototype.indent = function indent(indentStr) {
 			var _this2 = this;
 
-			if (!indentStr) {
+			if (!arguments.length) {
 				indentStr = this.getIndentString();
 			}
+
+			if (indentStr === '') return; // noop
 
 			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
 

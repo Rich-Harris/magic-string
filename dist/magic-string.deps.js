@@ -137,17 +137,15 @@
 	}
 
 	function encode ( value ) {
-		var result;
+		var result, i;
 
 		if ( typeof value === 'number' ) {
 			result = encodeInteger( value );
-		} else if ( Array.isArray( value ) ) {
-			result = '';
-			value.forEach( function ( num ) {
-				result += encodeInteger( num );
-			});
 		} else {
-			throw new Error( 'vlq.encode accepts an integer or an array of integers' );
+			result = '';
+			for ( i = 0; i < value.length; i += 1 ) {
+				result += encodeInteger( value[i] );
+			}
 		}
 
 		return result;
@@ -407,6 +405,8 @@
 			}
 
 			indentStr = indentStr !== undefined ? indentStr : this.indentStr || '\t';
+
+			if (indentStr === '') return; // noop
 
 			options = options || {};
 
@@ -861,9 +861,11 @@
 		Bundle.prototype.indent = function indent(indentStr) {
 			var _this2 = this;
 
-			if (!indentStr) {
+			if (!arguments.length) {
 				indentStr = this.getIndentString();
 			}
+
+			if (indentStr === '') return; // noop
 
 			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
 

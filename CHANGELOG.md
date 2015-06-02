@@ -1,5 +1,9 @@
 # changelog
 
+## 0.6.1
+
+* Indenting with an empty string is a noop
+
 ## 0.6.0
 
 * Use rollup for bundling, instead of esperanto
