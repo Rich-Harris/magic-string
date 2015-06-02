@@ -994,7 +994,7 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( new MagicString( 'ghijkl' ) );
 
 			b.prepend( '>>>' ).append( '<<<' ).indent();
-			assert.equal( b.toString(), '>>>abcdef\n\tghijkl<<<' );
+			assert.equal( b.toString(), '\t>>>abcdef\n\tghijkl<<<' );
 		});
 
 		it( 'should noop with an empty string', function () {
@@ -1005,6 +1005,24 @@ describe( 'MagicString.Bundle', function () {
 
 			b.indent( '' );
 			assert.equal( b.toString(), 'abcdef\nghijkl' );
+		});
+
+		it( 'indents prepended content', function () {
+			var b = new MagicString.Bundle();
+			b.prepend( 'a\nb' ).indent();
+
+			assert.equal( b.toString(), '\ta\n\tb' );
+		});
+
+		it( 'indents content immediately following intro with trailing newline', function () {
+			var b = new MagicString.Bundle({ separator: '\n\n' });
+
+			var s = new MagicString( '2' );
+			b.addSource({ content: s });
+
+			b.prepend( '1\n' );
+
+			assert.equal( b.indent().toString(), '\t1\n\t2' );
 		});
 
 		it( 'should return this', function () {

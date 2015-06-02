@@ -138,7 +138,7 @@ class Bundle {
 
 		if ( indentStr === '' ) return this; // noop
 
-		let trailingNewline = !this.intro || ( this.intro.slice( 0, -1 ) === '\n' );
+		let trailingNewline = !this.intro || this.intro.slice( -1 ) === '\n';
 
 		this.sources.forEach( ( source, i ) => {
 			const separator = source.separator !== undefined ? source.separator : this.separator;
@@ -152,9 +152,12 @@ class Bundle {
 			trailingNewline = source.content.str.slice( 0, -1 ) === '\n';
 		});
 
-		this.intro = this.intro.replace( /^[^\n]/gm, ( match, index ) => {
-			return index > 0 ? indentStr + match : match;
-		});
+		if ( this.intro ) {
+			this.intro = indentStr + this.intro.replace( /^[^\n]/gm, ( match, index ) => {
+				return index > 0 ? indentStr + match : match;
+			});
+		}
+
 		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
 
 		return this;
