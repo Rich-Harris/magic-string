@@ -21,7 +21,8 @@
 		}
 
 		return fromParts.concat(toParts).join('/');
-	}var _btoa;
+	}
+	var _btoa;
 
 	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
 		_btoa = window.btoa;
@@ -33,7 +34,8 @@
 		throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 	}
 
-	var btoa = _btoa;function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var btoa = _btoa;
+	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var SourceMap = (function () {
 		function SourceMap(properties) {
@@ -678,7 +680,8 @@
 		return MagicString;
 	})();
 
-	var hasOwnProp = Object.prototype.hasOwnProperty;function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var hasOwnProp = Object.prototype.hasOwnProperty;
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var Bundle = (function () {
 		function Bundle() {
@@ -820,7 +823,7 @@
 
 			if (indentStr === '') return this; // noop
 
-			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
+			var trailingNewline = !this.intro || this.intro.slice(-1) === '\n';
 
 			this.sources.forEach(function (source, i) {
 				var separator = source.separator !== undefined ? source.separator : _this2.separator;
@@ -834,9 +837,12 @@
 				trailingNewline = source.content.str.slice(0, -1) === '\n';
 			});
 
-			this.intro = this.intro.replace(/^[^\n]/gm, function (match, index) {
-				return index > 0 ? indentStr + match : match;
-			});
+			if (this.intro) {
+				this.intro = indentStr + this.intro.replace(/^[^\n]/gm, function (match, index) {
+					return index > 0 ? indentStr + match : match;
+				});
+			}
+
 			this.outro = this.outro.replace(/^[^\n]/gm, indentStr + '$&');
 
 			return this;

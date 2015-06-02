@@ -1,5 +1,10 @@
 # changelog
 
+## 0.6.3
+
+* Intro content is correctly indented
+* Content following an intro with trailing newline is correctly indented
+
 ## 0.6.2
 
 * Noop indents are still chainable (fixes bug introduced in 0.6.1)
