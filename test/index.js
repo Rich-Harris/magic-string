@@ -283,6 +283,11 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent(), s );
 		});
+
+		it( 'should return this on noop', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.indent( '' ), s );
+		});
 	});
 
 	describe( 'insert', function () {
@@ -1005,6 +1010,11 @@ describe( 'MagicString.Bundle', function () {
 		it( 'should return this', function () {
 			var b = new MagicString.Bundle();
 			assert.strictEqual( b.indent(), b );
+		});
+
+		it( 'should return this on noop', function () {
+			var b = new MagicString.Bundle();
+			assert.strictEqual( b.indent( '' ), b );
 		});
 	});
 
