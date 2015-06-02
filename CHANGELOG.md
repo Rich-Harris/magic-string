@@ -1,5 +1,9 @@
 # changelog
 
+## 0.6.2
+
+* Noop indents are still chainable (fixes bug introduced in 0.6.1)
+
 ## 0.6.1
 
 * Indenting with an empty string is a noop

@@ -406,7 +406,7 @@
 
 			indentStr = indentStr !== undefined ? indentStr : this.indentStr || '\t';
 
-			if (indentStr === '') return; // noop
+			if (indentStr === '') return this; // noop
 
 			options = options || {};
 
@@ -865,7 +865,7 @@
 				indentStr = this.getIndentString();
 			}
 
-			if (indentStr === '') return; // noop
+			if (indentStr === '') return this; // noop
 
 			var trailingNewline = !this.intro || this.intro.slice(0, -1) === '\n';
 
