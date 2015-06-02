@@ -94,6 +94,8 @@ class MagicString {
 
 		indentStr = indentStr !== undefined ? indentStr : ( this.indentStr || '\t' );
 
+		if ( indentStr === '' ) return; // noop
+
 		options = options || {};
 
 		// Process exclusion ranges

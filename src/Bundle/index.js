@@ -132,9 +132,11 @@ class Bundle {
 	}
 
 	indent ( indentStr ) {
-		if ( !indentStr ) {
+		if ( !arguments.length ) {
 			indentStr = this.getIndentString();
 		}
+
+		if ( indentStr === '' ) return; // noop
 
 		let trailingNewline = !this.intro || ( this.intro.slice( 0, -1 ) === '\n' );
 

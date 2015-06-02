@@ -242,6 +242,13 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
 		});
 
+		it( 'should indent content using the empty string if specified (i.e. noop)', function () {
+			var s = new MagicString( 'abc\ndef\nghi\njkl' );
+
+			s.indent( '');
+			assert.equal( s.toString(), 'abc\ndef\nghi\njkl' );
+		});
+
 		it( 'should prevent excluded characters from being indented', function () {
 			var s = new MagicString( 'abc\ndef\nghi\njkl' );
 
@@ -983,6 +990,16 @@ describe( 'MagicString.Bundle', function () {
 
 			b.prepend( '>>>' ).append( '<<<' ).indent();
 			assert.equal( b.toString(), '>>>abcdef\n\tghijkl<<<' );
+		});
+
+		it( 'should noop with an empty string', function () {
+			var b = new MagicString.Bundle();
+
+			b.addSource( new MagicString( 'abcdef' ) );
+			b.addSource( new MagicString( 'ghijkl' ) );
+
+			b.indent( '' );
+			assert.equal( b.toString(), 'abcdef\nghijkl' );
 		});
 
 		it( 'should return this', function () {
