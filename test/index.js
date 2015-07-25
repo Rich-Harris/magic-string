@@ -506,6 +506,14 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abchijkl' );
 		});
 
+		it( 'should remove overlapping ranges, redux', function () {
+			var s = new MagicString( 'abccde' );
+
+			s.remove( 2, 3 ); // c
+			s.remove( 1, 3 ); // bc
+			assert.equal( s.toString(), 'acde' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.remove( 3, 4 ), s );

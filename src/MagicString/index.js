@@ -287,7 +287,7 @@ class MagicString {
 		for ( i = start; i < end; i += 1 ) {
 			loc = this.mappings[i];
 
-			if ( loc !== -1 ) {
+			if ( ~loc ) {
 				if ( !~currentStart ) {
 					currentStart = loc;
 				}
