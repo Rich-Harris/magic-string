@@ -1,5 +1,9 @@
 # changelog
 
+## 0.6.4
+
+* Fix bug with positive integer coercion
+
 ## 0.6.3
 
 * Intro content is correctly indented
