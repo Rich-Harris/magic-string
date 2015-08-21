@@ -2,10 +2,10 @@
   "name": "magic-string",
   "description": "Modify strings, generate sourcemaps",
   "author": "Rich Harris",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "repository": "https://github.com/rich-harris/magic-string",
   "main": "dist/magic-string.js",
-  "jsnext:main": "src/MagicString/index.js",
+  "jsnext:main": "src/index.js",
   "license": "MIT",
   "dependencies": {
     "vlq": "^0.2.0"

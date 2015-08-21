@@ -1,5 +1,9 @@
 # changelog
 
+## 0.6.5
+
+* Fix `jsnext:main` in package.json
+
 ## 0.6.4
 
 * Fix bug with positive integer coercion
