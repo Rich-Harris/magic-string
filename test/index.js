@@ -596,6 +596,29 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( -3 ), 'jkl' );
 			assert.equal( s.slice( 0, -3 ), 'abcdefghi' );
 		});
+
+		it( 'errors if replaced characters are used as slice anchors', function () {
+			var s = new MagicString( 'abcdef' );
+			s.replace( 2, 4, 'CD' );
+
+			assert.throws( function () {
+				s.slice( 2, 3 );
+			}, /slice anchors/ );
+
+			assert.throws( function () {
+				s.slice( 2, 4 );
+			}, /slice anchors/ );
+
+			assert.throws( function () {
+				s.slice( 1, 4 );
+			}, /slice anchors/ );
+
+			assert.throws( function () {
+				s.slice( 2, 5 );
+			}, /slice anchors/ );
+
+			assert.equal( s.slice( 1, 5 ), 'bCDe' );
+		});
 	});
 
 	describe( 'snip', function () {

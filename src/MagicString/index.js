@@ -314,13 +314,13 @@ class MagicString {
 		while ( end < 0 ) end += this.original.length;
 
 		firstChar = this.locate( start );
-		lastChar = this.locate( end - 1 ) + 1;
+		lastChar = this.locate( end - 1 );
 
 		if ( firstChar === null || lastChar === null ) {
 			throw new Error( 'Cannot use replaced characters as slice anchors' );
 		}
 
-		return this.str.slice( firstChar, lastChar );
+		return this.str.slice( firstChar, lastChar + 1 );
 	}
 
 	snip ( start, end ) {
