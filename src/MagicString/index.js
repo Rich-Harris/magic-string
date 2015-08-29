@@ -275,33 +275,26 @@ class MagicString {
 	}
 
 	remove ( start, end ) {
-		var loc, d, i, currentStart, currentEnd;
-
 		if ( start < 0 || end > this.mappings.length ) {
 			throw new Error( 'Character is out of bounds' );
 		}
 
-		d = 0;
-		currentStart = -1;
-		currentEnd = -1;
-		for ( i = start; i < end; i += 1 ) {
-			loc = this.mappings[i];
+		let currentStart = -1;
+		let currentEnd = -1;
+		for ( let i = start; i < end; i += 1 ) {
+			const loc = this.mappings[i];
 
 			if ( ~loc ) {
-				if ( !~currentStart ) {
-					currentStart = loc;
-				}
+				if ( !~currentStart ) currentStart = loc;
 
 				currentEnd = loc + 1;
-
 				this.mappings[i] = -1;
-				d += 1;
 			}
 		}
 
 		this.str = this.str.slice( 0, currentStart ) + this.str.slice( currentEnd );
 
-		adjust( this.mappings, end, this.mappings.length, -d );
+		adjust( this.mappings, end, this.mappings.length, currentStart - currentEnd );
 		return this;
 	}
 

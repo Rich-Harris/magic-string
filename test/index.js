@@ -514,6 +514,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'acde' );
 		});
 
+		it( 'should remove modified ranges', function () {
+			var s = new MagicString( 'abcdefghi' );
+
+			s.overwrite( 3, 6, 'DEF' );
+			s.remove( 2, 7 ); // cDEFg
+			assert.equal( s.slice( 1, 8 ), 'bh' );
+			assert.equal( s.toString(), 'abhi' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.remove( 3, 4 ), s );
