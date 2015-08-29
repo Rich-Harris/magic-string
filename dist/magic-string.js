@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('vlq')) :
 	typeof define === 'function' && define.amd ? define(['vlq'], factory) :
-	global.MagicString = factory(global.vlq);
+	global.MagicString = factory(vlq);
 }(this, function (vlq) { 'use strict';
 
 	function getRelativePath(from, to) {
@@ -22,7 +22,6 @@
 
 		return fromParts.concat(toParts).join('/');
 	}
-
 	var _btoa;
 
 	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
@@ -35,11 +34,12 @@
 		throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 	}
 
-	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var btoa = _btoa;
+	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var SourceMap = (function () {
 		function SourceMap(properties) {
-			___classCallCheck(this, SourceMap);
+			__classCallCheck(this, SourceMap);
 
 			this.version = 3;
 
@@ -55,11 +55,93 @@
 		};
 
 		SourceMap.prototype.toUrl = function toUrl() {
-			return 'data:application/json;charset=utf-8;base64,' + _btoa(this.toString());
+			return 'data:application/json;charset=utf-8;base64,' + btoa(this.toString());
 		};
 
 		return SourceMap;
 	})();
+
+	function getSemis(str) {
+		return new Array(str.split('\n').length).join(';');
+	}
+
+	function adjust(mappings, start, end, d) {
+		var i = end;
+
+		if (!d) return; // replacement is same length as replaced string
+
+		while (i-- > start) {
+			if (~mappings[i]) {
+				mappings[i] += d;
+			}
+		}
+	}
+
+	var warned = false;
+
+	function blank(mappings, start, i) {
+		while (i-- > start) {
+			mappings[i] = -1;
+		}
+	}
+
+	function reverse(mappings, i) {
+		var result, location;
+
+		result = new Uint32Array(i);
+
+		while (i--) {
+			result[i] = -1;
+		}
+
+		i = mappings.length;
+		while (i--) {
+			location = mappings[i];
+
+			if (~location) {
+				result[location] = i;
+			}
+		}
+
+		return result;
+	}
+
+	function getLocation(locations, char) {
+		var i;
+
+		i = locations.length;
+		while (i--) {
+			if (locations[i] <= char) {
+				return {
+					line: i,
+					column: char - locations[i]
+				};
+			}
+		}
+
+		throw new Error('Character out of bounds');
+	}
+
+	function invert(str, mappings) {
+		var inverted = new Uint32Array(str.length),
+		    i;
+
+		// initialise everything to -1
+		i = str.length;
+		while (i--) {
+			inverted[i] = -1;
+		}
+
+		// then apply the actual mappings
+		i = mappings.length;
+		while (i--) {
+			if (~mappings[i]) {
+				inverted[mappings[i]] = i;
+			}
+		}
+
+		return inverted;
+	}
 
 	function encodeMappings(original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets) {
 		// store locations, for fast lookup
@@ -142,47 +224,6 @@
 		return encoded;
 	}
 
-	function invert(str, mappings) {
-		var inverted = new Uint32Array(str.length),
-		    i;
-
-		// initialise everything to -1
-		i = str.length;
-		while (i--) {
-			inverted[i] = -1;
-		}
-
-		// then apply the actual mappings
-		i = mappings.length;
-		while (i--) {
-			if (~mappings[i]) {
-				inverted[mappings[i]] = i;
-			}
-		}
-
-		return inverted;
-	}
-
-	function getLocation(locations, char) {
-		var i;
-
-		i = locations.length;
-		while (i--) {
-			if (locations[i] <= char) {
-				return {
-					line: i,
-					column: char - locations[i]
-				};
-			}
-		}
-
-		throw new Error('Character out of bounds');
-	}
-
-	// do nothing
-
-	// do nothing
-
 	function guessIndent(code) {
 		var lines = code.split('\n');
 
@@ -213,15 +254,23 @@
 		return new Array(min + 1).join(' ');
 	}
 
-	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	function initMappings(i) {
+		var mappings = new Uint32Array(i);
 
-	var warned = false;
+		while (i--) {
+			mappings[i] = i;
+		}
+
+		return mappings;
+	}
+
+	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var MagicString = (function () {
 		function MagicString(string) {
 			var options = arguments[1] === undefined ? {} : arguments[1];
 
-			__classCallCheck(this, MagicString);
+			___classCallCheck(this, MagicString);
 
 			this.original = this.str = string;
 			this.mappings = initMappings(string.length);
@@ -492,33 +541,26 @@
 		};
 
 		MagicString.prototype.remove = function remove(start, end) {
-			var loc, d, i, currentStart, currentEnd;
-
 			if (start < 0 || end > this.mappings.length) {
 				throw new Error('Character is out of bounds');
 			}
 
-			d = 0;
-			currentStart = -1;
-			currentEnd = -1;
-			for (i = start; i < end; i += 1) {
-				loc = this.mappings[i];
+			var currentStart = -1;
+			var currentEnd = -1;
+			for (var i = start; i < end; i += 1) {
+				var loc = this.mappings[i];
 
 				if (~loc) {
-					if (! ~currentStart) {
-						currentStart = loc;
-					}
+					if (! ~currentStart) currentStart = loc;
 
 					currentEnd = loc + 1;
-
 					this.mappings[i] = -1;
-					d += 1;
 				}
 			}
 
 			this.str = this.str.slice(0, currentStart) + this.str.slice(currentEnd);
 
-			adjust(this.mappings, end, this.mappings.length, -d);
+			adjust(this.mappings, end, this.mappings.length, currentStart - currentEnd);
 			return this;
 		};
 
@@ -540,13 +582,13 @@
 			while (end < 0) end += this.original.length;
 
 			firstChar = this.locate(start);
-			lastChar = this.locate(end - 1) + 1;
+			lastChar = this.locate(end - 1);
 
 			if (firstChar === null || lastChar === null) {
 				throw new Error('Cannot use replaced characters as slice anchors');
 			}
 
-			return this.str.slice(firstChar, lastChar);
+			return this.str.slice(firstChar, lastChar + 1);
 		};
 
 		MagicString.prototype.snip = function snip(start, end) {
@@ -631,57 +673,7 @@
 		return MagicString;
 	})();
 
-	function adjust(mappings, start, end, d) {
-		var i = end;
-
-		if (!d) return; // replacement is same length as replaced string
-
-		while (i-- > start) {
-			if (~mappings[i]) {
-				mappings[i] += d;
-			}
-		}
-	}
-
-	function initMappings(i) {
-		var mappings = new Uint32Array(i);
-
-		while (i--) {
-			mappings[i] = i;
-		}
-
-		return mappings;
-	}
-
-	function blank(mappings, start, i) {
-		while (i-- > start) {
-			mappings[i] = -1;
-		}
-	}
-
-	function reverse(mappings, i) {
-		var result, location;
-
-		result = new Uint32Array(i);
-
-		while (i--) {
-			result[i] = -1;
-		}
-
-		i = mappings.length;
-		while (i--) {
-			location = mappings[i];
-
-			if (~location) {
-				result[location] = i;
-			}
-		}
-
-		return result;
-	}
-
 	var hasOwnProp = Object.prototype.hasOwnProperty;
-
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var Bundle = (function () {
@@ -926,12 +918,10 @@
 		return Bundle;
 	})();
 
-	function getSemis(str) {
-		return new Array(str.split('\n').length).join(';');
-	}
-
 	MagicString.Bundle = Bundle;
 
-	return MagicString;
+	var index = MagicString;
+
+	return index;
 
 }));

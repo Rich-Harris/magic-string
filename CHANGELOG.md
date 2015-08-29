@@ -1,5 +1,10 @@
 # changelog
 
+## 0.6.6
+
+* Adjust mappings correctly when removing replaced content
+* Error correctly when removed characters are used as slice anchors
+
 ## 0.6.5
 
 * Fix `jsnext:main` in package.json
