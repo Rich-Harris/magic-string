@@ -18,7 +18,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 
 		let char; // TODO put these inside loop, once we've determined it's safe to do so transpilation-wise
 		let origin;
-		let lastOrigin;
+		let lastOrigin = -1;
 		let location;
 
 		let i;
@@ -32,11 +32,13 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 				if ( !~lastOrigin ) {
 					// do nothing
 				} else {
+					location = getLocation( locations, lastOrigin + 1 );
+
 					segments.push({
 						generatedCodeColumn: i,
 						sourceIndex: sourceIndex,
-						sourceCodeLine: 0,
-						sourceCodeColumn: 0
+						sourceCodeLine: location.line,
+						sourceCodeColumn: location.column
 					});
 				}
 			}
