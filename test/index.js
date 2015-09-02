@@ -225,6 +225,26 @@ describe( 'MagicString', function () {
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.name, 'Foo' );
 		});
+
+		it( 'should generate one segment per replacement', function () {
+			var s = new MagicString( 'var answer = 42' );
+			s.overwrite( 4, 10, 'number', true );
+
+			map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			smc = new SourceMapConsumer( map );
+
+			var numMappings = 0;
+			smc.eachMapping( function ( mapping ) {
+				numMappings += 1;
+			});
+
+			assert.equal( numMappings, 1 );
+		});
 	});
 
 	describe( 'getIndentString', function () {
@@ -1024,7 +1044,7 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'bar.js' );
 		});
 
-		it.only( 'should recover original names', function () {
+		it( 'should recover original names', function () {
 			var b = new MagicString.Bundle();
 
 			var one = new MagicString( 'function one () {}', { filename: 'one.js' });

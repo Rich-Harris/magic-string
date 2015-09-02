@@ -35,10 +35,9 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 			// if this character has no mapping, but the last one did,
 			// create a new segment
 			if ( !~origin && ~lastOrigin ) {
-				origin = lastOrigin + 1;
 				location = getLocation( locations, lastOrigin + 1 );
 
-				if ( origin in nameLocations ) nameIndex = names.indexOf( nameLocations[ origin ] );
+				if ( ( lastOrigin + 1 ) in nameLocations ) nameIndex = names.indexOf( nameLocations[ lastOrigin + 1 ] );
 			}
 
 			else if ( ~origin && ( hires || ( ~lastOrigin && origin !== lastOrigin + 1 ) || sourcemapLocations[ origin ] ) ) {
