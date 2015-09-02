@@ -22,6 +22,7 @@
 
 		return fromParts.concat(toParts).join('/');
 	}
+
 	var _btoa;
 
 	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
@@ -34,12 +35,11 @@
 		throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 	}
 
-	var btoa = _btoa;
-	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var SourceMap = (function () {
 		function SourceMap(properties) {
-			__classCallCheck(this, SourceMap);
+			___classCallCheck(this, SourceMap);
 
 			this.version = 3;
 
@@ -55,65 +55,34 @@
 		};
 
 		SourceMap.prototype.toUrl = function toUrl() {
-			return 'data:application/json;charset=utf-8;base64,' + btoa(this.toString());
+			return 'data:application/json;charset=utf-8;base64,' + _btoa(this.toString());
 		};
 
 		return SourceMap;
 	})();
 
-	function getSemis(str) {
-		return new Array(str.split('\n').length).join(';');
-	}
-
-	function adjust(mappings, start, end, d) {
-		var i = end;
-
-		if (!d) return; // replacement is same length as replaced string
-
-		while (i-- > start) {
-			if (~mappings[i]) {
-				mappings[i] += d;
-			}
-		}
-	}
-
-	var warned = false;
-
-	function blank(mappings, start, i) {
-		while (i-- > start) {
-			mappings[i] = -1;
-		}
-	}
-
-	function reverse(mappings, i) {
-		var result, location;
-
-		result = new Uint32Array(i);
-
-		while (i--) {
-			result[i] = -1;
-		}
-
-		i = mappings.length;
-		while (i--) {
-			location = mappings[i];
-
-			if (~location) {
-				result[location] = i;
-			}
-		}
-
-		return result;
-	}
-
-	var integerToChar = {};
-
 	var charToInteger = {};
+	var integerToChar = {};
 
 	'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split( '' ).forEach( function ( char, i ) {
 		charToInteger[ char ] = i;
 		integerToChar[ i ] = char;
 	});
+
+	function encode ( value ) {
+		var result, i;
+
+		if ( typeof value === 'number' ) {
+			result = encodeInteger( value );
+		} else {
+			result = '';
+			for ( i = 0; i < value.length; i += 1 ) {
+				result += encodeInteger( value[i] );
+			}
+		}
+
+		return result;
+	}
 
 	function encodeInteger ( num ) {
 		var result = '', clamped;
@@ -138,35 +107,91 @@
 		return result;
 	}
 
-	function encode ( value ) {
-		var result, i;
+	function encodeMappings(original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets, names, nameLocations) {
+		// store locations, for fast lookup
+		var lineStart = 0;
+		var locations = original.split('\n').map(function (line) {
+			var start = lineStart;
+			lineStart += line.length + 1; // +1 for the newline
 
-		if ( typeof value === 'number' ) {
-			result = encodeInteger( value );
-		} else {
-			result = '';
-			for ( i = 0; i < value.length; i += 1 ) {
-				result += encodeInteger( value[i] );
+			return start;
+		});
+
+		var inverseMappings = invert(str, mappings);
+
+		var charOffset = 0;
+		var lines = str.split('\n').map(function (line) {
+			var segments = [];
+
+			var char = undefined; // TODO put these inside loop, once we've determined it's safe to do so transpilation-wise
+			var origin = undefined;
+			var lastOrigin = -1;
+			var location = undefined;
+			var nameIndex = undefined;
+
+			var i = undefined;
+
+			var len = line.length;
+			for (i = 0; i < len; i += 1) {
+				char = i + charOffset;
+				origin = inverseMappings[char];
+
+				nameIndex = -1;
+				location = null;
+
+				// if this character has no mapping, but the last one did,
+				// create a new segment
+				if (! ~origin && ~lastOrigin) {
+					location = getLocation(locations, lastOrigin + 1);
+
+					if (lastOrigin + 1 in nameLocations) nameIndex = names.indexOf(nameLocations[lastOrigin + 1]);
+				} else if (~origin && (hires || ~lastOrigin && origin !== lastOrigin + 1 || sourcemapLocations[origin])) {
+					location = getLocation(locations, origin);
+				}
+
+				if (location) {
+					segments.push({
+						generatedCodeColumn: i,
+						sourceIndex: sourceIndex,
+						sourceCodeLine: location.line,
+						sourceCodeColumn: location.column,
+						sourceCodeName: nameIndex
+					});
+				}
+
+				lastOrigin = origin;
 			}
-		}
 
-		return result;
-	}
+			charOffset += line.length + 1;
+			return segments;
+		});
 
-	function getLocation(locations, char) {
-		var i;
+		offsets.sourceIndex = offsets.sourceIndex || 0;
+		offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
+		offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
+		offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
-		i = locations.length;
-		while (i--) {
-			if (locations[i] <= char) {
-				return {
-					line: i,
-					column: char - locations[i]
-				};
-			}
-		}
+		var encoded = lines.map(function (segments) {
+			var generatedCodeColumn = 0;
 
-		throw new Error('Character out of bounds');
+			return segments.map(function (segment) {
+				var arr = [segment.generatedCodeColumn - generatedCodeColumn, segment.sourceIndex - offsets.sourceIndex, segment.sourceCodeLine - offsets.sourceCodeLine, segment.sourceCodeColumn - offsets.sourceCodeColumn];
+
+				generatedCodeColumn = segment.generatedCodeColumn;
+				offsets.sourceIndex = segment.sourceIndex;
+				offsets.sourceCodeLine = segment.sourceCodeLine;
+				offsets.sourceCodeColumn = segment.sourceCodeColumn;
+
+				if (~segment.sourceCodeName) {
+					arr.push(segment.sourceCodeName - offsets.sourceCodeName);
+					offsets.sourceCodeName = segment.sourceCodeName;
+				}
+
+				return encode(arr);
+			}).join(',');
+		}).join(';');
+
+		return encoded;
 	}
 
 	function invert(str, mappings) {
@@ -190,95 +215,32 @@
 		return inverted;
 	}
 
-	function encodeMappings(original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets) {
-		// store locations, for fast lookup
-		var lineStart = 0;
-		var locations = original.split('\n').map(function (line) {
-			var start = lineStart;
-			lineStart += line.length + 1; // +1 for the newline
+	function getLocation(locations, char) {
+		var i;
 
-			return start;
-		});
-
-		var inverseMappings = invert(str, mappings);
-
-		var charOffset = 0;
-		var lines = str.split('\n').map(function (line) {
-			var segments = [];
-
-			var char = undefined; // TODO put these inside loop, once we've determined it's safe to do so transpilation-wise
-			var origin = undefined;
-			var lastOrigin = undefined;
-			var location = undefined;
-
-			var i = undefined;
-
-			var len = line.length;
-			for (i = 0; i < len; i += 1) {
-				char = i + charOffset;
-				origin = inverseMappings[char];
-
-				if (! ~origin) {
-					if (! ~lastOrigin) {} else {
-						segments.push({
-							generatedCodeColumn: i,
-							sourceIndex: sourceIndex,
-							sourceCodeLine: 0,
-							sourceCodeColumn: 0
-						});
-					}
-				} else {
-					if (!hires && origin === lastOrigin + 1 && !sourcemapLocations[origin]) {} else {
-						location = getLocation(locations, origin);
-
-						segments.push({
-							generatedCodeColumn: i,
-							sourceIndex: sourceIndex,
-							sourceCodeLine: location.line,
-							sourceCodeColumn: location.column
-						});
-					}
-				}
-
-				lastOrigin = origin;
+		i = locations.length;
+		while (i--) {
+			if (locations[i] <= char) {
+				return {
+					line: i,
+					column: char - locations[i]
+				};
 			}
+		}
 
-			charOffset += line.length + 1;
-			return segments;
-		});
-
-		offsets = offsets || {};
-
-		offsets.sourceIndex = offsets.sourceIndex || 0;
-		offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
-		offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
-
-		var encoded = lines.map(function (segments) {
-			var generatedCodeColumn = 0;
-
-			return segments.map(function (segment) {
-				var arr = [segment.generatedCodeColumn - generatedCodeColumn, segment.sourceIndex - offsets.sourceIndex, segment.sourceCodeLine - offsets.sourceCodeLine, segment.sourceCodeColumn - offsets.sourceCodeColumn];
-
-				generatedCodeColumn = segment.generatedCodeColumn;
-				offsets.sourceIndex = segment.sourceIndex;
-				offsets.sourceCodeLine = segment.sourceCodeLine;
-				offsets.sourceCodeColumn = segment.sourceCodeColumn;
-
-				return encode(arr);
-			}).join(',');
-		}).join(';');
-
-		return encoded;
+		throw new Error('Character out of bounds');
 	}
 
 	function guessIndent(code) {
 		var lines = code.split('\n');
 
 		var tabbed = lines.filter(function (line) {
-			return /^\t+/.test(line);
+			return (/^\t+/.test(line)
+			);
 		});
 		var spaced = lines.filter(function (line) {
-			return /^ {2,}/.test(line);
+			return (/^ {2,}/.test(line)
+			);
 		});
 
 		if (tabbed.length === 0 && spaced.length === 0) {
@@ -301,23 +263,17 @@
 		return new Array(min + 1).join(' ');
 	}
 
-	function initMappings(i) {
-		var mappings = new Uint32Array(i);
+	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-		while (i--) {
-			mappings[i] = i;
-		}
+	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-		return mappings;
-	}
-
-	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var warned = false;
 
 	var MagicString = (function () {
 		function MagicString(string) {
-			var options = arguments[1] === undefined ? {} : arguments[1];
+			var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-			___classCallCheck(this, MagicString);
+			__classCallCheck(this, MagicString);
 
 			this.original = this.str = string;
 			this.mappings = initMappings(string.length);
@@ -326,6 +282,7 @@
 			this.indentExclusionRanges = options.indentExclusionRanges;
 
 			this.sourcemapLocations = {};
+			this.nameLocations = {};
 
 			this.indentStr = guessIndent(string);
 		}
@@ -356,8 +313,10 @@
 
 			if (this.indentExclusionRanges) {
 				clone.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ? [this.indentExclusionRanges[0], this.indentExclusionRanges[1]] : this.indentExclusionRanges.map(function (_ref) {
-					var start = _ref[0];
-					var end = _ref[1];
+					var _ref2 = _slicedToArray(_ref, 2);
+
+					var start = _ref2[0];
+					var end = _ref2[1];
 					return [start, end];
 				});
 			}
@@ -370,14 +329,22 @@
 		};
 
 		MagicString.prototype.generateMap = function generateMap(options) {
+			var _this = this;
+
 			options = options || {};
+
+			var names = [];
+			Object.keys(this.nameLocations).forEach(function (location) {
+				var name = _this.nameLocations[location];
+				if (! ~names.indexOf(name)) names.push(name);
+			});
 
 			return new SourceMap({
 				file: options.file ? options.file.split(/[\/\\]/).pop() : null,
 				sources: [options.source ? getRelativePath(options.file || '', options.source) : null],
 				sourcesContent: options.includeContent ? [this.original] : [null],
-				names: [],
-				mappings: this.getMappings(options.hires, 0)
+				names: names,
+				mappings: this.getMappings(options.hires, 0, {}, names)
 			});
 		};
 
@@ -385,8 +352,8 @@
 			return this.indentStr === null ? '\t' : this.indentStr;
 		};
 
-		MagicString.prototype.getMappings = function getMappings(hires, sourceIndex, offsets) {
-			return encodeMappings(this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets);
+		MagicString.prototype.getMappings = function getMappings(hires, sourceIndex, offsets, names) {
+			return encodeMappings(this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations);
 		};
 
 		MagicString.prototype.indent = function indent(indentStr, options) {
@@ -554,7 +521,7 @@
 			return null;
 		};
 
-		MagicString.prototype.overwrite = function overwrite(start, end, content) {
+		MagicString.prototype.overwrite = function overwrite(start, end, content, storeName) {
 			if (typeof content !== 'string') {
 				throw new TypeError('replacement content must be a string');
 			}
@@ -570,6 +537,10 @@
 
 			if (firstChar > lastChar + 1) {
 				throw new Error('BUG! First character mapped to a position after the last character: ' + '[' + start + ', ' + end + '] -> [' + firstChar + ', ' + (lastChar + 1) + ']');
+			}
+
+			if (storeName) {
+				this.nameLocations[start] = this.original.slice(start, end);
 			}
 
 			this.str = this.str.substr(0, firstChar) + content + this.str.substring(lastChar + 1);
@@ -621,7 +592,7 @@
 		};
 
 		MagicString.prototype.slice = function slice(start) {
-			var end = arguments[1] === undefined ? this.original.length : arguments[1];
+			var end = arguments.length <= 1 || arguments[1] === undefined ? this.original.length : arguments[1];
 
 			var firstChar, lastChar;
 
@@ -720,12 +691,62 @@
 		return MagicString;
 	})();
 
+	function adjust(mappings, start, end, d) {
+		var i = end;
+
+		if (!d) return; // replacement is same length as replaced string
+
+		while (i-- > start) {
+			if (~mappings[i]) {
+				mappings[i] += d;
+			}
+		}
+	}
+
+	function initMappings(i) {
+		var mappings = new Uint32Array(i);
+
+		while (i--) {
+			mappings[i] = i;
+		}
+
+		return mappings;
+	}
+
+	function blank(mappings, start, i) {
+		while (i-- > start) {
+			mappings[i] = -1;
+		}
+	}
+
+	function reverse(mappings, i) {
+		var result, location;
+
+		result = new Uint32Array(i);
+
+		while (i--) {
+			result[i] = -1;
+		}
+
+		i = mappings.length;
+		while (i--) {
+			location = mappings[i];
+
+			if (~location) {
+				result[location] = i;
+			}
+		}
+
+		return result;
+	}
+
 	var hasOwnProp = Object.prototype.hasOwnProperty;
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var Bundle = (function () {
 		function Bundle() {
-			var options = arguments[0] === undefined ? {} : arguments[0];
+			var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
 			_classCallCheck(this, Bundle);
 
@@ -809,6 +830,14 @@
 
 			var offsets = {};
 
+			var names = [];
+			this.sources.forEach(function (source) {
+				Object.keys(source.content.nameLocations).forEach(function (location) {
+					var name = source.content.nameLocations[location];
+					if (! ~names.indexOf(name)) names.push(name);
+				});
+			});
+
 			var encoded = getSemis(this.intro) + this.sources.map(function (source, i) {
 				var prefix = i > 0 ? getSemis(source.separator) || ',' : '';
 				var mappings = undefined;
@@ -818,7 +847,7 @@
 					mappings = getSemis(source.content.toString());
 				} else {
 					var sourceIndex = _this.uniqueSourceIndexByFilename[source.filename];
-					mappings = source.content.getMappings(options.hires, sourceIndex, offsets);
+					mappings = source.content.getMappings(options.hires, sourceIndex, offsets, names);
 				}
 
 				return prefix + mappings;
@@ -832,7 +861,7 @@
 				sourcesContent: this.uniqueSources.map(function (source) {
 					return options.includeContent ? source.content : null;
 				}),
-				names: [],
+				names: names,
 				mappings: encoded
 			});
 		};
@@ -965,10 +994,14 @@
 		return Bundle;
 	})();
 
+	function getSemis(str) {
+		return new Array(str.split('\n').length).join(';');
+	}
+
+	'use strict';
+
 	MagicString.Bundle = Bundle;
 
-	var index = MagicString;
-
-	return index;
+	return MagicString;
 
 }));

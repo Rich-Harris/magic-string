@@ -1,5 +1,10 @@
 # changelog
 
+## 0.7.0
+
+* The `names` array is populated when generating sourcemaps, and mappings include name indices where appropriate ([#16](https://github.com/Rich-Harris/magic-string/issues/16))
+* Replaced content is mapped correctly in sourcemaps ([#15](https://github.com/Rich-Harris/magic-string/issues/15))
+
 ## 0.6.6
 
 * Adjust mappings correctly when removing replaced content
