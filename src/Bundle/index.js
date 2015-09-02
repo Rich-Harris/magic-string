@@ -82,6 +82,14 @@ class Bundle {
 	generateMap ( options ) {
 		let offsets = {};
 
+		let names = [];
+		this.sources.forEach( source => {
+			Object.keys( source.content.nameLocations ).forEach( location => {
+				const name = source.content.nameLocations[ location ];
+				if ( !~names.indexOf( name ) ) names.push( name );
+			});
+		});
+
 		const encoded = (
 			getSemis( this.intro ) +
 			this.sources.map( ( source, i ) => {
@@ -93,7 +101,7 @@ class Bundle {
 					mappings = getSemis( source.content.toString() );
 				} else {
 					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
-					mappings = source.content.getMappings( options.hires, sourceIndex, offsets, [], {} ); // TODO names and nameLocations
+					mappings = source.content.getMappings( options.hires, sourceIndex, offsets, names );
 				}
 
 				return prefix + mappings;
@@ -109,7 +117,7 @@ class Bundle {
 			sourcesContent: this.uniqueSources.map( source => {
 				return options.includeContent ? source.content : null;
 			}),
-			names: [],
+			names,
 			mappings: encoded
 		});
 	}

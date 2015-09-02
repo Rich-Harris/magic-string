@@ -1023,6 +1023,33 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.column, 0 );
 			assert.equal( loc.source, 'bar.js' );
 		});
+
+		it.only( 'should recover original names', function () {
+			var b = new MagicString.Bundle();
+
+			var one = new MagicString( 'function one () {}', { filename: 'one.js' });
+			var two = new MagicString( 'function two () {}', { filename: 'two.js' });
+
+			one.overwrite( 9, 12, 'three', true );
+			two.overwrite( 9, 12, 'four', true );
+
+			b.addSource( one );
+			b.addSource( two );
+
+			map = b.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			assert.equal( loc.name, 'one' );
+
+			loc = smc.originalPositionFor({ line: 2, column: 9 });
+			assert.equal( loc.name, 'two' );
+		});
 	});
 
 	describe( 'indent', function () {

@@ -70,7 +70,7 @@ class MagicString {
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names,
-			mappings: this.getMappings( options.hires, 0, {}, names, this.nameLocations )
+			mappings: this.getMappings( options.hires, 0, {}, names )
 		});
 	}
 
@@ -78,8 +78,8 @@ class MagicString {
 		return this.indentStr === null ? '\t' : this.indentStr;
 	}
 
-	getMappings ( hires, sourceIndex, offsets, names, nameLocations ) {
-		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, nameLocations );
+	getMappings ( hires, sourceIndex, offsets, names ) {
+		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations );
 	}
 
 	indent ( indentStr, options ) {
