@@ -14,6 +14,7 @@ class MagicString {
 		this.indentExclusionRanges = options.indentExclusionRanges;
 
 		this.sourcemapLocations = {};
+		this.nameLocations = {};
 
 		this.indentStr = guessIndent( string );
 	}
@@ -58,12 +59,18 @@ class MagicString {
 	generateMap ( options ) {
 		options = options || {};
 
+		let names = [];
+		Object.keys( this.nameLocations ).forEach( location => {
+			const name = this.nameLocations[ location ];
+			if ( !~names.indexOf( name ) ) names.push( name );
+		});
+
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
-			names: [],
-			mappings: this.getMappings( options.hires, 0 )
+			names,
+			mappings: this.getMappings( options.hires, 0, {}, names, this.nameLocations )
 		});
 	}
 
@@ -71,8 +78,8 @@ class MagicString {
 		return this.indentStr === null ? '\t' : this.indentStr;
 	}
 
-	getMappings ( hires, sourceIndex, offsets ) {
-		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets );
+	getMappings ( hires, sourceIndex, offsets, names, nameLocations ) {
+		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, nameLocations );
 	}
 
 	indent ( indentStr, options ) {
@@ -238,7 +245,7 @@ class MagicString {
 		return null;
 	}
 
-	overwrite ( start, end, content ) {
+	overwrite ( start, end, content, storeName ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'replacement content must be a string' );
 		}
@@ -257,6 +264,10 @@ class MagicString {
 				'BUG! First character mapped to a position after the last character: ' +
 				'[' + start + ', ' + end + '] -> [' + firstChar + ', ' + ( lastChar + 1 ) + ']'
 			);
+		}
+
+		if ( storeName ) {
+			this.nameLocations[ start ] = this.original.slice( start, end );
 		}
 
 		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );

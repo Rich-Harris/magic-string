@@ -1,6 +1,6 @@
 import { encode } from 'vlq';
 
-export default function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets ) {
+export default function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets, names, nameLocations ) {
 	// store locations, for fast lookup
 	let lineStart = 0;
 	const locations = original.split( '\n' ).map( line => {
@@ -20,6 +20,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 		let origin;
 		let lastOrigin = -1;
 		let location;
+		let nameIndex;
 
 		let i;
 
@@ -28,28 +29,29 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 			char = i + charOffset;
 			origin = inverseMappings[ char ];
 
-			location = ( !~origin && ~lastOrigin ) ?
+			nameIndex = -1;
+			location = null;
 
-				// if this character has no mapping, but the last one did,
-				// create a new segment
-				getLocation( locations, lastOrigin + 1 ) :
+			// if this character has no mapping, but the last one did,
+			// create a new segment
+			if ( !~origin && ~lastOrigin ) {
+				origin = lastOrigin + 1;
+				location = getLocation( locations, lastOrigin + 1 );
 
-				// otherwise create a new segment if this character is mapped to an origin and
-				//   a) we're in hires mode
-				//   b) the origin isn't just lastOrigin + 1
-				//   c) there's a marked sourcemapLocation
-				( ~origin && ( hires || ( ~lastOrigin && origin !== lastOrigin + 1 ) || sourcemapLocations[ origin ] ) ) ?
-					getLocation( locations, origin ) :
+				if ( origin in nameLocations ) nameIndex = names.indexOf( nameLocations[ origin ] );
+			}
 
-					// otherwise skip it
-					null;
+			else if ( ~origin && ( hires || ( ~lastOrigin && origin !== lastOrigin + 1 ) || sourcemapLocations[ origin ] ) ) {
+				location = getLocation( locations, origin );
+			}
 
 			if ( location ) {
 				segments.push({
 					generatedCodeColumn: i,
 					sourceIndex: sourceIndex,
 					sourceCodeLine: location.line,
-					sourceCodeColumn: location.column
+					sourceCodeColumn: location.column,
+					sourceCodeName: nameIndex
 				});
 			}
 
@@ -60,17 +62,16 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 		return segments;
 	});
 
-	offsets = offsets || {};
-
 	offsets.sourceIndex = offsets.sourceIndex || 0;
 	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
+	offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
 	const encoded = lines.map( segments => {
 		var generatedCodeColumn = 0;
 
 		return segments.map( segment => {
-			const arr = [
+			let arr = [
 				segment.generatedCodeColumn - generatedCodeColumn,
 				segment.sourceIndex - offsets.sourceIndex,
 				segment.sourceCodeLine - offsets.sourceCodeLine,
@@ -81,6 +82,11 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 			offsets.sourceIndex = segment.sourceIndex;
 			offsets.sourceCodeLine = segment.sourceCodeLine;
 			offsets.sourceCodeColumn = segment.sourceCodeColumn;
+
+			if ( ~segment.sourceCodeName ) {
+				arr.push( segment.sourceCodeName - offsets.sourceCodeName );
+				offsets.sourceCodeName = segment.sourceCodeName;
+			}
 
 			return encode( arr );
 		}).join( ',' );

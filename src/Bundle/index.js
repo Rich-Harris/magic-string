@@ -93,7 +93,7 @@ class Bundle {
 					mappings = getSemis( source.content.toString() );
 				} else {
 					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
-					mappings = source.content.getMappings( options.hires, sourceIndex, offsets );
+					mappings = source.content.getMappings( options.hires, sourceIndex, offsets, [], {} ); // TODO names and nameLocations
 				}
 
 				return prefix + mappings;
