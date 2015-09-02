@@ -208,6 +208,23 @@ describe( 'MagicString', function () {
 			assert.equal( loc.line, 1 );
 			assert.equal( loc.column, 9 );
 		});
+
+		it( 'should recover original names', function () {
+			var s = new MagicString( 'function Foo () {}' );
+
+			s.overwrite( 9, 12, 'Bar', true );
+
+			map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			assert.equal( loc.name, 'Foo' );
+		});
 	});
 
 	describe( 'getIndentString', function () {
