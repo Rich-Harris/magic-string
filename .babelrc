@@ -1,0 +1,4 @@
+{
+	"blacklist": [ "es6.modules" ],
+	"loose": [ "es6.classes" ]
+}
