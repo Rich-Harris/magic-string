@@ -190,6 +190,24 @@ describe( 'MagicString', function () {
 			assert.equal( loc.line, 1 );
 			assert.equal( loc.column, 10 );
 		});
+
+		it( 'should correctly map inserted content', function () {
+			var s = new MagicString( 'function Foo () {}' );
+
+			s.overwrite( 9, 12, 'Bar' );
+
+			map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			assert.equal( loc.line, 1 );
+			assert.equal( loc.column, 9 );
+		});
 	});
 
 	describe( 'getIndentString', function () {
