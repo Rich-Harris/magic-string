@@ -28,34 +28,29 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 			char = i + charOffset;
 			origin = inverseMappings[ char ];
 
-			if ( !~origin ) {
-				if ( !~lastOrigin ) {
-					// do nothing
-				} else {
-					location = getLocation( locations, lastOrigin + 1 );
+			location = ( !~origin && ~lastOrigin ) ?
 
-					segments.push({
-						generatedCodeColumn: i,
-						sourceIndex: sourceIndex,
-						sourceCodeLine: location.line,
-						sourceCodeColumn: location.column
-					});
-				}
-			}
+				// if this character has no mapping, but the last one did,
+				// create a new segment
+				getLocation( locations, lastOrigin + 1 ) :
 
-			else {
-				if ( !hires && ( origin === lastOrigin + 1 ) && !sourcemapLocations[ origin ] ) {
-					// do nothing
-				} else {
-					location = getLocation( locations, origin );
+				// otherwise create a new segment if this character is mapped to an origin and
+				//   a) we're in hires mode
+				//   b) the origin isn't just lastOrigin + 1
+				//   c) there's a marked sourcemapLocation
+				( ~origin && ( hires || ( ~lastOrigin && origin !== lastOrigin + 1 ) || sourcemapLocations[ origin ] ) ) ?
+					getLocation( locations, origin ) :
 
-					segments.push({
-						generatedCodeColumn: i,
-						sourceIndex: sourceIndex,
-						sourceCodeLine: location.line,
-						sourceCodeColumn: location.column
-					});
-				}
+					// otherwise skip it
+					null;
+
+			if ( location ) {
+				segments.push({
+					generatedCodeColumn: i,
+					sourceIndex: sourceIndex,
+					sourceCodeLine: location.line,
+					sourceCodeColumn: location.column
+				});
 			}
 
 			lastOrigin = origin;
