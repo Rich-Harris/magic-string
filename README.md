@@ -83,8 +83,6 @@ Generates a [version 3 sourcemap](https://docs.google.com/document/d/1U1RGAehQwR
 * `includeContent` - whether to include the original content in the map's `sourcesContent` array
 * `hires` - whether the mapping should be high-resolution. Hi-res mappings map every single character, meaning (for example) your devtools will always be able to pinpoint the exact location of function calls and so on. With lo-res mappings, devtools may only be able to identify the correct line - but they're quicker to generate and less bulky. If sourcemap locations have been specified with `s.addSourceMapLocation()`, they will be used here.
 
-The `names` property of the sourcemap is not currently populated.
-
 The returned sourcemap has two (non-enumerable) methods attached for convenience:
 
 * `toString` - returns the equivalent of `JSON.stringify(map)`
@@ -112,9 +110,9 @@ Finds the location, in the generated string, of the character at `index` in the 
 
 The opposite of `s.locate()`. Returns `null` if the character in question was inserted with `s.append()`, `s.prepend()` or `s.overwrite()`.
 
-### s.overwrite( start, end, content )
+### s.overwrite( start, end, content[, storeName] )
 
-Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
+Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`. If `storeName` is `true`, the original name will be stored for later inclusion in a sourcemap's `names` array.
 
 ### s.prepend( content )
 
