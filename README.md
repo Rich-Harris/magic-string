@@ -1,24 +1,24 @@
 # magic-string
 
 <p align="center">
-  <a href="https://travis-ci.org/rich-harris/magic-string">
-    <img src="http://img.shields.io/travis/rich-harris/magic-string.svg"
+  <a href="https://travis-ci.org/Rich-Harris/magic-string">
+    <img src="http://img.shields.io/travis/Rich-Harris/magic-string.svg"
          alt="build status">
   </a>
   <a href="https://npmjs.org/package/magic-string">
     <img src="https://img.shields.io/npm/v/magic-string.svg"
          alt="npm version">
   </a>
-  <a href="https://github.com/rich-harris/magic-string/blob/master/LICENSE.md">
+  <a href="https://github.com/Rich-Harris/magic-string/blob/master/LICENSE.md">
     <img src="https://img.shields.io/npm/l/magic-string.svg"
          alt="license">
   </a>
-  <a href="https://david-dm.org/rich-harris/magic-string">
-    <img src="https://david-dm.org/rich-harris/magic-string.svg"
+  <a href="https://david-dm.org/Rich-Harris/magic-string">
+    <img src="https://david-dm.org/Rich-Harris/magic-string.svg"
          alt="dependency status">
   </a>
-  <a href="http://codecov.io/github/rich-harris/magic-string?branch=master">
-    <img src="http://codecov.io/github/rich-harris/magic-string/coverage.svg?branch=master" alt="Coverage via Codecov" />
+  <a href="http://codecov.io/github/Rich-Harris/magic-string?branch=master">
+    <img src="http://codecov.io/github/Rich-Harris/magic-string/coverage.svg?branch=master" alt="Coverage via Codecov" />
   </a>
 </p>
 
