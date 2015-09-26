@@ -1,8 +1,10 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('vlq')) :
 	typeof define === 'function' && define.amd ? define(['vlq'], factory) :
-	global.MagicString = factory(global.vlq);
+	global.MagicString = factory(vlq);
 }(this, function (vlq) { 'use strict';
+
+	'use strict';
 
 	function getRelativePath(from, to) {
 		var fromParts = from.split(/[\/\\]/);
@@ -23,11 +25,12 @@
 		return fromParts.concat(toParts).join('/');
 	}
 
-	var _btoa;
+	var _btoa = undefined;
 
 	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
 		_btoa = window.btoa;
 	} else if (typeof Buffer === 'function') {
+		/* global Buffer */
 		_btoa = function (str) {
 			return new Buffer(str).toString('base64');
 		};
@@ -35,11 +38,13 @@
 		throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 	}
 
-	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var btoa = _btoa;
+
+	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var SourceMap = (function () {
 		function SourceMap(properties) {
-			___classCallCheck(this, SourceMap);
+			__classCallCheck(this, SourceMap);
 
 			this.version = 3;
 
@@ -55,11 +60,86 @@
 		};
 
 		SourceMap.prototype.toUrl = function toUrl() {
-			return 'data:application/json;charset=utf-8;base64,' + _btoa(this.toString());
+			return 'data:application/json;charset=utf-8;base64,' + btoa(this.toString());
 		};
 
 		return SourceMap;
 	})();
+
+	function getSemis(str) {
+		return new Array(str.split('\n').length).join(';');
+	}
+
+	function adjust(mappings, start, end, d) {
+		if (!d) return; // replacement is same length as replaced string
+
+		var i = end;
+		while (i-- > start) {
+			if (~mappings[i]) {
+				mappings[i] += d;
+			}
+		}
+	}
+
+	var warned = false;
+
+	function blank(mappings, start, i) {
+		while (i-- > start) mappings[i] = -1;
+	}
+
+	function reverse(mappings, i) {
+		var result = new Uint32Array(i);
+
+		while (i--) {
+			result[i] = -1;
+		}
+
+		var location = undefined;
+		i = mappings.length;
+		while (i--) {
+			location = mappings[i];
+
+			if (~location) {
+				result[location] = i;
+			}
+		}
+
+		return result;
+	}
+
+	function getLocation(locations, char) {
+		var i = locations.length;
+		while (i--) {
+			if (locations[i] <= char) {
+				return {
+					line: i,
+					column: char - locations[i]
+				};
+			}
+		}
+
+		throw new Error('Character out of bounds');
+	}
+
+	function invert(str, mappings) {
+		var inverted = new Uint32Array(str.length);
+
+		// initialise everything to -1
+		var i = str.length;
+		while (i--) {
+			inverted[i] = -1;
+		}
+
+		// then apply the actual mappings
+		i = mappings.length;
+		while (i--) {
+			if (~mappings[i]) {
+				inverted[mappings[i]] = i;
+			}
+		}
+
+		return inverted;
+	}
 
 	function encodeMappings(original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets, names, nameLocations) {
 		// store locations, for fast lookup
@@ -148,53 +228,16 @@
 		return encoded;
 	}
 
-	function invert(str, mappings) {
-		var inverted = new Uint32Array(str.length),
-		    i;
-
-		// initialise everything to -1
-		i = str.length;
-		while (i--) {
-			inverted[i] = -1;
-		}
-
-		// then apply the actual mappings
-		i = mappings.length;
-		while (i--) {
-			if (~mappings[i]) {
-				inverted[mappings[i]] = i;
-			}
-		}
-
-		return inverted;
-	}
-
-	function getLocation(locations, char) {
-		var i;
-
-		i = locations.length;
-		while (i--) {
-			if (locations[i] <= char) {
-				return {
-					line: i,
-					column: char - locations[i]
-				};
-			}
-		}
-
-		throw new Error('Character out of bounds');
-	}
+	function _slicedToArray(arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }
 
 	function guessIndent(code) {
 		var lines = code.split('\n');
 
 		var tabbed = lines.filter(function (line) {
-			return (/^\t+/.test(line)
-			);
+			return /^\t+/.test(line);
 		});
 		var spaced = lines.filter(function (line) {
-			return (/^ {2,}/.test(line)
-			);
+			return /^ {2,}/.test(line);
 		});
 
 		if (tabbed.length === 0 && spaced.length === 0) {
@@ -217,17 +260,20 @@
 		return new Array(min + 1).join(' ');
 	}
 
-	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+	function initMappings(i) {
+		var mappings = new Uint32Array(i);
 
-	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+		while (i--) mappings[i] = i;
+		return mappings;
+	}
 
-	var warned = false;
+	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var MagicString = (function () {
 		function MagicString(string) {
-			var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+			var options = arguments[1] === undefined ? {} : arguments[1];
 
-			__classCallCheck(this, MagicString);
+			___classCallCheck(this, MagicString);
 
 			this.original = this.str = string;
 			this.mappings = initMappings(string.length);
@@ -255,12 +301,10 @@
 		};
 
 		MagicString.prototype.clone = function clone() {
-			var clone, i;
-
-			clone = new MagicString(this.original, { filename: this.filename });
+			var clone = new MagicString(this.original, { filename: this.filename });
 			clone.str = this.str;
 
-			i = clone.mappings.length;
+			var i = clone.mappings.length;
 			while (i--) {
 				clone.mappings[i] = this.mappings[i];
 			}
@@ -311,16 +355,11 @@
 		};
 
 		MagicString.prototype.indent = function indent(indentStr, options) {
-			var self = this,
-			    mappings = this.mappings,
-			    reverseMappings = reverse(mappings, this.str.length),
-			    pattern = /^[^\r\n]/gm,
-			    match,
-			    inserts = [],
-			    adjustments,
-			    exclusions,
-			    lastEnd,
-			    i;
+			var _this2 = this;
+
+			var mappings = this.mappings;
+			var reverseMappings = reverse(mappings, this.str.length);
+			var pattern = /^[^\r\n]/gm;
 
 			if (typeof indentStr === 'object') {
 				options = indentStr;
@@ -334,14 +373,14 @@
 			options = options || {};
 
 			// Process exclusion ranges
+			var exclusions = undefined;
+
 			if (options.exclude) {
 				exclusions = typeof options.exclude[0] === 'number' ? [options.exclude] : options.exclude;
 
 				exclusions = exclusions.map(function (range) {
-					var rangeStart, rangeEnd;
-
-					rangeStart = self.locate(range[0]);
-					rangeEnd = self.locate(range[1]);
+					var rangeStart = _this2.locate(range[0]);
+					var rangeEnd = _this2.locate(range[1]);
 
 					if (rangeStart === null || rangeEnd === null) {
 						throw new Error('Cannot use indices of replaced characters as exclusion ranges');
@@ -366,6 +405,7 @@
 			}
 
 			var indentStart = options.indentStart !== false;
+			var inserts = [];
 
 			if (!exclusions) {
 				this.str = this.str.replace(pattern, function (match, index) {
@@ -387,28 +427,28 @@
 				});
 			}
 
-			adjustments = inserts.map(function (index) {
-				var origin;
+			var adjustments = inserts.map(function (index) {
+				var origin = undefined;
 
 				do {
 					origin = reverseMappings[index++];
-				} while (! ~origin && index < self.str.length);
+				} while (! ~origin && index < _this2.str.length);
 
 				return origin;
 			});
 
-			i = adjustments.length;
-			lastEnd = this.mappings.length;
+			var i = adjustments.length;
+			var lastEnd = this.mappings.length;
 			while (i--) {
-				adjust(self.mappings, adjustments[i], lastEnd, (i + 1) * indentStr.length);
+				adjust(this.mappings, adjustments[i], lastEnd, (i + 1) * indentStr.length);
 				lastEnd = adjustments[i];
 			}
 
 			return this;
 
 			function isExcluded(index) {
-				var i = exclusions.length,
-				    range;
+				var i = exclusions.length;
+				var range = undefined;
 
 				while (i--) {
 					range = exclusions[i];
@@ -448,24 +488,20 @@
 		// get current location of character in original string
 
 		MagicString.prototype.locate = function locate(character) {
-			var loc;
-
 			if (character < 0 || character > this.mappings.length) {
 				throw new Error('Character is out of bounds');
 			}
 
-			loc = this.mappings[character];
+			var loc = this.mappings[character];
 			return ~loc ? loc : null;
 		};
 
 		MagicString.prototype.locateOrigin = function locateOrigin(character) {
-			var i;
-
 			if (character < 0 || character >= this.str.length) {
 				throw new Error('Character is out of bounds');
 			}
 
-			i = this.mappings.length;
+			var i = this.mappings.length;
 			while (i--) {
 				if (this.mappings[i] === character) {
 					return i;
@@ -480,10 +516,8 @@
 				throw new TypeError('replacement content must be a string');
 			}
 
-			var firstChar, lastChar, d;
-
-			firstChar = this.locate(start);
-			lastChar = this.locate(end - 1);
+			var firstChar = this.locate(start);
+			var lastChar = this.locate(end - 1);
 
 			if (firstChar === null || lastChar === null) {
 				throw new Error('Cannot overwrite the same content twice: \'' + this.original.slice(start, end).replace(/\n/g, '\\n') + '\'');
@@ -499,7 +533,7 @@
 
 			this.str = this.str.substr(0, firstChar) + content + this.str.substring(lastChar + 1);
 
-			d = content.length - (lastChar + 1 - firstChar);
+			var d = content.length - (lastChar + 1 - firstChar);
 
 			blank(this.mappings, start, end);
 			adjust(this.mappings, end, this.mappings.length, d);
@@ -546,15 +580,13 @@
 		};
 
 		MagicString.prototype.slice = function slice(start) {
-			var end = arguments.length <= 1 || arguments[1] === undefined ? this.original.length : arguments[1];
-
-			var firstChar, lastChar;
+			var end = arguments[1] === undefined ? this.original.length : arguments[1];
 
 			while (start < 0) start += this.original.length;
 			while (end < 0) end += this.original.length;
 
-			firstChar = this.locate(start);
-			lastChar = this.locate(end - 1);
+			var firstChar = this.locate(start);
+			var lastChar = this.locate(end - 1);
 
 			if (firstChar === null || lastChar === null) {
 				throw new Error('Cannot use replaced characters as slice anchors');
@@ -584,24 +616,25 @@
 		};
 
 		MagicString.prototype.trimEnd = function trimEnd(charType) {
-			var self = this;
+			var _this3 = this;
+
 			var rx = new RegExp((charType || '\\s') + '+$');
 
 			this.str = this.str.replace(rx, function (trailing, index, str) {
-				var strLength = str.length,
-				    length = trailing.length,
-				    i,
-				    chars = [];
+				var strLength = str.length;
+				var length = trailing.length;
 
-				i = strLength;
+				var chars = [];
+
+				var i = strLength;
 				while (i-- > strLength - length) {
-					chars.push(self.locateOrigin(i));
+					chars.push(_this3.locateOrigin(i));
 				}
 
 				i = chars.length;
 				while (i--) {
 					if (chars[i] !== null) {
-						self.mappings[chars[i]] = -1;
+						_this3.mappings[chars[i]] = -1;
 					}
 				}
 
@@ -612,29 +645,30 @@
 		};
 
 		MagicString.prototype.trimStart = function trimStart(charType) {
-			var self = this;
+			var _this4 = this;
+
 			var rx = new RegExp('^' + (charType || '\\s') + '+');
 
 			this.str = this.str.replace(rx, function (leading) {
-				var length = leading.length,
-				    i,
-				    chars = [],
-				    adjustmentStart = 0;
+				var length = leading.length;
 
-				i = length;
+				var chars = [];
+				var adjustmentStart = 0;
+
+				var i = length;
 				while (i--) {
-					chars.push(self.locateOrigin(i));
+					chars.push(_this4.locateOrigin(i));
 				}
 
 				i = chars.length;
 				while (i--) {
 					if (chars[i] !== null) {
-						self.mappings[chars[i]] = -1;
+						_this4.mappings[chars[i]] = -1;
 						adjustmentStart += 1;
 					}
 				}
 
-				adjust(self.mappings, adjustmentStart, self.mappings.length, -length);
+				adjust(_this4.mappings, adjustmentStart, _this4.mappings.length, -length);
 
 				return '';
 			});
@@ -645,62 +679,13 @@
 		return MagicString;
 	})();
 
-	function adjust(mappings, start, end, d) {
-		var i = end;
-
-		if (!d) return; // replacement is same length as replaced string
-
-		while (i-- > start) {
-			if (~mappings[i]) {
-				mappings[i] += d;
-			}
-		}
-	}
-
-	function initMappings(i) {
-		var mappings = new Uint32Array(i);
-
-		while (i--) {
-			mappings[i] = i;
-		}
-
-		return mappings;
-	}
-
-	function blank(mappings, start, i) {
-		while (i-- > start) {
-			mappings[i] = -1;
-		}
-	}
-
-	function reverse(mappings, i) {
-		var result, location;
-
-		result = new Uint32Array(i);
-
-		while (i--) {
-			result[i] = -1;
-		}
-
-		i = mappings.length;
-		while (i--) {
-			location = mappings[i];
-
-			if (~location) {
-				result[location] = i;
-			}
-		}
-
-		return result;
-	}
-
 	var hasOwnProp = Object.prototype.hasOwnProperty;
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var Bundle = (function () {
 		function Bundle() {
-			var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+			var options = arguments[0] === undefined ? {} : arguments[0];
 
 			_classCallCheck(this, Bundle);
 
@@ -948,14 +933,10 @@
 		return Bundle;
 	})();
 
-	function getSemis(str) {
-		return new Array(str.split('\n').length).join(';');
-	}
-
-	'use strict';
-
 	MagicString.Bundle = Bundle;
 
-	return MagicString;
+	var index = MagicString;
+
+	return index;
 
 }));

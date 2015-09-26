@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "es6-promise": "^2.0.1",
+    "eslint": "^1.5.1",
     "gobble": "^0.10.1",
     "gobble-babel": "^5.1.0",
     "gobble-cli": "^0.4.2",
@@ -31,7 +32,8 @@
     "test": "mocha",
     "pretest": "npm run build",
     "build": "gobble build -f dist",
-    "prepublish": "npm test"
+    "prepublish": "npm test",
+    "lint": "eslint src"
   },
   "files": [
     "src/*",

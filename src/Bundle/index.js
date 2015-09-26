@@ -126,7 +126,7 @@ class Bundle {
 		let indentStringCounts = {};
 
 		this.sources.forEach( source => {
-			var indentStr = source.content.indentStr;
+			const indentStr = source.content.indentStr;
 
 			if ( indentStr === null ) return;
 
@@ -245,10 +245,6 @@ class Bundle {
 }
 
 export default Bundle;
-
-function stringify ( source ) {
-	return source.content.toString();
-}
 
 function getSemis ( str ) {
 	return new Array( str.split( '\n' ).length ).join( ';' );

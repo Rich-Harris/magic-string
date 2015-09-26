@@ -33,12 +33,10 @@ class MagicString {
 	}
 
 	clone () {
-		var clone, i;
-
-		clone = new MagicString( this.original, { filename: this.filename });
+		let clone = new MagicString( this.original, { filename: this.filename });
 		clone.str = this.str;
 
-		i = clone.mappings.length;
+		let i = clone.mappings.length;
 		while ( i-- ) {
 			clone.mappings[i] = this.mappings[i];
 		}
@@ -83,16 +81,9 @@ class MagicString {
 	}
 
 	indent ( indentStr, options ) {
-		var self = this,
-			mappings = this.mappings,
-			reverseMappings = reverse( mappings, this.str.length ),
-			pattern = /^[^\r\n]/gm,
-			match,
-			inserts = [],
-			adjustments,
-			exclusions,
-			lastEnd,
-			i;
+		const mappings = this.mappings;
+		const reverseMappings = reverse( mappings, this.str.length );
+		const pattern = /^[^\r\n]/gm;
 
 		if ( typeof indentStr === 'object' ) {
 			options = indentStr;
@@ -106,14 +97,14 @@ class MagicString {
 		options = options || {};
 
 		// Process exclusion ranges
+		let exclusions;
+
 		if ( options.exclude ) {
 			exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
 
-			exclusions = exclusions.map( function ( range ) {
-				var rangeStart, rangeEnd;
-
-				rangeStart = self.locate( range[0] );
-				rangeEnd = self.locate( range[1] );
+			exclusions = exclusions.map( range => {
+				const rangeStart = this.locate( range[0] );
+				const rangeEnd = this.locate( range[1] );
 
 				if ( rangeStart === null || rangeEnd === null ) {
 					throw new Error( 'Cannot use indices of replaced characters as exclusion ranges' );
@@ -122,13 +113,11 @@ class MagicString {
 				return [ rangeStart, rangeEnd ];
 			});
 
-			exclusions.sort( function ( a, b ) {
-				return a[0] - b[0];
-			});
+			exclusions.sort( ( a, b ) => a[0] - b[0] );
 
 			// check for overlaps
 			lastEnd = -1;
-			exclusions.forEach( function ( range ) {
+			exclusions.forEach( range => {
 				if ( range[0] < lastEnd ) {
 					throw new Error( 'Exclusion ranges cannot overlap' );
 				}
@@ -138,6 +127,7 @@ class MagicString {
 		}
 
 		const indentStart = options.indentStart !== false;
+		let inserts = [];
 
 		if ( !exclusions ) {
 			this.str = this.str.replace( pattern, ( match, index ) => {
@@ -159,27 +149,28 @@ class MagicString {
 			});
 		}
 
-		adjustments = inserts.map( function ( index ) {
-			var origin;
+		const adjustments = inserts.map( index => {
+			let origin;
 
 			do {
 				origin = reverseMappings[ index++ ];
-			} while ( !~origin && index < self.str.length );
+			} while ( !~origin && index < this.str.length );
 
 			return origin;
 		});
 
-		i = adjustments.length;
-		lastEnd = this.mappings.length;
+		let i = adjustments.length;
+		let lastEnd = this.mappings.length;
 		while ( i-- ) {
-			adjust( self.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
+			adjust( this.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
 			lastEnd = adjustments[i];
 		}
 
 		return this;
 
 		function isExcluded ( index ) {
-			var i = exclusions.length, range;
+			let i = exclusions.length;
+			let range;
 
 			while ( i-- ) {
 				range = exclusions[i];
@@ -203,7 +194,7 @@ class MagicString {
 		if ( index === this.original.length ) {
 			this.append( content );
 		} else {
-			var mapped = this.locate(index);
+			const mapped = this.locate( index );
 
 			if ( mapped === null ) {
 				throw new Error( 'Cannot insert at replaced character index: ' + index );
@@ -218,24 +209,20 @@ class MagicString {
 
 	// get current location of character in original string
 	locate ( character ) {
-		var loc;
-
 		if ( character < 0 || character > this.mappings.length ) {
 			throw new Error( 'Character is out of bounds' );
 		}
 
-		loc = this.mappings[ character ];
+		const loc = this.mappings[ character ];
 		return ~loc ? loc : null;
 	}
 
 	locateOrigin ( character ) {
-		var i;
-
 		if ( character < 0 || character >= this.str.length ) {
 			throw new Error( 'Character is out of bounds' );
 		}
 
-		i = this.mappings.length;
+		let i = this.mappings.length;
 		while ( i-- ) {
 			if ( this.mappings[i] === character ) {
 				return i;
@@ -250,10 +237,8 @@ class MagicString {
 			throw new TypeError( 'replacement content must be a string' );
 		}
 
-		var firstChar, lastChar, d;
-
-		firstChar = this.locate( start );
-		lastChar = this.locate( end - 1 );
+		const firstChar = this.locate( start );
+		const lastChar = this.locate( end - 1 );
 
 		if ( firstChar === null || lastChar === null ) {
 			throw new Error( `Cannot overwrite the same content twice: '${this.original.slice(start, end).replace(/\n/g, '\\n')}'` );
@@ -272,7 +257,7 @@ class MagicString {
 
 		this.str = this.str.substr( 0, firstChar ) + content + this.str.substring( lastChar + 1 );
 
-		d = content.length - ( lastChar + 1 - firstChar );
+		const d = content.length - ( lastChar + 1 - firstChar );
 
 		blank( this.mappings, start, end );
 		adjust( this.mappings, end, this.mappings.length, d );
@@ -319,13 +304,11 @@ class MagicString {
 	}
 
 	slice ( start, end = this.original.length ) {
-		var firstChar, lastChar;
-
 		while ( start < 0 ) start += this.original.length;
 		while ( end < 0 ) end += this.original.length;
 
-		firstChar = this.locate( start );
-		lastChar = this.locate( end - 1 );
+		const firstChar = this.locate( start );
+		const lastChar = this.locate( end - 1 );
 
 		if ( firstChar === null || lastChar === null ) {
 			throw new Error( 'Cannot use replaced characters as slice anchors' );
@@ -346,7 +329,7 @@ class MagicString {
 		return this.str;
 	}
 
-	trimLines() {
+	trimLines () {
 		return this.trim('[\\r\\n]');
 	}
 
@@ -355,24 +338,23 @@ class MagicString {
 	}
 
 	trimEnd (charType) {
-		var self = this;
-		var rx = new RegExp((charType || '\\s') + '+$');
+		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
 
-		this.str = this.str.replace( rx, function ( trailing, index, str ) {
-			var strLength = str.length,
-				length = trailing.length,
-				i,
-				chars = [];
+		this.str = this.str.replace( rx, ( trailing, index, str ) => {
+			const strLength = str.length;
+			const length = trailing.length;
 
-			i = strLength;
+			let chars = [];
+
+			let i = strLength;
 			while ( i-- > strLength - length ) {
-				chars.push( self.locateOrigin( i ) );
+				chars.push( this.locateOrigin( i ) );
 			}
 
 			i = chars.length;
 			while ( i-- ) {
 				if ( chars[i] !== null ) {
-					self.mappings[ chars[i] ] = -1;
+					this.mappings[ chars[i] ] = -1;
 				}
 			}
 
@@ -383,26 +365,28 @@ class MagicString {
 	}
 
 	trimStart (charType) {
-		var self = this;
-		var rx = new RegExp('^' + (charType || '\\s') + '+');
+		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
 
-		this.str = this.str.replace( rx, function ( leading ) {
-			var length = leading.length, i, chars = [], adjustmentStart = 0;
+		this.str = this.str.replace( rx, leading => {
+			const length = leading.length;
 
-			i = length;
+			let chars = [];
+			let adjustmentStart = 0;
+
+			let i = length;
 			while ( i-- ) {
-				chars.push( self.locateOrigin( i ) );
+				chars.push( this.locateOrigin( i ) );
 			}
 
 			i = chars.length;
 			while ( i-- ) {
 				if ( chars[i] !== null ) {
-					self.mappings[ chars[i] ] = -1;
+					this.mappings[ chars[i] ] = -1;
 					adjustmentStart += 1;
 				}
 			}
 
-			adjust( self.mappings, adjustmentStart, self.mappings.length, -length );
+			adjust( this.mappings, adjustmentStart, this.mappings.length, -length );
 
 			return '';
 		});
@@ -412,10 +396,9 @@ class MagicString {
 }
 
 function adjust ( mappings, start, end, d ) {
-	var i = end;
-
 	if ( !d ) return; // replacement is same length as replaced string
 
+	let i = end;
 	while ( i-- > start ) {
 		if ( ~mappings[i] ) {
 			mappings[i] += d;
@@ -424,30 +407,24 @@ function adjust ( mappings, start, end, d ) {
 }
 
 function initMappings ( i ) {
-	var mappings = new Uint32Array( i );
+	let mappings = new Uint32Array( i );
 
-	while ( i-- ) {
-		mappings[i] = i;
-	}
-
+	while ( i-- ) mappings[i] = i;
 	return mappings;
 }
 
 function blank ( mappings, start, i ) {
-	while ( i-- > start ) {
-		mappings[i] = -1;
-	}
+	while ( i-- > start ) mappings[i] = -1;
 }
 
 function reverse ( mappings, i ) {
-	var result, location;
-
-	result = new Uint32Array( i );
+	let result = new Uint32Array( i );
 
 	while ( i-- ) {
 		result[i] = -1;
 	}
 
+	let location;
 	i = mappings.length;
 	while ( i-- ) {
 		location = mappings[i];

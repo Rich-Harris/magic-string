@@ -4,7 +4,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 	// store locations, for fast lookup
 	let lineStart = 0;
 	const locations = original.split( '\n' ).map( line => {
-		var start = lineStart;
+		const start = lineStart;
 		lineStart += line.length + 1; // +1 for the newline
 
 		return start;
@@ -47,7 +47,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 			if ( location ) {
 				segments.push({
 					generatedCodeColumn: i,
-					sourceIndex: sourceIndex,
+					sourceIndex,
 					sourceCodeLine: location.line,
 					sourceCodeColumn: location.column,
 					sourceCodeName: nameIndex
@@ -67,7 +67,7 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 	offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
 	const encoded = lines.map( segments => {
-		var generatedCodeColumn = 0;
+		let generatedCodeColumn = 0;
 
 		return segments.map( segment => {
 			let arr = [
@@ -96,10 +96,10 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 
 
 function invert ( str, mappings ) {
-	var inverted = new Uint32Array( str.length ), i;
+	let inverted = new Uint32Array( str.length );
 
 	// initialise everything to -1
-	i = str.length;
+	let i = str.length;
 	while ( i-- ) {
 		inverted[i] = -1;
 	}
@@ -116,9 +116,7 @@ function invert ( str, mappings ) {
 }
 
 function getLocation ( locations, char ) {
-	var i;
-
-	i = locations.length;
+	let i = locations.length;
 	while ( i-- ) {
 		if ( locations[i] <= char ) {
 			return {
