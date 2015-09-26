@@ -987,3 +987,4 @@
 	return index;
 
 }));
+//# sourceMappingURL=magic-string.deps.js.map

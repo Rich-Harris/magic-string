@@ -1,0 +1,28 @@
+{
+	"rules": {
+		"indent": [ 2, "tab", { "SwitchCase": 1 }],
+		"quotes": [ 2, "single" ],
+		"linebreak-style": [ 2, "unix" ],
+		"semi": [ 2, "always" ],
+		"no-mixed-spaces-and-tabs": [ 2, "smart-tabs" ],
+		"object-shorthand":  [2, "always" ],
+		"no-const-assign": 2,
+		"no-class-assign": 2,
+		"no-this-before-super": 2,
+		"no-var": 2,
+		"quote-props": [ 2, "as-needed" ],
+		"one-var": [ 2, "never" ],
+		"prefer-arrow-callback": 2,
+		"arrow-spacing": 2,
+
+		"no-cond-assign": 0
+	},
+	"env": {
+		"es6": true,
+		"browser": true
+	},
+	"extends": "eslint:recommended",
+	"ecmaFeatures": {
+		"modules": true
+	}
+}

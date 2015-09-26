@@ -940,3 +940,4 @@
 	return index;
 
 }));
+//# sourceMappingURL=magic-string.js.map

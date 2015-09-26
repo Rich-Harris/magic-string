@@ -11,7 +11,8 @@ module.exports = gobble([
 		dest: 'magic-string.js',
 		format: 'umd',
 		moduleName: 'MagicString',
-		external: [ 'vlq' ]
+		external: [ 'vlq' ],
+		sourceMap: true
 	}),
 
 	// version with deps (i.e. vlq) included
@@ -19,6 +20,7 @@ module.exports = gobble([
 		entry: 'index.js',
 		dest: 'magic-string.deps.js',
 		format: 'umd',
-		moduleName: 'MagicString'
+		moduleName: 'MagicString',
+		sourceMap: true
 	})
 ]);
