@@ -4,8 +4,6 @@
 	global.MagicString = factory();
 }(this, function () { 'use strict';
 
-	'use strict';
-
 	function getRelativePath(from, to) {
 		var fromParts = from.split(/[\/\\]/);
 		var toParts = to.split(/[\/\\]/);
@@ -38,13 +36,11 @@
 		throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 	}
 
-	var btoa = _btoa;
-
-	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 	var SourceMap = (function () {
 		function SourceMap(properties) {
-			__classCallCheck(this, SourceMap);
+			___classCallCheck(this, SourceMap);
 
 			this.version = 3;
 
@@ -60,61 +56,34 @@
 		};
 
 		SourceMap.prototype.toUrl = function toUrl() {
-			return 'data:application/json;charset=utf-8;base64,' + btoa(this.toString());
+			return 'data:application/json;charset=utf-8;base64,' + _btoa(this.toString());
 		};
 
 		return SourceMap;
 	})();
 
-	function getSemis(str) {
-		return new Array(str.split('\n').length).join(';');
-	}
-
-	function adjust(mappings, start, end, d) {
-		if (!d) return; // replacement is same length as replaced string
-
-		var i = end;
-		while (i-- > start) {
-			if (~mappings[i]) {
-				mappings[i] += d;
-			}
-		}
-	}
-
-	var warned = false;
-
-	function blank(mappings, start, i) {
-		while (i-- > start) mappings[i] = -1;
-	}
-
-	function reverse(mappings, i) {
-		var result = new Uint32Array(i);
-
-		while (i--) {
-			result[i] = -1;
-		}
-
-		var location = undefined;
-		i = mappings.length;
-		while (i--) {
-			location = mappings[i];
-
-			if (~location) {
-				result[location] = i;
-			}
-		}
-
-		return result;
-	}
-
-	var integerToChar = {};
-
 	var charToInteger = {};
+	var integerToChar = {};
 
 	'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split( '' ).forEach( function ( char, i ) {
 		charToInteger[ char ] = i;
 		integerToChar[ i ] = char;
 	});
+
+	function encode ( value ) {
+		var result, i;
+
+		if ( typeof value === 'number' ) {
+			result = encodeInteger( value );
+		} else {
+			result = '';
+			for ( i = 0; i < value.length; i += 1 ) {
+				result += encodeInteger( value[i] );
+			}
+		}
+
+		return result;
+	}
 
 	function encodeInteger ( num ) {
 		var result = '', clamped;
@@ -137,55 +106,6 @@
 		} while ( num > 0 );
 
 		return result;
-	}
-
-	function encode ( value ) {
-		var result, i;
-
-		if ( typeof value === 'number' ) {
-			result = encodeInteger( value );
-		} else {
-			result = '';
-			for ( i = 0; i < value.length; i += 1 ) {
-				result += encodeInteger( value[i] );
-			}
-		}
-
-		return result;
-	}
-
-	function getLocation(locations, char) {
-		var i = locations.length;
-		while (i--) {
-			if (locations[i] <= char) {
-				return {
-					line: i,
-					column: char - locations[i]
-				};
-			}
-		}
-
-		throw new Error('Character out of bounds');
-	}
-
-	function invert(str, mappings) {
-		var inverted = new Uint32Array(str.length);
-
-		// initialise everything to -1
-		var i = str.length;
-		while (i--) {
-			inverted[i] = -1;
-		}
-
-		// then apply the actual mappings
-		i = mappings.length;
-		while (i--) {
-			if (~mappings[i]) {
-				inverted[mappings[i]] = i;
-			}
-		}
-
-		return inverted;
 	}
 
 	function encodeMappings(original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets, names, nameLocations) {
@@ -275,7 +195,39 @@
 		return encoded;
 	}
 
-	function _slicedToArray(arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }
+	function invert(str, mappings) {
+		var inverted = new Uint32Array(str.length);
+
+		// initialise everything to -1
+		var i = str.length;
+		while (i--) {
+			inverted[i] = -1;
+		}
+
+		// then apply the actual mappings
+		i = mappings.length;
+		while (i--) {
+			if (~mappings[i]) {
+				inverted[mappings[i]] = i;
+			}
+		}
+
+		return inverted;
+	}
+
+	function getLocation(locations, char) {
+		var i = locations.length;
+		while (i--) {
+			if (locations[i] <= char) {
+				return {
+					line: i,
+					column: char - locations[i]
+				};
+			}
+		}
+
+		throw new Error('Character out of bounds');
+	}
 
 	function guessIndent(code) {
 		var lines = code.split('\n');
@@ -307,31 +259,28 @@
 		return new Array(min + 1).join(' ');
 	}
 
-	function initMappings(i) {
-		var mappings = new Uint32Array(i);
+	function _slicedToArray(arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }
 
-		while (i--) mappings[i] = i;
-		return mappings;
-	}
+	function __classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	function ___classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var warned = false;
 
 	var MagicString = (function () {
 		function MagicString(string) {
 			var options = arguments[1] === undefined ? {} : arguments[1];
 
-			___classCallCheck(this, MagicString);
+			__classCallCheck(this, MagicString);
 
-			this.original = this.str = string;
-			this.mappings = initMappings(string.length);
-
-			this.filename = options.filename;
-			this.indentExclusionRanges = options.indentExclusionRanges;
-
-			this.sourcemapLocations = {};
-			this.nameLocations = {};
-
-			this.indentStr = guessIndent(string);
+			Object.defineProperties(this, {
+				original: { writable: true, value: string },
+				str: { writable: true, value: string },
+				mappings: { writable: true, value: initMappings(string.length) },
+				filename: { writable: true, value: options.filename },
+				indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
+				sourcemapLocations: { writable: true, value: {} },
+				nameLocations: { writable: true, value: {} },
+				indentStr: { writable: true, value: guessIndent(string) }
+			});
 		}
 
 		MagicString.prototype.addSourcemapLocation = function addSourcemapLocation(char) {
@@ -726,6 +675,48 @@
 		return MagicString;
 	})();
 
+	function adjust(mappings, start, end, d) {
+		if (!d) return; // replacement is same length as replaced string
+
+		var i = end;
+		while (i-- > start) {
+			if (~mappings[i]) {
+				mappings[i] += d;
+			}
+		}
+	}
+
+	function initMappings(i) {
+		var mappings = new Uint32Array(i);
+
+		while (i--) mappings[i] = i;
+		return mappings;
+	}
+
+	function blank(mappings, start, i) {
+		while (i-- > start) mappings[i] = -1;
+	}
+
+	function reverse(mappings, i) {
+		var result = new Uint32Array(i);
+
+		while (i--) {
+			result[i] = -1;
+		}
+
+		var location = undefined;
+		i = mappings.length;
+		while (i--) {
+			location = mappings[i];
+
+			if (~location) {
+				result[location] = i;
+			}
+		}
+
+		return result;
+	}
+
 	var hasOwnProp = Object.prototype.hasOwnProperty;
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -980,11 +971,15 @@
 		return Bundle;
 	})();
 
+	function getSemis(str) {
+		return new Array(str.split('\n').length).join(';');
+	}
+
+	'use strict';
+
 	MagicString.Bundle = Bundle;
 
-	var index = MagicString;
-
-	return index;
+	return MagicString;
 
 }));
 //# sourceMappingURL=magic-string.deps.js.map

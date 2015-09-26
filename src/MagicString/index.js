@@ -7,16 +7,16 @@ let warned = false;
 
 class MagicString {
 	constructor ( string, options = {} ) {
-		this.original = this.str = string;
-		this.mappings = initMappings( string.length );
-
-		this.filename = options.filename;
-		this.indentExclusionRanges = options.indentExclusionRanges;
-
-		this.sourcemapLocations = {};
-		this.nameLocations = {};
-
-		this.indentStr = guessIndent( string );
+		Object.defineProperties( this, {
+			original:              { writable: true, value: string },
+			str:                   { writable: true, value: string },
+			mappings:              { writable: true, value: initMappings( string.length ) },
+			filename:              { writable: true, value: options.filename },
+			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
+			sourcemapLocations:    { writable: true, value: {} },
+			nameLocations:         { writable: true, value: {} },
+			indentStr:             { writable: true, value: guessIndent( string ) }
+		});
 	}
 
 	addSourcemapLocation ( char ) {
