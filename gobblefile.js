@@ -3,10 +3,8 @@ var path = require( 'path' );
 var resolve = require( 'resolve' );
 var Promise = require( 'es6-promise' ).Promise;
 
-var src = gobble( 'src' ).transform( 'babel' );
-
 module.exports = gobble([
-	src.transform( 'rollup', {
+	gobble( 'src' ).transform( 'rollup-babel', {
 		entry: 'index.js',
 		dest: 'magic-string.js',
 		format: 'umd',
@@ -16,7 +14,7 @@ module.exports = gobble([
 	}),
 
 	// version with deps (i.e. vlq) included
-	src.transform( 'rollup', {
+	gobble( 'src' ).transform( 'rollup-babel', {
 		entry: 'index.js',
 		dest: 'magic-string.deps.js',
 		format: 'umd',
