@@ -4,16 +4,25 @@ var resolve = require( 'resolve' );
 var Promise = require( 'es6-promise' ).Promise;
 
 module.exports = gobble([
+	// CommonJS build
 	gobble( 'src' ).transform( 'rollup-babel', {
 		entry: 'index.js',
-		dest: 'magic-string.js',
-		format: 'umd',
-		moduleName: 'MagicString',
+		dest: 'magic-string.cjs.js',
+		format: 'cjs',
 		external: [ 'vlq' ],
 		sourceMap: true
 	}),
 
-	// version with deps (i.e. vlq) included
+	// ES6 build
+	gobble( 'src' ).transform( 'rollup-babel', {
+		entry: 'index.js',
+		dest: 'magic-string.es6.js',
+		format: 'es6',
+		external: [ 'vlq' ],
+		sourceMap: true
+	}),
+
+	// UMD build with deps (i.e. vlq) included
 	gobble( 'src' ).transform( 'rollup-babel', {
 		entry: 'index.js',
 		dest: 'magic-string.deps.js',
