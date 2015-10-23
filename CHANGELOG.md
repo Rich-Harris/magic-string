@@ -1,5 +1,11 @@
 # changelog
 
+## 0.8.0
+
+* Add an ES6 build, change default UMD build to CommonJS (but keeping existing UMD build with bundled dependencies)
+* Make properties non-enumerable, for cleaner logging
+* Update dependencies
+
 ## 0.7.0
 
 * The `names` array is populated when generating sourcemaps, and mappings include name indices where appropriate ([#16](https://github.com/Rich-Harris/magic-string/issues/16))
