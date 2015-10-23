@@ -44,7 +44,7 @@ class MagicString {
 		if ( this.indentExclusionRanges ) {
 			clone.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ?
 				[ this.indentExclusionRanges[0], this.indentExclusionRanges[1] ] :
-				this.indentExclusionRanges.map( ([ start, end ]) => [ start, end ] );
+				this.indentExclusionRanges.map( range => [ range.start, range.end ] );
 		}
 
 		Object.keys( this.sourcemapLocations ).forEach( loc => {
