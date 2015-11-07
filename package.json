@@ -13,7 +13,7 @@
   "devDependencies": {
     "codecov.io": "^0.1.6",
     "es6-promise": "^3.0.2",
-    "eslint": "^1.5.1",
+    "eslint": "^1.8.0",
     "gobble": "^0.10.1",
     "gobble-cli": "^0.6.0",
     "gobble-rollup-babel": "^0.6.1",
