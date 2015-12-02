@@ -360,6 +360,20 @@ describe( 'MagicString', function () {
 			assert.equal( s.locate( 11 ), 17 );
 		});
 
+		it( 'should insert characters in the correct location when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( s.locate(0), '>>>', true );
+			s.insert( s.locate(6), '***', true );
+			s.insert( s.toString().length, '<<<', true );
+
+			assert.equal( s.toString(), '>>>abcdef***ghijkl<<<' );
+			assert.equal( s.locate( 0 ), 3 );
+			assert.equal( s.locate( 5 ), 8 );
+			assert.equal( s.locate( 6 ), 12 );
+			assert.equal( s.locate( 11 ), 17 );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.insert( 0, 'a' ), s );
@@ -549,6 +563,16 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'afghi' );
 		});
 
+		it( 'should remove characters from the original string when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.remove( s.locate(1), s.locate(5), true );
+			assert.equal( s.toString(), 'afghijkl' );
+
+			s.remove( s.locate(9), s.toString().length, true );
+			assert.equal( s.toString(), 'afghi' );
+		});
+
 		it( 'should remove overlapping ranges', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
@@ -584,11 +608,18 @@ describe( 'MagicString', function () {
 		});
 	});
 
-	describe( 'replace', function () {
+	describe( 'overwrite', function () {
 		it( 'should replace characters', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 5, 8, 'FGH' );
+			assert.equal( s.toString(), 'abcdeFGHijkl' );
+		});
+
+		it( 'should replace characters when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( s.locate(5), s.locate(8), 'FGH', true );
 			assert.equal( s.toString(), 'abcdeFGHijkl' );
 		});
 
@@ -603,6 +634,21 @@ describe( 'MagicString', function () {
 
 			s.overwrite( 6, 12, 'yes' );
 			assert.equal( s.toString(), 'abcdefyes' );
+		});
+
+		it( 'should not throw an error if overlapping replacements are attempted when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 7, 11, 'xx' );
+			s.overwrite( 7, 9, 'yyyyy', 'FGH', true );
+			assert.equal( s.toString(), 'abcdefgyyyyyl' );
+
+			s.overwrite( 1, 3, 'yes' );
+			assert.equal( s.toString(), 'ayesdefgyyyyyl' );
+
+			s.overwrite( 1, 8, 'foo', 'FGH', true );
+			assert.equal( s.toString(), 'afooyyyyyl' );
+
 		});
 
 		it( 'should replace characters at the end of the original string', function () {
@@ -638,6 +684,20 @@ describe( 'MagicString', function () {
 
 			assert.throws( function () {
 				s.slice( 2, 10 );
+			});
+		});
+
+		it( 'should return the generated content between the specified original characters when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			assert.equal( s.slice( s.locate(3), s.locate(9), true ), 'defghi' );
+			s.overwrite( 4, 8, 'XX' );
+			assert.equal( s.slice( s.locate(3), s.locate(9), true ), 'dXXi' );
+			s.overwrite( 2, 10, 'ZZ' );
+			assert.equal( s.slice( s.locate(1), s.locate(11), true ), 'bZZk' );
+
+			assert.throws( function () {
+				s.slice( s.locate(2), s.locate(10), true );
 			});
 		});
 
@@ -685,6 +745,19 @@ describe( 'MagicString', function () {
 			s.overwrite( 6, 9, 'GHI' );
 
 			var snippet = s.snip( 3, 9 );
+			assert.equal( snippet.toString(), 'defGHI' );
+			assert.equal( snippet.locate( 0, 3 ) );
+			assert.equal( snippet.filename, 'foo.js' );
+		});
+
+		it( 'should return a clone with content outside `start` and `end` removed when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js'
+			});
+
+			s.overwrite( 6, 9, 'GHI' );
+
+			var snippet = s.snip( s.locate(3), s.locate(9), true );
 			assert.equal( snippet.toString(), 'defGHI' );
 			assert.equal( snippet.locate( 0, 3 ) );
 			assert.equal( snippet.filename, 'foo.js' );

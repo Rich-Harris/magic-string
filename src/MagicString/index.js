@@ -5,6 +5,7 @@ import getRelativePath from '../utils/getRelativePath';
 
 let warned = false;
 
+
 class MagicString {
 	constructor ( string, options = {} ) {
 		Object.defineProperties( this, {
@@ -80,7 +81,7 @@ class MagicString {
 		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations );
 	}
 
-	indent ( indentStr, options ) {
+	indent ( indentStr, options = {} ) {
 		const mappings = this.mappings;
 		const reverseMappings = reverse( mappings, this.str.length );
 		const pattern = /^[^\r\n]/gm;
@@ -93,8 +94,6 @@ class MagicString {
 		indentStr = indentStr !== undefined ? indentStr : ( this.indentStr || '\t' );
 
 		if ( indentStr === '' ) return this; // noop
-
-		options = options || {};
 
 		// Process exclusion ranges
 		let exclusions;
@@ -186,22 +185,22 @@ class MagicString {
 		}
 	}
 
-	insert ( index, content ) {
+	insert ( index, content, isLocated) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'inserted content must be a string' );
 		}
-
-		if ( index === this.original.length ) {
+		var origins = extractOrigins(isLocated, this, index, index);
+		if ( origins.end === this.original.length ) {
 			this.append( content );
 		} else {
-			const mapped = this.locate( index );
+			const mapped = isLocated? index : this.locate( index );
 
 			if ( mapped === null ) {
 				throw new Error( 'Cannot insert at replaced character index: ' + index );
 			}
 
 			this.str = this.str.substr( 0, mapped ) + content + this.str.substr( mapped );
-			adjust( this.mappings, index, this.mappings.length, content.length );
+			adjust( this.mappings, origins.end, this.mappings.length, content.length );
 		}
 
 		return this;
@@ -210,7 +209,7 @@ class MagicString {
 	// get current location of character in original string
 	locate ( character ) {
 		if ( character < 0 || character > this.mappings.length ) {
-			throw new Error( 'Character is out of bounds' );
+			throw new Error( `Character ${character} is out of bounds` );
 		}
 
 		const loc = this.mappings[ character ];
@@ -232,16 +231,18 @@ class MagicString {
 		return null;
 	}
 
-	overwrite ( start, end, content, storeName ) {
+	overwrite ( start, end, content, storeName, isLocated) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'replacement content must be a string' );
 		}
 
-		const firstChar = this.locate( start );
-		const lastChar = this.locate( end - 1 );
+		const firstChar = isLocated? start : this.locate( start );
+		const lastChar = isLocated? end - 1 : this.locate( end - 1 );
+
+		var origins = extractOrigins(isLocated, this, start, end);
 
 		if ( firstChar === null || lastChar === null ) {
-			throw new Error( `Cannot overwrite the same content twice: '${this.original.slice(start, end).replace(/\n/g, '\\n')}'` );
+			throw new Error( `Cannot overwrite the same content twice: '${this.original.slice(origins.start, origins.end).replace(/\n/g, '\\n')}'` );
 		}
 
 		if ( firstChar > lastChar + 1 ) {
@@ -259,8 +260,8 @@ class MagicString {
 
 		const d = content.length - ( lastChar + 1 - firstChar );
 
-		blank( this.mappings, start, end );
-		adjust( this.mappings, end, this.mappings.length, d );
+		blank( this.mappings, origins.start, origins.end );
+		adjust( this.mappings, origins.end, this.mappings.length, d );
 		return this;
 	}
 
@@ -270,14 +271,15 @@ class MagicString {
 		return this;
 	}
 
-	remove ( start, end ) {
-		if ( start < 0 || end > this.mappings.length ) {
+	remove ( start, end, isLocated ) {
+		if ( start < 0 || end > (isLocated? this.str : this.mappings).length) {
 			throw new Error( 'Character is out of bounds' );
 		}
+		var origins = extractOrigins(isLocated, this, start, end);
 
 		let currentStart = -1;
 		let currentEnd = -1;
-		for ( let i = start; i < end; i += 1 ) {
+		for ( let i = origins.start; i < origins.end; i += 1 ) {
 			const loc = this.mappings[i];
 
 			if ( ~loc ) {
@@ -290,7 +292,7 @@ class MagicString {
 
 		this.str = this.str.slice( 0, currentStart ) + this.str.slice( currentEnd );
 
-		adjust( this.mappings, end, this.mappings.length, currentStart - currentEnd );
+		adjust( this.mappings, origins.end, this.mappings.length, currentStart - currentEnd );
 		return this;
 	}
 
@@ -303,12 +305,12 @@ class MagicString {
 		return this.overwrite( start, end, content );
 	}
 
-	slice ( start, end = this.original.length ) {
-		while ( start < 0 ) start += this.original.length;
-		while ( end < 0 ) end += this.original.length;
+	slice ( start, end = this.original.length, isLocated ) {
+		while ( start < 0 ) start += (isLocated? this.str : this.original).length;
+		while ( end < 0 ) end += (isLocated? this.str : this.original).length;
 
-		const firstChar = this.locate( start );
-		const lastChar = this.locate( end - 1 );
+		const firstChar = isLocated ? start : this.locate( start );
+		const lastChar = isLocated? end - 1 : this.locate( end - 1 );
 
 		if ( firstChar === null || lastChar === null ) {
 			throw new Error( 'Cannot use replaced characters as slice anchors' );
@@ -435,6 +437,25 @@ function reverse ( mappings, i ) {
 	}
 
 	return result;
+}
+
+function extractOrigins (notOrigins, s, start, end) {
+	if (notOrigins) {
+		var result = {};
+		if (end === s.str.length){
+			result.end = s.mappings.length;
+		}
+		let i = s.mappings.length;
+		while (i-- && s.mappings[i] >= start) {
+			if (s.mappings[i] <= end && !result.end) {
+				result.end = i;
+			}
+			result.start = i;
+		}
+		return result;
+	} else {
+		return {end, start};
+	}
 }
 
 export default MagicString;
