@@ -608,7 +608,7 @@ describe( 'MagicString', function () {
 		});
 	});
 
-	describe( 'replace', function () {
+	describe( 'overwrite', function () {
 		it( 'should replace characters', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
@@ -634,6 +634,21 @@ describe( 'MagicString', function () {
 
 			s.overwrite( 6, 12, 'yes' );
 			assert.equal( s.toString(), 'abcdefyes' );
+		});
+
+		it( 'should not throw an error if overlapping replacements are attempted when using located indexes', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 7, 11, 'xx' );
+			s.overwrite( 7, 9, 'yyyyy', 'FGH', true );
+			assert.equal( s.toString(), 'abcdefgyyyyyl' );
+
+			s.overwrite( 1, 3, 'yes' );
+			assert.equal( s.toString(), 'ayesdefgyyyyyl' );
+
+			s.overwrite( 1, 8, 'foo', 'FGH', true );
+			assert.equal( s.toString(), 'afooyyyyyl' );
+
 		});
 
 		it( 'should replace characters at the end of the original string', function () {

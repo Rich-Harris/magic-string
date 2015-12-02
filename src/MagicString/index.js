@@ -5,6 +5,7 @@ import getRelativePath from '../utils/getRelativePath';
 
 let warned = false;
 
+
 class MagicString {
 	constructor ( string, options = {} ) {
 		Object.defineProperties( this, {
@@ -188,19 +189,18 @@ class MagicString {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'inserted content must be a string' );
 		}
-
-		if ( index === (isLocated? this.str : this.original).length ) {
+		var origins = extractOrigins(isLocated, this, index, index);
+		if ( origins.end === this.original.length ) {
 			this.append( content );
 		} else {
 			const mapped = isLocated? index : this.locate( index );
-			const unmapped = isLocated? this.locateOrigin(index) : index;
 
 			if ( mapped === null ) {
 				throw new Error( 'Cannot insert at replaced character index: ' + index );
 			}
 
 			this.str = this.str.substr( 0, mapped ) + content + this.str.substr( mapped );
-			adjust( this.mappings, unmapped, this.mappings.length, content.length );
+			adjust( this.mappings, origins.end, this.mappings.length, content.length );
 		}
 
 		return this;
@@ -239,8 +239,10 @@ class MagicString {
 		const firstChar = isLocated? start : this.locate( start );
 		const lastChar = isLocated? end - 1 : this.locate( end - 1 );
 
+		var origins = extractOrigins(isLocated, this, start, end);
+
 		if ( firstChar === null || lastChar === null ) {
-			throw new Error( `Cannot overwrite the same content twice: '${this.original.slice(start, end).replace(/\n/g, '\\n')}'` );
+			throw new Error( `Cannot overwrite the same content twice: '${this.original.slice(origins.start, origins.end).replace(/\n/g, '\\n')}'` );
 		}
 
 		if ( firstChar > lastChar + 1 ) {
@@ -258,10 +260,8 @@ class MagicString {
 
 		const d = content.length - ( lastChar + 1 - firstChar );
 
-		var originEnd = isLocated? this.locateOrigin(end) : end;
-		var originStart = isLocated? this.locateOrigin(start) : start;
-		blank( this.mappings, originStart, originEnd );
-		adjust( this.mappings, originEnd, this.mappings.length, d );
+		blank( this.mappings, origins.start, origins.end );
+		adjust( this.mappings, origins.end, this.mappings.length, d );
 		return this;
 	}
 
@@ -275,17 +275,11 @@ class MagicString {
 		if ( start < 0 || end > (isLocated? this.str : this.mappings).length) {
 			throw new Error( 'Character is out of bounds' );
 		}
-
-		if (isLocated) {
-			var originEnd = end === this.str.length ? this.mappings.length : this.locateOrigin(end);
-		} else {
-			var originEnd = end;
-		}
-		var originStart = isLocated? this.locateOrigin(start) : start;
+		var origins = extractOrigins(isLocated, this, start, end);
 
 		let currentStart = -1;
 		let currentEnd = -1;
-		for ( let i = originStart; i < originEnd; i += 1 ) {
+		for ( let i = origins.start; i < origins.end; i += 1 ) {
 			const loc = this.mappings[i];
 
 			if ( ~loc ) {
@@ -298,7 +292,7 @@ class MagicString {
 
 		this.str = this.str.slice( 0, currentStart ) + this.str.slice( currentEnd );
 
-		adjust( this.mappings, originEnd, this.mappings.length, currentStart - currentEnd );
+		adjust( this.mappings, origins.end, this.mappings.length, currentStart - currentEnd );
 		return this;
 	}
 
@@ -443,6 +437,25 @@ function reverse ( mappings, i ) {
 	}
 
 	return result;
+}
+
+function extractOrigins (notOrigins, s, start, end) {
+	if (notOrigins) {
+		var result = {};
+		if (end === s.str.length){
+			result.end = s.mappings.length;
+		}
+		let i = s.mappings.length;
+		while (i-- && s.mappings[i] >= start) {
+			if (s.mappings[i] <= end && !result.end) {
+				result.end = i;
+			}
+			result.start = i;
+		}
+		return result;
+	} else {
+		return {end, start};
+	}
 }
 
 export default MagicString;
