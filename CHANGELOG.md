@@ -1,5 +1,9 @@
 # changelog
 
+## 0.9.1
+
+* Update deps
+
 ## 0.9.0
 
 * Update build process
