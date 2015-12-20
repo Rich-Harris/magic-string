@@ -1,5 +1,9 @@
 # changelog
 
+## 0.9.0
+
+* Update build process
+
 ## 0.8.0
 
 * Add an ES6 build, change default UMD build to CommonJS (but keeping existing UMD build with bundled dependencies)
