@@ -1,20 +1,21 @@
-import MagicString from '../MagicString/index.js';
-import SourceMap from '../utils/SourceMap.js';
-import getRelativePath from '../utils/getRelativePath.js';
-import hasOwnProp from '../utils/hasOwnProp.js';
+import MagicString from './MagicString.js';
+import SourceMap from './utils/SourceMap.js';
+import getRelativePath from './utils/getRelativePath.js';
+import hasOwnProp from './utils/hasOwnProp.js';
+import isObject from './utils/isObject.js';
 
-class Bundle {
-	constructor ( options = {} ) {
-		this.intro = options.intro || '';
-		this.outro = options.outro || '';
-		this.separator = options.separator !== undefined ? options.separator : '\n';
+export default function Bundle ( options = {} ) {
+	this.intro = options.intro || '';
+	this.outro = options.outro || '';
+	this.separator = options.separator !== undefined ? options.separator : '\n';
 
-		this.sources = [];
+	this.sources = [];
 
-		this.uniqueSources = [];
-		this.uniqueSourceIndexByFilename = {};
-	}
+	this.uniqueSources = [];
+	this.uniqueSourceIndexByFilename = {};
+}
 
+Bundle.prototype = {
 	addSource ( source ) {
 		if ( source instanceof MagicString ) {
 			return this.addSource({
@@ -24,7 +25,7 @@ class Bundle {
 			});
 		}
 
-		if ( typeof source !== 'object' || !source.content ) {
+		if ( !isObject( source ) || !source.content ) {
 			throw new Error( 'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`' );
 		}
 
@@ -50,7 +51,7 @@ class Bundle {
 
 		this.sources.push( source );
 		return this;
-	}
+	},
 
 	append ( str, options ) {
 		this.addSource({
@@ -59,7 +60,7 @@ class Bundle {
 		});
 
 		return this;
-	}
+	},
 
 	clone () {
 		const bundle = new Bundle({
@@ -77,7 +78,7 @@ class Bundle {
 		});
 
 		return bundle;
-	}
+	},
 
 	generateMap ( options ) {
 		let offsets = {};
@@ -120,7 +121,7 @@ class Bundle {
 			names,
 			mappings: encoded
 		});
-	}
+	},
 
 	getIndentString () {
 		let indentStringCounts = {};
@@ -137,7 +138,7 @@ class Bundle {
 		return ( Object.keys( indentStringCounts ).sort( ( a, b ) => {
 			return indentStringCounts[a] - indentStringCounts[b];
 		})[0] ) || '\t';
-	}
+	},
 
 	indent ( indentStr ) {
 		if ( !arguments.length ) {
@@ -169,12 +170,12 @@ class Bundle {
 		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
 
 		return this;
-	}
+	},
 
 	prepend ( str ) {
 		this.intro = str + this.intro;
 		return this;
-	}
+	},
 
 	toString () {
 		const body = this.sources.map( ( source, i ) => {
@@ -185,15 +186,15 @@ class Bundle {
 		}).join( '' );
 
 		return this.intro + body + this.outro;
-	}
+	},
 
 	trimLines () {
 		return this.trim('[\\r\\n]');
-	}
+	},
 
 	trim ( charType ) {
 		return this.trimStart( charType ).trimEnd( charType );
-	}
+	},
 
 	trimStart ( charType ) {
 		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
@@ -217,7 +218,7 @@ class Bundle {
 		}
 
 		return this;
-	}
+	},
 
 	trimEnd ( charType ) {
 		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
@@ -242,9 +243,7 @@ class Bundle {
 
 		return this;
 	}
-}
-
-export default Bundle;
+};
 
 function getSemis ( str ) {
 	return new Array( str.split( '\n' ).length ).join( ';' );

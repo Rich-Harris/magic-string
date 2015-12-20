@@ -1,5 +1,5 @@
-import MagicString from './MagicString/index.js';
-import Bundle from './Bundle/index.js';
+import MagicString from './MagicString.js';
+import Bundle from './Bundle.js';
 
 MagicString.Bundle = Bundle;
 

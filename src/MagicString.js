@@ -1,27 +1,28 @@
-import SourceMap from '../utils/SourceMap.js';
-import guessIndent from './guessIndent.js';
-import encodeMappings from './encodeMappings.js';
-import getRelativePath from '../utils/getRelativePath.js';
+import SourceMap from './utils/SourceMap.js';
+import guessIndent from './utils/guessIndent.js';
+import encodeMappings from './utils/encodeMappings.js';
+import getRelativePath from './utils/getRelativePath.js';
+import isObject from './utils/isObject.js';
 
 let warned = false;
 
-class MagicString {
-	constructor ( string, options = {} ) {
-		Object.defineProperties( this, {
-			original:              { writable: true, value: string },
-			str:                   { writable: true, value: string },
-			mappings:              { writable: true, value: initMappings( string.length ) },
-			filename:              { writable: true, value: options.filename },
-			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
-			sourcemapLocations:    { writable: true, value: {} },
-			nameLocations:         { writable: true, value: {} },
-			indentStr:             { writable: true, value: guessIndent( string ) }
-		});
-	}
+export default function MagicString ( string, options = {} ) {
+	Object.defineProperties( this, {
+		original:              { writable: true, value: string },
+		str:                   { writable: true, value: string },
+		mappings:              { writable: true, value: initMappings( string.length ) },
+		filename:              { writable: true, value: options.filename },
+		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
+		sourcemapLocations:    { writable: true, value: {} },
+		nameLocations:         { writable: true, value: {} },
+		indentStr:             { writable: true, value: guessIndent( string ) }
+	});
+}
 
+MagicString.prototype = {
 	addSourcemapLocation ( char ) {
 		this.sourcemapLocations[ char ] = true;
-	}
+	},
 
 	append ( content ) {
 		if ( typeof content !== 'string' ) {
@@ -30,7 +31,7 @@ class MagicString {
 
 		this.str += content;
 		return this;
-	}
+	},
 
 	clone () {
 		let cloned = new MagicString( this.original, { filename: this.filename });
@@ -52,7 +53,7 @@ class MagicString {
 		});
 
 		return cloned;
-	}
+	},
 
 	generateMap ( options ) {
 		options = options || {};
@@ -70,22 +71,22 @@ class MagicString {
 			names,
 			mappings: this.getMappings( options.hires, 0, {}, names )
 		});
-	}
+	},
 
 	getIndentString () {
 		return this.indentStr === null ? '\t' : this.indentStr;
-	}
+	},
 
 	getMappings ( hires, sourceIndex, offsets, names ) {
 		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations );
-	}
+	},
 
 	indent ( indentStr, options ) {
 		const mappings = this.mappings;
 		const reverseMappings = reverse( mappings, this.str.length );
 		const pattern = /^[^\r\n]/gm;
 
-		if ( typeof indentStr === 'object' ) {
+		if ( isObject( indentStr ) ) {
 			options = indentStr;
 			indentStr = undefined;
 		}
@@ -184,7 +185,7 @@ class MagicString {
 				}
 			}
 		}
-	}
+	},
 
 	insert ( index, content ) {
 		if ( typeof content !== 'string' ) {
@@ -205,7 +206,7 @@ class MagicString {
 		}
 
 		return this;
-	}
+	},
 
 	// get current location of character in original string
 	locate ( character ) {
@@ -215,7 +216,7 @@ class MagicString {
 
 		const loc = this.mappings[ character ];
 		return ~loc ? loc : null;
-	}
+	},
 
 	locateOrigin ( character ) {
 		if ( character < 0 || character >= this.str.length ) {
@@ -230,7 +231,7 @@ class MagicString {
 		}
 
 		return null;
-	}
+	},
 
 	overwrite ( start, end, content, storeName ) {
 		if ( typeof content !== 'string' ) {
@@ -262,13 +263,13 @@ class MagicString {
 		blank( this.mappings, start, end );
 		adjust( this.mappings, end, this.mappings.length, d );
 		return this;
-	}
+	},
 
 	prepend ( content ) {
 		this.str = content + this.str;
 		adjust( this.mappings, 0, this.mappings.length, content.length );
 		return this;
-	}
+	},
 
 	remove ( start, end ) {
 		if ( start < 0 || end > this.mappings.length ) {
@@ -292,7 +293,7 @@ class MagicString {
 
 		adjust( this.mappings, end, this.mappings.length, currentStart - currentEnd );
 		return this;
-	}
+	},
 
 	replace ( start, end, content ) {
 		if ( !warned ) {
@@ -301,7 +302,7 @@ class MagicString {
 		}
 
 		return this.overwrite( start, end, content );
-	}
+	},
 
 	slice ( start, end = this.original.length ) {
 		while ( start < 0 ) start += this.original.length;
@@ -315,7 +316,7 @@ class MagicString {
 		}
 
 		return this.str.slice( firstChar, lastChar + 1 );
-	}
+	},
 
 	snip ( start, end ) {
 		const clone = this.clone();
@@ -323,19 +324,19 @@ class MagicString {
 		clone.remove( end, clone.original.length );
 
 		return clone;
-	}
+	},
 
 	toString () {
 		return this.str;
-	}
+	},
 
 	trimLines () {
 		return this.trim('[\\r\\n]');
-	}
+	},
 
 	trim (charType) {
 		return this.trimStart(charType).trimEnd(charType);
-	}
+	},
 
 	trimEnd (charType) {
 		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
@@ -362,7 +363,7 @@ class MagicString {
 		});
 
 		return this;
-	}
+	},
 
 	trimStart (charType) {
 		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
@@ -436,5 +437,3 @@ function reverse ( mappings, i ) {
 
 	return result;
 }
-
-export default MagicString;
