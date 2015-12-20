@@ -14,15 +14,15 @@
     "babel-preset-es2015-rollup": "^1.0.0",
     "codecov.io": "^0.1.6",
     "es6-promise": "^3.0.2",
-    "eslint": "^1.5.1",
+    "eslint": "^1.10.3",
     "istanbul": "^0.4.0",
     "mocha": "^2.1.0",
-    "remap-istanbul": "^0.4.0",
+    "remap-istanbul": "^0.5.1",
     "resolve": "^1.1.0",
     "rollup": "^0.21.2",
     "rollup-plugin-babel": "^2.2.0",
     "rollup-plugin-npm": "^1.1.0",
-    "source-map": "^0.5.1"
+    "source-map": "^0.5.3"
   },
   "keywords": [
     "string",
