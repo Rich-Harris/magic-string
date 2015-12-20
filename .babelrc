@@ -1,4 +1,3 @@
 {
-	"blacklist": [ "es6.modules" ],
-	"loose": [ "es6.classes" ]
+	"presets": [ "es2015-rollup" ]
 }

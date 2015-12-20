@@ -1,7 +1,7 @@
-import SourceMap from '../utils/SourceMap';
-import guessIndent from './guessIndent';
-import encodeMappings from './encodeMappings';
-import getRelativePath from '../utils/getRelativePath';
+import SourceMap from '../utils/SourceMap.js';
+import guessIndent from './guessIndent.js';
+import encodeMappings from './encodeMappings.js';
+import getRelativePath from '../utils/getRelativePath.js';
 
 let warned = false;
 
@@ -33,25 +33,25 @@ class MagicString {
 	}
 
 	clone () {
-		let clone = new MagicString( this.original, { filename: this.filename });
-		clone.str = this.str;
+		let cloned = new MagicString( this.original, { filename: this.filename });
+		cloned.str = this.str;
 
-		let i = clone.mappings.length;
+		let i = cloned.mappings.length;
 		while ( i-- ) {
-			clone.mappings[i] = this.mappings[i];
+			cloned.mappings[i] = this.mappings[i];
 		}
 
 		if ( this.indentExclusionRanges ) {
-			clone.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ?
+			cloned.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ?
 				[ this.indentExclusionRanges[0], this.indentExclusionRanges[1] ] :
 				this.indentExclusionRanges.map( range => [ range.start, range.end ] );
 		}
 
 		Object.keys( this.sourcemapLocations ).forEach( loc => {
-			clone.sourcemapLocations[ loc ] = true;
+			cloned.sourcemapLocations[ loc ] = true;
 		});
 
-		return clone;
+		return cloned;
 	}
 
 	generateMap ( options ) {

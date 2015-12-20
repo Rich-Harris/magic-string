@@ -1,7 +1,7 @@
-import MagicString from '../MagicString/index';
-import SourceMap from '../utils/SourceMap';
-import getRelativePath from '../utils/getRelativePath';
-import hasOwnProp from '../utils/hasOwnProp';
+import MagicString from '../MagicString/index.js';
+import SourceMap from '../utils/SourceMap.js';
+import getRelativePath from '../utils/getRelativePath.js';
+import hasOwnProp from '../utils/hasOwnProp.js';
 
 class Bundle {
 	constructor ( options = {} ) {

@@ -11,16 +11,17 @@
     "vlq": "^0.2.0"
   },
   "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.0.0",
     "codecov.io": "^0.1.6",
     "es6-promise": "^3.0.2",
     "eslint": "^1.5.1",
-    "gobble": "^0.10.1",
-    "gobble-cli": "^0.6.0",
-    "gobble-rollup-babel": "^0.6.1",
     "istanbul": "^0.4.0",
     "mocha": "^2.1.0",
     "remap-istanbul": "^0.4.0",
     "resolve": "^1.1.0",
+    "rollup": "^0.21.2",
+    "rollup-plugin-babel": "^2.2.0",
+    "rollup-plugin-npm": "^1.1.0",
     "source-map": "^0.5.1"
   },
   "keywords": [
@@ -37,7 +38,7 @@
     "test-coverage": "rm -rf coverage/* && istanbul cover --report json node_modules/.bin/_mocha -- -u exports -R spec test/index.js",
     "posttest-coverage": "remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.lcov -t lcovonly -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped -t html -b dist",
     "ci": "npm run test-coverage && codecov < coverage/coverage-remapped.lcov",
-    "build": "gobble build -f dist",
+    "build": "rm -rf dist && rollup -c -f cjs -o dist/magic-string.cjs.js && rollup -c -f es6 -o dist/magic-string.es6.js && export DEPS=true && rollup -c -f umd -o dist/magic-string.umd.js",
     "prepublish": "npm test",
     "lint": "eslint src"
   },
