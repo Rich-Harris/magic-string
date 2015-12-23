@@ -2,9 +2,9 @@ export default function Patch ( start, end, content, original, storeName ) {
 	this.start = start;
 	this.end = end;
 	this.content = content;
-	this.original = original || null;
+	this.original = original || null; // TODO this isn't right, because of empty strings
 
-	this.storeName = true;
+	this.storeName = storeName;
 }
 
 Patch.prototype = {

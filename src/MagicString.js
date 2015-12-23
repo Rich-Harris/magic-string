@@ -74,8 +74,6 @@ MagicString.prototype = {
 	},
 
 	indent ( indentStr, options ) {
-		const mappings = this.mappings;
-		const reverseMappings = reverse( mappings, this.str.length );
 		const pattern = /^[^\r\n]/gm;
 
 		if ( isObject( indentStr ) ) {
@@ -90,93 +88,57 @@ MagicString.prototype = {
 		options = options || {};
 
 		// Process exclusion ranges
-		let exclusions;
+		let isExcluded = {};
 
 		if ( options.exclude ) {
-			exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
-
-			exclusions = exclusions.map( range => {
-				const rangeStart = this.locate( range[0] );
-				const rangeEnd = this.locate( range[1] );
-
-				if ( rangeStart === null || rangeEnd === null ) {
-					throw new Error( 'Cannot use indices of replaced characters as exclusion ranges' );
+			let exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
+			exclusions.forEach( exclusion => {
+				for ( let i = exclusion[0]; i < exclusion[1]; i += 1 ) {
+					isExcluded[i] = true;
 				}
-
-				return [ rangeStart, rangeEnd ];
-			});
-
-			exclusions.sort( ( a, b ) => a[0] - b[0] );
-
-			// check for overlaps
-			lastEnd = -1;
-			exclusions.forEach( range => {
-				if ( range[0] < lastEnd ) {
-					throw new Error( 'Exclusion ranges cannot overlap' );
-				}
-
-				lastEnd = range[1];
 			});
 		}
 
-		const indentStart = options.indentStart !== false;
-		let inserts = [];
+		let charIndex = 0;
+		let patchIndex = 0;
+		let shouldIndentNextCharacter = true;
 
-		if ( !exclusions ) {
-			this.str = this.str.replace( pattern, ( match, index ) => {
-				if ( !indentStart && index === 0 ) {
-					return match;
+		const indentUntil = end => {
+			while ( charIndex < end ) {
+				if ( !isExcluded[ charIndex ] ) {
+					const char = this.original[ charIndex ];
+
+					if ( char === '\n' ) {
+						shouldIndentNextCharacter = true;
+					} else if ( char !== '\r' && shouldIndentNextCharacter ) {
+						this.patches.splice( patchIndex, 0, new Patch( charIndex, charIndex, indentStr, '' ) );
+						shouldIndentNextCharacter = false;
+
+						patchIndex += 1;
+					}
 				}
 
-				inserts.push( index );
-				return indentStr + match;
-			});
-		} else {
-			this.str = this.str.replace( pattern, ( match, index ) => {
-				if ( ( !indentStart && index === 0 ) || isExcluded( index - 1 ) ) {
-					return match;
-				}
+				charIndex += 1;
+			}
+		};
 
-				inserts.push( index );
-				return indentStr + match;
-			});
-		}
+		for ( ; patchIndex < this.patches.length; patchIndex += 1 ) { // can't cache this.patches.length, it may change
+			const patch = this.patches[ patchIndex ];
 
-		const adjustments = inserts.map( index => {
-			let origin;
+			indentUntil( patch.start );
 
-			do {
-				origin = reverseMappings[ index++ ];
-			} while ( !~origin && index < this.str.length );
+			if ( !isExcluded[ charIndex ] ) {
+				patch.content = patch.content.replace( pattern, match => `${indentStr}${match}` );
 
-			return origin;
-		});
-
-		let i = adjustments.length;
-		let lastEnd = this.mappings.length;
-		while ( i-- ) {
-			adjust( this.mappings, adjustments[i], lastEnd, ( ( i + 1 ) * indentStr.length ) );
-			lastEnd = adjustments[i];
-		}
-
-		return this;
-
-		function isExcluded ( index ) {
-			let i = exclusions.length;
-			let range;
-
-			while ( i-- ) {
-				range = exclusions[i];
-
-				if ( range[1] < index ) {
-					return false;
-				}
-
-				if ( range[0] <= index ) {
-					return true;
+				if ( patch.content.length ) {
+					shouldIndentNextCharacter = patch.content[ patch.content.length - 1 ] === '\n';
 				}
 			}
 		}
+
+		indentUntil( this.original.length );
+
+		return this;
 	},
 
 	insert ( index, content ) {

@@ -11,7 +11,7 @@ export default function encodeMappings ( original, patches, hires, sourcemapLoca
 	let sourceCodeLine = 0;
 	let sourceCodeColumn = 0;
 
-	function addSegments ( end ) {
+	function addSegmentsUntil ( end ) {
 		let first = true;
 
 		while ( originalCharIndex < end ) {
@@ -44,7 +44,7 @@ export default function encodeMappings ( original, patches, hires, sourcemapLoca
 	for ( let i = 0; i < patches.length; i += 1 ) {
 		const patch = patches[i];
 
-		addSegments( patch.start );
+		addSegmentsUntil( patch.start );
 
 		if ( patch.content.length ) { // TODO is it correct to omit this?
 			rawSegments.push({
@@ -81,7 +81,7 @@ export default function encodeMappings ( original, patches, hires, sourcemapLoca
 		originalCharIndex = patch.end;
 	}
 
-	addSegments( original.length );
+	addSegmentsUntil( original.length );
 
 	offsets.sourceIndex = offsets.sourceIndex || 0;
 	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
