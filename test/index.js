@@ -521,6 +521,48 @@ describe( 'MagicString', function () {
 		});
 	});
 
+	describe( 'overwrite', function () {
+		it( 'should replace characters', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 5, 8, 'FGH' );
+			assert.equal( s.toString(), 'abcdeFGHijkl' );
+		});
+
+		it( 'should throw an error if overlapping replacements are attempted', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 7, 11, 'xx' );
+			assert.throws( function () {
+				s.overwrite( 8, 12, 'yy' );
+			}, /Cannot overwrite the same content twice: \'ijkl\'/ );
+			assert.equal( s.toString(), 'abcdefgxxl' );
+
+			s.overwrite( 6, 12, 'yes' );
+			assert.equal( s.toString(), 'abcdefyes' );
+		});
+
+		it( 'should replace characters at the end of the original string', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 12, 12, '<<<' );
+			assert.equal( s.toString(), 'abcdefghijkl<<<' );
+		});
+
+		it( 'should return this', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.overwrite( 3, 4, 'D' ), s );
+		});
+
+		it( 'should throw when given non-string content', function () {
+			var s = new MagicString( '' );
+			assert.throws(
+				function () { s.overwrite( 0, 1, [] ); },
+				TypeError
+			);
+		});
+	});
+
 	describe( 'prepend', function () {
 		it( 'should prepend content', function () {
 			var s = new MagicString( 'abcdefghijkl' );
@@ -581,48 +623,6 @@ describe( 'MagicString', function () {
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.remove( 3, 4 ), s );
-		});
-	});
-
-	describe( 'replace', function () {
-		it( 'should replace characters', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.overwrite( 5, 8, 'FGH' );
-			assert.equal( s.toString(), 'abcdeFGHijkl' );
-		});
-
-		it( 'should throw an error if overlapping replacements are attempted', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.overwrite( 7, 11, 'xx' );
-			assert.throws( function () {
-				s.overwrite( 8, 12, 'yy' );
-			}, /Cannot overwrite the same content twice: \'ijkl\'/ );
-			assert.equal( s.toString(), 'abcdefgxxl' );
-
-			s.overwrite( 6, 12, 'yes' );
-			assert.equal( s.toString(), 'abcdefyes' );
-		});
-
-		it( 'should replace characters at the end of the original string', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.overwrite( 12, 12, '<<<' );
-			assert.equal( s.toString(), 'abcdefghijkl<<<' );
-		});
-
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.overwrite( 3, 4, 'D' ), s );
-		});
-
-		it( 'should throw when given non-string content', function () {
-			var s = new MagicString( '' );
-			assert.throws(
-				function () { s.overwrite( 0, 1, [] ); },
-				TypeError
-			);
 		});
 	});
 
