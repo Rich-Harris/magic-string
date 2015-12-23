@@ -1,12 +1,9 @@
 import { encode } from 'vlq';
 
 export default function encodeMappings ( original, patches, hires, sourcemapLocations, sourceIndex, offsets, names ) {
-	console.log( 'sourcemapLocations', sourcemapLocations )
+	let rawSegments = [];
+	let rawLines = [ rawSegments ];
 
-	let rawLines = [ [] ];
-	let rawSegments = rawLines[0];
-
-	let generatedCharIndex = 0;
 	let originalCharIndex = 0;
 
 	let generatedCodeLine = 0;
@@ -15,8 +12,10 @@ export default function encodeMappings ( original, patches, hires, sourcemapLoca
 	let sourceCodeColumn = 0;
 
 	function addSegments ( end ) {
+		let first = true;
+
 		while ( originalCharIndex < end ) {
-			if ( hires || sourcemapLocations[ originalCharIndex ] ) {
+			if ( hires || first || sourcemapLocations[ originalCharIndex ] ) {
 				rawSegments.push({
 					generatedCodeLine,
 					generatedCodeColumn,
@@ -38,6 +37,7 @@ export default function encodeMappings ( original, patches, hires, sourcemapLoca
 			}
 
 			originalCharIndex += 1;
+			first = false;
 		}
 	}
 
@@ -52,7 +52,7 @@ export default function encodeMappings ( original, patches, hires, sourcemapLoca
 				generatedCodeColumn,
 				sourceCodeLine,
 				sourceCodeColumn,
-				sourceCodeName: names.indexOf( patch.name ),
+				sourceCodeName: patch.storeName ? names.indexOf( patch.original ) : -1,
 				sourceIndex: null
 			});
 		}

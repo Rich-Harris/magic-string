@@ -16,7 +16,7 @@ export default function MagicString ( string, options = {} ) {
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
-		nameLocations:         { writable: true, value: {} },
+		storedNames:           { writable: true, value: {} },
 		indentStr:             { writable: true, value: guessIndent( string ) }
 	});
 }
@@ -54,11 +54,7 @@ MagicString.prototype = {
 	generateMap ( options ) {
 		options = options || {};
 
-		let names = [];
-		Object.keys( this.nameLocations ).forEach( location => {
-			const name = this.nameLocations[ location ];
-			if ( !~names.indexOf( name ) ) names.push( name );
-		});
+		const names = Object.keys( this.storedNames );
 
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
@@ -206,7 +202,10 @@ MagicString.prototype = {
 			throw new TypeError( 'replacement content must be a string' );
 		}
 
-		this.patch( start, end, content, this.original.slice( start, end ) );
+		const original = this.original.slice( start, end );
+		if ( storeName ) this.storedNames[ original ] = true;
+
+		this.patch( start, end, content, original, storeName );
 		return this;
 	},
 
