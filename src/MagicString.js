@@ -198,18 +198,7 @@ MagicString.prototype = {
 	},
 
 	locateOrigin ( character ) {
-		if ( character < 0 || character >= this.str.length ) {
-			throw new Error( 'Character is out of bounds' );
-		}
-
-		let i = this.mappings.length;
-		while ( i-- ) {
-			if ( this.mappings[i] === character ) {
-				return i;
-			}
-		}
-
-		return null;
+		throw new Error( 'magicString.locateOrigin is deprecated' );
 	},
 
 	overwrite ( start, end, content, storeName ) {
@@ -288,7 +277,7 @@ MagicString.prototype = {
 			if ( end >= patch.start && end < patch.end ) throw new Error( `Cannot use replaced characters (${start}, ${end}) as slice anchors` );
 
 			// TODO this is weird, rewrite it
-			if ( patch.start >= end ) continue;
+			if ( patch.start > end ) continue;
 			break;
 		}
 
@@ -326,7 +315,6 @@ MagicString.prototype = {
 	},
 
 	toString () {
-		if ( !this.patches.length ) return this.original;
 		return this.prepended + this.slice( 0, this.original.length ) + this.appended;
 	},
 
@@ -334,63 +322,36 @@ MagicString.prototype = {
 		return this.trim('[\\r\\n]');
 	},
 
-	trim (charType) {
-		return this.trimStart(charType).trimEnd(charType);
+	trim ( charType ) {
+		return this.trimStart( charType ).trimEnd( charType );
 	},
 
-	trimEnd (charType) {
+	trimEnd ( charType ) {
 		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
 
-		this.str = this.str.replace( rx, ( trailing, index, str ) => {
-			const strLength = str.length;
-			const length = trailing.length;
+		this.appended = this.appended.replace( rx, '' );
+		if ( this.appended.length ) return this;
 
-			let chars = [];
-
-			let i = strLength;
-			while ( i-- > strLength - length ) {
-				chars.push( this.locateOrigin( i ) );
-			}
-
-			i = chars.length;
-			while ( i-- ) {
-				if ( chars[i] !== null ) {
-					this.mappings[ chars[i] ] = -1;
-				}
-			}
-
-			return '';
-		});
+		// TODO trim patches
+		const match = rx.exec( this.original );
+		if ( match ) {
+			this.patch( this.original.length - match[0].length, this.original.length, '' );
+		}
 
 		return this;
 	},
 
-	trimStart (charType) {
+	trimStart ( charType ) {
 		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
 
-		this.str = this.str.replace( rx, leading => {
-			const length = leading.length;
+		this.prepended = this.prepended.replace( rx, '' );
+		if ( this.prepended.length ) return this;
 
-			let chars = [];
-			let adjustmentStart = 0;
-
-			let i = length;
-			while ( i-- ) {
-				chars.push( this.locateOrigin( i ) );
-			}
-
-			i = chars.length;
-			while ( i-- ) {
-				if ( chars[i] !== null ) {
-					this.mappings[ chars[i] ] = -1;
-					adjustmentStart += 1;
-				}
-			}
-
-			adjust( this.mappings, adjustmentStart, this.mappings.length, -length );
-
-			return '';
-		});
+		// TODO trim patches
+		const match = rx.exec( this.original );
+		if ( match ) {
+			this.patch( 0, match[0].length, '' );
+		}
 
 		return this;
 	}
