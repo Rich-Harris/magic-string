@@ -1,72 +1,94 @@
 import { encode } from 'vlq';
 
-export default function encodeMappings ( original, str, mappings, hires, sourcemapLocations, sourceIndex, offsets, names, nameLocations ) {
-	// store locations, for fast lookup
-	let lineStart = 0;
-	const locations = original.split( '\n' ).map( line => {
-		const start = lineStart;
-		lineStart += line.length + 1; // +1 for the newline
+export default function encodeMappings ( original, patches, hires, sourcemapLocations, sourceIndex, offsets, names ) {
+	console.log( 'sourcemapLocations', sourcemapLocations )
 
-		return start;
-	});
+	let rawLines = [ [] ];
+	let rawSegments = rawLines[0];
 
-	const inverseMappings = invert( str, mappings );
+	let generatedCharIndex = 0;
+	let originalCharIndex = 0;
 
-	let charOffset = 0;
-	const lines = str.split( '\n' ).map( line => {
-		let segments = [];
+	let generatedCodeLine = 0;
+	let generatedCodeColumn = 0;
+	let sourceCodeLine = 0;
+	let sourceCodeColumn = 0;
 
-		let char; // TODO put these inside loop, once we've determined it's safe to do so transpilation-wise
-		let origin;
-		let lastOrigin = -1;
-		let location;
-		let nameIndex;
-
-		let i;
-
-		const len = line.length;
-		for ( i = 0; i < len; i += 1 ) {
-			char = i + charOffset;
-			origin = inverseMappings[ char ];
-
-			nameIndex = -1;
-			location = null;
-
-			// if this character has no mapping, but the last one did,
-			// create a new segment
-			if ( !~origin && ~lastOrigin ) {
-				location = getLocation( locations, lastOrigin + 1 );
-
-				if ( ( lastOrigin + 1 ) in nameLocations ) nameIndex = names.indexOf( nameLocations[ lastOrigin + 1 ] );
-			}
-
-			else if ( ~origin && ( hires || ( ~lastOrigin && origin !== lastOrigin + 1 ) || sourcemapLocations[ origin ] ) ) {
-				location = getLocation( locations, origin );
-			}
-
-			if ( location ) {
-				segments.push({
-					generatedCodeColumn: i,
-					sourceIndex,
-					sourceCodeLine: location.line,
-					sourceCodeColumn: location.column,
-					sourceCodeName: nameIndex
+	function addSegments ( end ) {
+		while ( originalCharIndex < end ) {
+			if ( hires || sourcemapLocations[ originalCharIndex ] ) {
+				rawSegments.push({
+					generatedCodeLine,
+					generatedCodeColumn,
+					sourceCodeLine,
+					sourceCodeColumn,
+					sourceCodeName: -1,
+					sourceIndex
 				});
 			}
 
-			lastOrigin = origin;
+			if ( original[ originalCharIndex ] === '\n' ) {
+				sourceCodeLine += 1;
+				sourceCodeColumn = 0;
+				generatedCodeLine += 1;
+				generatedCodeColumn = 0;
+			} else {
+				sourceCodeColumn += 1;
+				generatedCodeColumn += 1;
+			}
+
+			originalCharIndex += 1;
+		}
+	}
+
+	for ( let i = 0; i < patches.length; i += 1 ) {
+		const patch = patches[i];
+
+		addSegments( patch.start );
+
+		if ( patch.content.length ) { // TODO is it correct to omit this?
+			rawSegments.push({
+				generatedCodeLine,
+				generatedCodeColumn,
+				sourceCodeLine,
+				sourceCodeColumn,
+				sourceCodeName: names.indexOf( patch.name ),
+				sourceIndex: null
+			});
 		}
 
-		charOffset += line.length + 1;
-		return segments;
-	});
+		let lines = patch.content.split( '\n' );
+		let lastLine = lines.pop();
+
+		if ( lines.length ) {
+			generatedCodeLine += lines.length;
+			rawLines[ generatedCodeLine ] = rawSegments = [];
+			generatedCodeColumn = lastLine.length;
+		} else {
+			generatedCodeColumn += lastLine.length;
+		}
+
+		lines = patch.original.split( '\n' );
+		lastLine = lines.pop();
+
+		if ( lines.length ) {
+			sourceCodeLine += lines.length;
+			sourceCodeColumn = lastLine.length;
+		} else {
+			sourceCodeColumn += lastLine.length;
+		}
+
+		originalCharIndex = patch.end;
+	}
+
+	addSegments( original.length );
 
 	offsets.sourceIndex = offsets.sourceIndex || 0;
 	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 	offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
-	const encoded = lines.map( segments => {
+	const encoded = rawLines.map( segments => {
 		let generatedCodeColumn = 0;
 
 		return segments.map( segment => {
@@ -92,39 +114,4 @@ export default function encodeMappings ( original, str, mappings, hires, sourcem
 	}).join( ';' );
 
 	return encoded;
-}
-
-
-function invert ( str, mappings ) {
-	let inverted = new Uint32Array( str.length );
-
-	// initialise everything to -1
-	let i = str.length;
-	while ( i-- ) {
-		inverted[i] = -1;
-	}
-
-	// then apply the actual mappings
-	i = mappings.length;
-	while ( i-- ) {
-		if ( ~mappings[i] ) {
-			inverted[ mappings[i] ] = i;
-		}
-	}
-
-	return inverted;
-}
-
-function getLocation ( locations, char ) {
-	let i = locations.length;
-	while ( i-- ) {
-		if ( locations[i] <= char ) {
-			return {
-				line: i,
-				column: char - locations[i]
-			};
-		}
-	}
-
-	throw new Error( 'Character out of bounds' );
 }

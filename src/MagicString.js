@@ -74,7 +74,7 @@ MagicString.prototype = {
 	},
 
 	getMappings ( hires, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.str, this.mappings, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations );
+		return encodeMappings( this.original, this.patches, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations );
 	},
 
 	indent ( indentStr, options ) {
