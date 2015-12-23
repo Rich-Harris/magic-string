@@ -542,6 +542,22 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefyes' );
 		});
 
+		it( 'should allow contiguous but non-overlapping replacements', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 3, 6, 'DEF' );
+			assert.equal( s.toString(), 'abcDEFghijkl' );
+
+			s.overwrite( 6, 9, 'GHI' );
+			assert.equal( s.toString(), 'abcDEFGHIjkl' );
+
+			s.overwrite( 0, 3, 'ABC' );
+			assert.equal( s.toString(), 'ABCDEFGHIjkl' );
+
+			s.overwrite( 9, 12, 'JKL' );
+			assert.equal( s.toString(), 'ABCDEFGHIJKL' );
+		});
+
 		it( 'should replace characters at the end of the original string', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
