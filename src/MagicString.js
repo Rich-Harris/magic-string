@@ -141,6 +141,8 @@ MagicString.prototype = {
 					shouldIndentNextCharacter = patch.content[ patch.content.length - 1 ] === '\n';
 				}
 			}
+
+			charIndex = patch.end;
 		}
 
 		indentUntil( this.original.length );

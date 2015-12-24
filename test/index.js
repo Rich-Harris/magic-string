@@ -336,6 +336,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\r\n\r\n\t\tabc\r\n\t\tdef\r\n\r\n\t\tghi\r\n\t\tjkl' );
 		});
 
+		it( 'should indent content with removals', function () {
+			var s = new MagicString( '/* remove this line */\nvar foo = 1;' );
+
+			s.remove( 0, 23 );
+			s.indent();
+
+			assert.equal( s.toString(), '\tvar foo = 1;' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent(), s );
