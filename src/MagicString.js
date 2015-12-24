@@ -321,10 +321,29 @@ MagicString.prototype = {
 		this.intro = this.intro.replace( rx, '' );
 		if ( this.intro.length ) return this;
 
-		// TODO trim patches
-		const match = rx.exec( this.original );
-		if ( match ) {
-			this.patch( 0, match[0].length, '' );
+		let charIndex = 0;
+
+		for ( let i = 0; i < this.patches.length; i += 1 ) {
+			const patch = this.patches[i];
+
+			if ( charIndex < patch.start ) {
+				const slice = patch ? this.original.slice( charIndex, patch.start ) : this.original;
+
+				const match = rx.exec( slice );
+				if ( match ) {
+					this.patch( charIndex, charIndex + match[0].length, '' );
+				}
+
+				if ( !match || match[0].length < head.length ) {
+					// there is non-whitespace before the patch
+					break;
+				}
+			}
+
+			patch.content = patch.content.replace( rx, '' );
+			if ( patch.content ) break;
+
+			charIndex = patch.end;
 		}
 
 		return this;
