@@ -170,8 +170,6 @@ MagicString.prototype = {
 
 	patch ( start, end, content, storeName ) {
 		const original = this.original.slice( start, end );
-		const patch = new Patch( start, end, content, original, storeName );
-
 		if ( storeName ) this.storedNames[ original ] = true;
 
 		let i = this.patches.length;
@@ -186,7 +184,14 @@ MagicString.prototype = {
 			}
 
 			// if it overlaps, throw error
-			else if ( start < previous.end && end > previous.end ) {
+			else if ( start < previous.end && end > previous.start ) {
+				// special case – it's okay to remove overlapping ranges
+				if ( !previous.content.length && !content.length ) {
+					previous.start = Math.min( start, previous.start );
+					previous.end = Math.max( end, previous.end );
+					return;
+				}
+
 				throw new Error( `Cannot overwrite the same content twice: '${original}'` );
 			}
 
@@ -196,6 +201,7 @@ MagicString.prototype = {
 			}
 		}
 
+		const patch = new Patch( start, end, content, original, storeName );
 		this.patches.splice( i + 1, 0, patch );
 		return patch;
 	},
