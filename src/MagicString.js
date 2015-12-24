@@ -99,11 +99,16 @@ MagicString.prototype = {
 			});
 		}
 
-		this.intro = this.intro.replace( pattern, match => `${indentStr}${match}` );
+		let shouldIndentNextCharacter = options.indentStart !== false;
+
+		this.intro = this.intro.replace( pattern, match => {
+			if ( shouldIndentNextCharacter ) return `${indentStr}${match}`;
+			shouldIndentNextCharacter = true;
+			return match;
+		});
 
 		let charIndex = 0;
 		let patchIndex = 0;
-		let shouldIndentNextCharacter = this.intro ? this.intro.slice( -1 ) === '\n' : true;
 
 		const indentUntil = end => {
 			while ( charIndex < end ) {
@@ -144,7 +149,7 @@ MagicString.prototype = {
 			if ( shouldIndentNextCharacter ) return `${indentStr}${match}`;
 			shouldIndentNextCharacter = true;
 			return match;
-		})
+		});
 
 		return this;
 	},
