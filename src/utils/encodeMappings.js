@@ -56,7 +56,7 @@ export default function encodeMappings ( original, intro, patches, hires, source
 				sourceCodeLine,
 				sourceCodeColumn,
 				sourceCodeName: patch.storeName ? names.indexOf( patch.original ) : -1,
-				sourceIndex: null
+				sourceIndex
 			});
 		}
 

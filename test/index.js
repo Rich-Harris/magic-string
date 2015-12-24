@@ -146,7 +146,7 @@ describe( 'MagicString', function () {
 			assert.equal( originLoc.column, 0 );
 		});
 
-		it.only( 'should generate a sourcemap using specified locations', function () {
+		it( 'should generate a sourcemap using specified locations', function () {
 			var s, map, smc, loc;
 
 			s = new MagicString( 'abcdefghijkl' );
