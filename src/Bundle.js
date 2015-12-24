@@ -208,7 +208,7 @@ Bundle.prototype = {
 
 				source.content.trimStart( charType );
 				i += 1;
-			} while ( source.content.str === '' );
+			} while ( source.content.toString() === '' ); // TODO faster way to determine non-empty source?
 		}
 
 		return this;
@@ -230,7 +230,7 @@ Bundle.prototype = {
 
 			source.content.trimEnd( charType );
 			i -= 1;
-		} while ( source.content.str === '' );
+		} while ( source.content.toString() === '' ); // TODO faster way to determine non-empty source?
 
 		return this;
 	}
