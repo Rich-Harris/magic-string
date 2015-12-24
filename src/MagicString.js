@@ -306,10 +306,30 @@ MagicString.prototype = {
 		this.outro = this.outro.replace( rx, '' );
 		if ( this.outro.length ) return this;
 
-		// TODO trim patches
-		const match = rx.exec( this.original );
-		if ( match ) {
-			this.patch( this.original.length - match[0].length, this.original.length, '' );
+		let charIndex = this.original.length;
+		let i = this.patches.length;
+
+		while ( i-- ) {
+			const patch = this.patches[i];
+
+			if ( charIndex > patch.end ) {
+				const slice = this.original.slice( patch.end, charIndex );
+
+				const match = rx.exec( slice );
+				if ( match ) {
+					this.patch( charIndex - match[0].length, charIndex, '' );
+				}
+
+				if ( !match || match[0].length < slice.length ) {
+					// there is non-whitespace after the patch
+					break;
+				}
+			}
+
+			patch.content = patch.content.replace( rx, '' );
+			if ( patch.content ) break;
+
+			charIndex = patch.end;
 		}
 
 		return this;
@@ -327,14 +347,14 @@ MagicString.prototype = {
 			const patch = this.patches[i];
 
 			if ( charIndex < patch.start ) {
-				const slice = patch ? this.original.slice( charIndex, patch.start ) : this.original;
+				const slice = this.original.slice( charIndex, patch.start );
 
 				const match = rx.exec( slice );
 				if ( match ) {
 					this.patch( charIndex, charIndex + match[0].length, '' );
 				}
 
-				if ( !match || match[0].length < head.length ) {
+				if ( !match || match[0].length < slice.length ) {
 					// there is non-whitespace before the patch
 					break;
 				}
