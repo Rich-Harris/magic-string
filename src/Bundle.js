@@ -196,7 +196,7 @@ Bundle.prototype = {
 		this.intro = this.intro.replace( rx, '' );
 
 		if ( !this.intro ) {
-			let source; // TODO put inside loop if safe
+			let source;
 			let i = 0;
 
 			do {
