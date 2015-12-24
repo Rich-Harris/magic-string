@@ -6,7 +6,6 @@ import isObject from './utils/isObject.js';
 
 export default function Bundle ( options = {} ) {
 	this.intro = options.intro || '';
-	this.outro = options.outro || '';
 	this.separator = options.separator !== undefined ? options.separator : '\n';
 
 	this.sources = [];
@@ -65,7 +64,6 @@ Bundle.prototype = {
 	clone () {
 		const bundle = new Bundle({
 			intro: this.intro,
-			outro: this.outro,
 			separator: this.separator
 		});
 
@@ -105,8 +103,7 @@ Bundle.prototype = {
 				}
 
 				return prefix + mappings;
-			}).join( '' ) +
-			getSemis( this.outro )
+			}).join( '' )
 		);
 
 		return new SourceMap({
@@ -167,8 +164,6 @@ Bundle.prototype = {
 			});
 		}
 
-		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
-
 		return this;
 	},
 
@@ -185,7 +180,7 @@ Bundle.prototype = {
 			return str;
 		}).join( '' );
 
-		return this.intro + body + this.outro;
+		return this.intro + body;
 	},
 
 	trimLines () {
@@ -208,11 +203,10 @@ Bundle.prototype = {
 				source = this.sources[i];
 
 				if ( !source ) {
-					this.outro = this.outro.replace( rx, '' );
 					break;
 				}
 
-				source.content.trimStart();
+				source.content.trimStart( charType );
 				i += 1;
 			} while ( source.content.str === '' );
 		}
@@ -222,24 +216,21 @@ Bundle.prototype = {
 
 	trimEnd ( charType ) {
 		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
-		this.outro = this.outro.replace( rx, '' );
 
-		if ( !this.outro ) {
-			let source;
-			let i = this.sources.length - 1;
+		let source;
+		let i = this.sources.length - 1;
 
-			do {
-				source = this.sources[i];
+		do {
+			source = this.sources[i];
 
-				if ( !source ) {
-					this.intro = this.intro.replace( rx, '' );
-					break;
-				}
+			if ( !source ) {
+				this.intro = this.intro.replace( rx, '' );
+				break;
+			}
 
-				source.content.trimEnd(charType);
-				i -= 1;
-			} while ( source.content.str === '' );
-		}
+			source.content.trimEnd( charType );
+			i -= 1;
+		} while ( source.content.str === '' );
 
 		return this;
 	}
