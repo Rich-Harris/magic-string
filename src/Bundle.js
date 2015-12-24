@@ -85,8 +85,7 @@ Bundle.prototype = {
 
 		let names = [];
 		this.sources.forEach( source => {
-			Object.keys( source.content.storedNames ).forEach( location => {
-				const name = source.content.storedNames[ location ];
+			Object.keys( source.content.storedNames ).forEach( name => {
 				if ( !~names.indexOf( name ) ) names.push( name );
 			});
 		});
