@@ -720,10 +720,9 @@ describe( 'MagicString', function () {
 
 	describe( 'trim', function () {
 		it( 'should trim original content', function () {
-			var s = new MagicString( '   abcdefghijkl   ' );
-
-			s.trim();
-			assert.equal( s.toString(), 'abcdefghijkl' );
+			assert.equal( new MagicString( '   abcdefghijkl   ' ).trim().toString(), 'abcdefghijkl' );
+			assert.equal( new MagicString( '   abcdefghijkl' ).trim().toString(), 'abcdefghijkl' );
+			assert.equal( new MagicString( 'abcdefghijkl   ' ).trim().toString(), 'abcdefghijkl' );
 		});
 
 		it( 'should trim replaced content', function () {

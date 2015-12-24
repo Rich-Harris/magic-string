@@ -322,15 +322,20 @@ MagicString.prototype = {
 
 				if ( !match || match[0].length < slice.length ) {
 					// there is non-whitespace after the patch
-					break;
+					return this;
 				}
 			}
 
 			patch.content = patch.content.replace( rx, '' );
-			if ( patch.content ) break;
+			if ( patch.content ) return this;
 
 			charIndex = patch.end;
 		}
+
+		const slice = this.original.slice( 0, charIndex );
+
+		const match = rx.exec( slice );
+		if ( match ) this.patch( charIndex - match[0].length, charIndex, '' );
 
 		return this;
 	},
@@ -350,21 +355,24 @@ MagicString.prototype = {
 				const slice = this.original.slice( charIndex, patch.start );
 
 				const match = rx.exec( slice );
-				if ( match ) {
-					this.patch( charIndex, charIndex + match[0].length, '' );
-				}
+				if ( match ) this.patch( charIndex, charIndex + match[0].length, '' );
 
 				if ( !match || match[0].length < slice.length ) {
 					// there is non-whitespace before the patch
-					break;
+					return this;
 				}
 			}
 
 			patch.content = patch.content.replace( rx, '' );
-			if ( patch.content ) break;
+			if ( patch.content ) return this;
 
 			charIndex = patch.end;
 		}
+
+		const slice = this.original.slice( charIndex, this.original.length );
+
+		const match = rx.exec( slice );
+		if ( match ) this.patch( charIndex, charIndex + match[0].length, '' );
 
 		return this;
 	}
