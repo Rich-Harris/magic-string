@@ -31,6 +31,7 @@ export default function encodeMappings ( original, intro, patches, hires, source
 				sourceCodeLine += 1;
 				sourceCodeColumn = 0;
 				generatedCodeLine += 1;
+				rawLines[ generatedCodeLine ] = rawSegments = [];
 				generatedCodeColumn = 0;
 			} else {
 				sourceCodeColumn += 1;
