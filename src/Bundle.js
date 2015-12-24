@@ -85,8 +85,8 @@ Bundle.prototype = {
 
 		let names = [];
 		this.sources.forEach( source => {
-			Object.keys( source.content.nameLocations ).forEach( location => {
-				const name = source.content.nameLocations[ location ];
+			Object.keys( source.content.storedNames ).forEach( location => {
+				const name = source.content.storedNames[ location ];
 				if ( !~names.indexOf( name ) ) names.push( name );
 			});
 		});
@@ -158,7 +158,8 @@ Bundle.prototype = {
 				indentStart//: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
 			});
 
-			trailingNewline = source.content.str.slice( 0, -1 ) === '\n';
+			// TODO this is a very slow way to determine this
+			trailingNewline = source.content.toString().slice( 0, -1 ) === '\n';
 		});
 
 		if ( this.intro ) {

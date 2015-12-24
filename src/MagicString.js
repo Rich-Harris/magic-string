@@ -70,7 +70,7 @@ MagicString.prototype = {
 	},
 
 	getMappings ( hires, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.patches, hires, this.sourcemapLocations, sourceIndex, offsets, names, this.nameLocations );
+		return encodeMappings( this.original, this.patches, hires, this.sourcemapLocations, sourceIndex, offsets, names );
 	},
 
 	indent ( indentStr, options ) {
@@ -111,7 +111,7 @@ MagicString.prototype = {
 					if ( char === '\n' ) {
 						shouldIndentNextCharacter = true;
 					} else if ( char !== '\r' && shouldIndentNextCharacter ) {
-						this.patches.splice( patchIndex, 0, new Patch( charIndex, charIndex, indentStr, '' ) );
+						this.patches.splice( patchIndex, 0, new Patch( charIndex, charIndex, indentStr, '', false ) );
 						shouldIndentNextCharacter = false;
 
 						patchIndex += 1;
@@ -164,16 +164,15 @@ MagicString.prototype = {
 			throw new TypeError( 'replacement content must be a string' );
 		}
 
-		const original = this.original.slice( start, end );
-		if ( storeName ) this.storedNames[ original ] = true;
-
-		this.patch( start, end, content, original, storeName );
+		this.patch( start, end, content, storeName );
 		return this;
 	},
 
-	patch ( start, end, content ) {
+	patch ( start, end, content, storeName ) {
 		const original = this.original.slice( start, end );
-		const patch = new Patch( start, end, content, original );
+		const patch = new Patch( start, end, content, original, storeName );
+
+		if ( storeName ) this.storedNames[ original ] = true;
 
 		let i = this.patches.length;
 		while ( i-- ) {
