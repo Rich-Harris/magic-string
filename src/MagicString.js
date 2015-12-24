@@ -100,12 +100,13 @@ MagicString.prototype = {
 		}
 
 		let shouldIndentNextCharacter = options.indentStart !== false;
-
-		this.intro = this.intro.replace( pattern, match => {
+		const replacer = match => {
 			if ( shouldIndentNextCharacter ) return `${indentStr}${match}`;
 			shouldIndentNextCharacter = true;
 			return match;
-		});
+		};
+
+		this.intro = this.intro.replace( pattern, replacer );
 
 		let charIndex = 0;
 		let patchIndex = 0;
@@ -135,7 +136,7 @@ MagicString.prototype = {
 			indentUntil( patch.start );
 
 			if ( !isExcluded[ charIndex ] ) {
-				patch.content = patch.content.replace( pattern, match => `${indentStr}${match}` );
+				patch.content = patch.content.replace( pattern, replacer );
 
 				if ( patch.content.length ) {
 					shouldIndentNextCharacter = patch.content[ patch.content.length - 1 ] === '\n';
@@ -147,11 +148,7 @@ MagicString.prototype = {
 
 		indentUntil( this.original.length );
 
-		this.outro = this.outro.replace( pattern, match => {
-			if ( shouldIndentNextCharacter ) return `${indentStr}${match}`;
-			shouldIndentNextCharacter = true;
-			return match;
-		});
+		this.outro = this.outro.replace( pattern, replacer );
 
 		return this;
 	},

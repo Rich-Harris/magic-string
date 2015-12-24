@@ -345,6 +345,16 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\tvar foo = 1;' );
 		});
 
+		it( 'should not indent patches in the middle of a line', function () {
+			var s = new MagicString( 'class Foo extends Bar {}' );
+
+			s.overwrite( 18, 21, 'Baz' );
+			assert.equal( s.toString(), 'class Foo extends Baz {}' );
+
+			s.indent();
+			assert.equal( s.toString(), '\tclass Foo extends Baz {}' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent(), s );
