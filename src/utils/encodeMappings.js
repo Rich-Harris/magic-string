@@ -45,10 +45,11 @@ export default function encodeMappings ( original, intro, patches, hires, source
 
 	for ( let i = 0; i < patches.length; i += 1 ) {
 		const patch = patches[i];
+		const addSegmentForPatch = patch.storeName || patch.start > originalCharIndex;
 
 		addSegmentsUntil( patch.start );
 
-		if ( patch.content.length ) { // TODO is it correct to omit this?
+		if ( addSegmentForPatch ) {
 			rawSegments.push({
 				generatedCodeLine,
 				generatedCodeColumn,
