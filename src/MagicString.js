@@ -10,8 +10,8 @@ let warned = false;
 export default function MagicString ( string, options = {} ) {
 	Object.defineProperties( this, {
 		original:              { writable: true, value: string },
-		appended:              { writable: true, value: '' },
-		prepended:             { writable: true, value: '' },
+		outro:                 { writable: true, value: '' },
+		intro:                 { writable: true, value: '' },
 		patches:               { writable: true, value: [] },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
@@ -27,9 +27,9 @@ MagicString.prototype = {
 	},
 
 	append ( content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'appended content must be a string' );
+		if ( typeof content !== 'string' ) throw new TypeError( 'outro content must be a string' );
 
-		this.appended += content;
+		this.outro += content;
 		return this;
 	},
 
@@ -70,7 +70,7 @@ MagicString.prototype = {
 	},
 
 	getMappings ( hires, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.patches, hires, this.sourcemapLocations, sourceIndex, offsets, names );
+		return encodeMappings( this.original, this.intro, this.patches, hires, this.sourcemapLocations, sourceIndex, offsets, names );
 	},
 
 	indent ( indentStr, options ) {
@@ -207,9 +207,9 @@ MagicString.prototype = {
 	},
 
 	prepend ( content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'appended content must be a string' );
+		if ( typeof content !== 'string' ) throw new TypeError( 'outro content must be a string' );
 
-		this.prepended = content + this.prepended;
+		this.intro = content + this.intro;
 		return this;
 	},
 
@@ -281,7 +281,7 @@ MagicString.prototype = {
 	},
 
 	toString () {
-		return this.prepended + this.slice( 0, this.original.length ) + this.appended;
+		return this.intro + this.slice( 0, this.original.length ) + this.outro;
 	},
 
 	trimLines () {
@@ -295,8 +295,8 @@ MagicString.prototype = {
 	trimEnd ( charType ) {
 		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
 
-		this.appended = this.appended.replace( rx, '' );
-		if ( this.appended.length ) return this;
+		this.outro = this.outro.replace( rx, '' );
+		if ( this.outro.length ) return this;
 
 		// TODO trim patches
 		const match = rx.exec( this.original );
@@ -310,8 +310,8 @@ MagicString.prototype = {
 	trimStart ( charType ) {
 		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
 
-		this.prepended = this.prepended.replace( rx, '' );
-		if ( this.prepended.length ) return this;
+		this.intro = this.intro.replace( rx, '' );
+		if ( this.intro.length ) return this;
 
 		// TODO trim patches
 		const match = rx.exec( this.original );

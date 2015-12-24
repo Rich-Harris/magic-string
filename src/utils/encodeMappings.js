@@ -1,12 +1,13 @@
 import { encode } from 'vlq';
 
-export default function encodeMappings ( original, patches, hires, sourcemapLocations, sourceIndex, offsets, names ) {
-	let rawSegments = [];
-	let rawLines = [ rawSegments ];
+export default function encodeMappings ( original, intro, patches, hires, sourcemapLocations, sourceIndex, offsets, names ) {
+	let rawLines = [];
+
+	let generatedCodeLine = intro.split( '\n' ).length - 1;
+	let rawSegments = rawLines[ generatedCodeLine ] = [];
 
 	let originalCharIndex = 0;
 
-	let generatedCodeLine = 0;
 	let generatedCodeColumn = 0;
 	let sourceCodeLine = 0;
 	let sourceCodeColumn = 0;
