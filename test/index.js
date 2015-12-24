@@ -3,6 +3,7 @@ var assert = require( 'assert' );
 var SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
 var MagicString = require( '../' );
 
+require( 'source-map-support' ).install();
 require( 'console-group' ).install();
 
 describe( 'MagicString', function () {
@@ -51,7 +52,6 @@ describe( 'MagicString', function () {
 
 			assert.notEqual( s, c );
 			assert.equal( c.toString(), 'abcXYZjkl' );
-			assert.equal( c.locate( 9 ), 6 );
 		});
 
 		it( 'should clone filename info', function () {
@@ -245,7 +245,7 @@ describe( 'MagicString', function () {
 				numMappings += 1;
 			});
 
-			assert.equal( numMappings, 1 );
+			assert.equal( numMappings, 3 ); // one at 0, one at the edit, one afterwards
 		});
 	});
 
@@ -706,7 +706,6 @@ describe( 'MagicString', function () {
 
 			var snippet = s.snip( 3, 9 );
 			assert.equal( snippet.toString(), 'defGHI' );
-			assert.equal( snippet.locate( 0, 3 ) );
 			assert.equal( snippet.filename, 'foo.js' );
 		});
 
