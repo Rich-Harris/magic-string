@@ -751,6 +751,34 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'defghi' );
 		});
 
+		it( 'should trim original content before or after replaced content', function () {
+			var s = new MagicString( 'abc   defghi' );
+
+			s.remove( 6, 9 );
+			s.remove( 9, 12 );
+			assert.equal( s.toString(), 'abc   ' );
+
+			s.trim();
+			assert.equal( s.toString(), 'abc' );
+
+			s = new MagicString( 'xyz   abc   defghi' );
+
+			s.remove( 0, 3 );
+			s.remove( 12, 18 );
+			assert.equal( s.toString(), '   abc   ' );
+
+			s.trim();
+			assert.equal( s.toString(), 'abc' );
+
+			s = new MagicString( 'xyz   abc' );
+
+			s.remove( 0, 3 );
+			assert.equal( s.toString(), '   abc' );
+
+			s.trim();
+			assert.equal( s.toString(), 'abc' );
+		});
+
 		it( 'should trim appended/prepended content', function () {
 			var s = new MagicString( ' abcdefghijkl ' );
 

@@ -333,7 +333,7 @@ MagicString.prototype = {
 			patch.content = patch.content.replace( rx, '' );
 			if ( patch.content ) return this;
 
-			charIndex = patch.end;
+			charIndex = patch.start;
 		}
 
 		const slice = this.original.slice( 0, charIndex );
