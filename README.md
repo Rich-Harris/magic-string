@@ -52,8 +52,6 @@ var s = new MagicString( 'problems = 99' );
 
 s.overwrite( 0, 8, 'answer' );
 s.toString(); // 'answer = 99'
-s.locate( 9 ); // 7 - the character originally at index 9 ('=') is now at index 7
-s.locateOrigin( 7 ); // 9
 
 s.overwrite( 11, 13, '42' ); // character indices always refer to the original string
 s.toString(); // 'answer = 42'
@@ -126,11 +124,11 @@ Inserts the specified `content` at the `index` in the original string. Returns `
 
 ### s.locate( index )
 
-Finds the location, in the generated string, of the character at `index` in the original string. Returns `null` if the character in question has been removed or overwritten.
+**DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
 ### s.locateOrigin( index )
 
-The opposite of `s.locate()`. Returns `null` if the character in question was inserted with `s.append()`, `s.prepend()` or `s.overwrite()`.
+**DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
 ### s.overwrite( start, end, content[, storeName] )
 

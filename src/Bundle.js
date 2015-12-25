@@ -6,7 +6,6 @@ import isObject from './utils/isObject.js';
 
 export default function Bundle ( options = {} ) {
 	this.intro = options.intro || '';
-	this.outro = options.outro || '';
 	this.separator = options.separator !== undefined ? options.separator : '\n';
 
 	this.sources = [];
@@ -65,7 +64,6 @@ Bundle.prototype = {
 	clone () {
 		const bundle = new Bundle({
 			intro: this.intro,
-			outro: this.outro,
 			separator: this.separator
 		});
 
@@ -85,8 +83,7 @@ Bundle.prototype = {
 
 		let names = [];
 		this.sources.forEach( source => {
-			Object.keys( source.content.nameLocations ).forEach( location => {
-				const name = source.content.nameLocations[ location ];
+			Object.keys( source.content.storedNames ).forEach( name => {
 				if ( !~names.indexOf( name ) ) names.push( name );
 			});
 		});
@@ -106,8 +103,7 @@ Bundle.prototype = {
 				}
 
 				return prefix + mappings;
-			}).join( '' ) +
-			getSemis( this.outro )
+			}).join( '' )
 		);
 
 		return new SourceMap({
@@ -158,7 +154,8 @@ Bundle.prototype = {
 				indentStart//: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
 			});
 
-			trailingNewline = source.content.str.slice( 0, -1 ) === '\n';
+			// TODO this is a very slow way to determine this
+			trailingNewline = source.content.toString().slice( 0, -1 ) === '\n';
 		});
 
 		if ( this.intro ) {
@@ -166,8 +163,6 @@ Bundle.prototype = {
 				return index > 0 ? indentStr + match : match;
 			});
 		}
-
-		this.outro = this.outro.replace( /^[^\n]/gm, indentStr + '$&' );
 
 		return this;
 	},
@@ -185,7 +180,7 @@ Bundle.prototype = {
 			return str;
 		}).join( '' );
 
-		return this.intro + body + this.outro;
+		return this.intro + body;
 	},
 
 	trimLines () {
@@ -201,20 +196,19 @@ Bundle.prototype = {
 		this.intro = this.intro.replace( rx, '' );
 
 		if ( !this.intro ) {
-			let source; // TODO put inside loop if safe
+			let source;
 			let i = 0;
 
 			do {
 				source = this.sources[i];
 
 				if ( !source ) {
-					this.outro = this.outro.replace( rx, '' );
 					break;
 				}
 
-				source.content.trimStart();
+				source.content.trimStart( charType );
 				i += 1;
-			} while ( source.content.str === '' );
+			} while ( source.content.toString() === '' ); // TODO faster way to determine non-empty source?
 		}
 
 		return this;
@@ -222,24 +216,21 @@ Bundle.prototype = {
 
 	trimEnd ( charType ) {
 		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
-		this.outro = this.outro.replace( rx, '' );
 
-		if ( !this.outro ) {
-			let source;
-			let i = this.sources.length - 1;
+		let source;
+		let i = this.sources.length - 1;
 
-			do {
-				source = this.sources[i];
+		do {
+			source = this.sources[i];
 
-				if ( !source ) {
-					this.intro = this.intro.replace( rx, '' );
-					break;
-				}
+			if ( !source ) {
+				this.intro = this.intro.replace( rx, '' );
+				break;
+			}
 
-				source.content.trimEnd(charType);
-				i -= 1;
-			} while ( source.content.str === '' );
-		}
+			source.content.trimEnd( charType );
+			i -= 1;
+		} while ( source.content.toString() === '' ); // TODO faster way to determine non-empty source?
 
 		return this;
 	}
