@@ -1,5 +1,11 @@
 # changelog
 
+## 0.10.0
+
+* Complete rewrite, resulting in ~40x speed increase ([#30](https://github.com/Rich-Harris/magic-string/pull/30))
+* Breaking – `magicString.locate` and `locateOrigin` are deprecated
+* More forgiving rules about contiguous patches, and which ranges are valid with `magicString.slice(...)`
+
 ## 0.9.1
 
 * Update deps
