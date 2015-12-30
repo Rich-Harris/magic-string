@@ -1,4 +1,4 @@
-/*global require, before, describe, it, console */
+/*global require, describe, it, console */
 var assert = require( 'assert' );
 var SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
 var MagicString = require( '../' );
@@ -583,13 +583,33 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefghijkl<<<' );
 		});
 
-		it( 'does not replace inserts at start location', function () {
+		it( 'does not replace zero-length inserts at overwrite start location', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
 			s.insert( 6, 'DEF' );
 			s.overwrite( 6, 9, 'GHI' );
 			assert.equal( s.toString(), 'DEFGHIjkl' );
+		});
+
+		it( 'replaces zero-length inserts inside overwrite', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( 6, 'XXX' );
+			s.overwrite( 3, 9, 'DEFGHI' );
+			assert.equal( s.toString(), 'abcDEFGHIjkl' );
+		});
+
+		it( 'replaces non-zero-length inserts inside overwrite', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 3, 4, 'XXX' );
+			s.overwrite( 3, 5, 'DE' );
+			assert.equal( s.toString(), 'abcDEfghijkl' );
+
+			s.overwrite( 7, 8, 'YYY' );
+			s.overwrite( 6, 8, 'GH' );
+			assert.equal( s.toString(), 'abcDEfGHijkl' );
 		});
 
 		it( 'should return this', function () {
