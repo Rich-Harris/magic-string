@@ -191,7 +191,7 @@ MagicString.prototype = {
 			// TODO can we tidy this up?
 
 			// if this completely covers previous patch, remove it
-			if ( start !== end && start <= previous.start && end >= previous.end ) {
+			if ( start !== end && previous.start !== previous.end && start <= previous.start && end >= previous.end ) {
 				this.patches.splice( i, 1 );
 			}
 

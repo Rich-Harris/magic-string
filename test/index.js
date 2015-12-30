@@ -583,6 +583,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefghijkl<<<' );
 		});
 
+		it( 'does not replace inserts at start location', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.remove( 0, 6 );
+			s.insert( 6, 'DEF' );
+			s.overwrite( 6, 9, 'GHI' );
+			assert.equal( s.toString(), 'DEFGHIjkl' );
+		});
+
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.overwrite( 3, 4, 'D' ), s );
