@@ -194,6 +194,8 @@ MagicString.prototype = {
 			if ( start !== end && start <= previous.start && end >= previous.end ) {
 				// unless it's an insert at the start
 				if ( previous.start === previous.end && previous.start === start ) break;
+				// or it's an insert at the end
+				if ( previous.start === previous.end && previous.end === end ) continue;
 				this.patches.splice( i, 1 );
 			}
 

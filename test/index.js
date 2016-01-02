@@ -393,6 +393,13 @@ describe( 'MagicString', function () {
 				TypeError
 			);
 		});
+
+		it( 'should allow inserting after removed range', function () {
+			var s = new MagicString( 'abcd' );
+			s.remove( 1, 2 );
+			s.insert( 2, 'z' );
+			assert.equal( s.toString(), 'azcd' );
+		});
 	});
 
 	describe( 'locate', function () {
@@ -686,6 +693,15 @@ describe( 'MagicString', function () {
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.remove( 3, 4 ), s );
+		});
+
+		it( 'should not remove content inserted after the end of removed range', function () {
+			var s = new MagicString( 'ab.c;' );
+
+			s.insert( 0, '(' );
+			s.insert( 4, ')' );
+			s.remove( 2, 4 );
+			assert.equal( s.toString(), '(ab);' );
 		});
 	});
 
