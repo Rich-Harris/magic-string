@@ -1,5 +1,9 @@
 # changelog
 
+## 0.10.2
+
+* Do not overwrite inserts at the end of patched ranges ([#35](https://github.com/Rich-Harris/magic-string/pull/35))
+
 ## 0.10.1
 
 * Zero-length inserts are not removed on adjacent overwrites
