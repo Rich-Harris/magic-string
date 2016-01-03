@@ -20,7 +20,7 @@
     "mocha": "^2.1.0",
     "remap-istanbul": "^0.5.1",
     "resolve": "^1.1.0",
-    "rollup": "^0.22.0",
+    "rollup": "^0.23.2",
     "rollup-plugin-babel": "^2.2.0",
     "rollup-plugin-npm": "^1.1.0",
     "source-map": "^0.5.3",
@@ -42,7 +42,7 @@
     "ci": "npm run test-coverage && codecov < coverage/coverage-remapped.lcov",
     "build:cjs": "rollup -c -f cjs -o dist/magic-string.cjs.js",
     "build:es6": "rollup -c -f es6 -o dist/magic-string.es6.js",
-    "build:umd": "export DEPS=true && rollup -c -f umd -o dist/magic-string.umd.js",
+    "build:umd": "rollup -c --environment DEPS -f umd -o dist/magic-string.umd.js",
     "build": " npm run build:cjs && npm run build:es6 && npm run build:umd",
     "prepublish": "rm -rf dist && npm test && npm run build:es6 && npm run build:umd",
     "lint": "eslint src"
