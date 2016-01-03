@@ -21,7 +21,7 @@
     "remap-istanbul": "^0.5.1",
     "resolve": "^1.1.0",
     "rollup": "^0.22.0",
-    "rollup-plugin-babel": "^2.2.0",
+    "rollup-plugin-babel": "^2.3.5",
     "rollup-plugin-npm": "^1.1.0",
     "source-map": "^0.5.3",
     "source-map-support": "^0.4.0"
