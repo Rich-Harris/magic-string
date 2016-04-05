@@ -213,7 +213,7 @@ MagicString.prototype = {
 			this.storedNames[ original ] = true;
 		}
 
-		let firstIndex = this.chunks.findIndex( chunk => chunk.start === start );
+		let firstIndex = this.chunks.findIndex( chunk => chunk.start === start && chunk.original.length );
 		let lastIndex = this.chunks.findIndex( chunk => chunk.start === end );
 		if ( !~firstIndex ) firstIndex = this.chunks.length;
 		if ( !~lastIndex ) lastIndex = this.chunks.length;
