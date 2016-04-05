@@ -47,14 +47,16 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 		const chunk = chunks[i];
 
 		if ( chunk.edited ) {
-			rawSegments.push({
-				generatedCodeLine,
-				generatedCodeColumn,
-				sourceCodeLine,
-				sourceCodeColumn,
-				sourceCodeName: chunk.storeName ? names.indexOf( chunk.original ) : -1,
-				sourceIndex
-			});
+			if ( i > 0 || chunk.content.length ) {
+				rawSegments.push({
+					generatedCodeLine,
+					generatedCodeColumn,
+					sourceCodeLine,
+					sourceCodeColumn,
+					sourceCodeName: chunk.storeName ? names.indexOf( chunk.original ) : -1,
+					sourceIndex
+				});
+			}
 
 			let lines = chunk.content.split( '\n' );
 			let lastLine = lines.pop();

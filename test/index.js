@@ -90,12 +90,9 @@ describe( 'MagicString', function () {
 
 	describe( 'generateMap', function () {
 		it( 'should generate a sourcemap', function () {
-			var s, map, smc, loc;
+			var s = new MagicString( 'abcdefghijkl' ).remove( 3, 9 );
 
-			s = new MagicString( 'abcdefghijkl' );
-
-			s.remove( 3, 9 );
-			map = s.generateMap({
+			var map = s.generateMap({
 				file: 'output.md',
 				source: 'input.md',
 				includeContent: true,
@@ -110,7 +107,8 @@ describe( 'MagicString', function () {
 			assert.equal( map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,AAAM,CAAC,CAAC"}' );
 			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQUMsQUFBTSxDQUFDLENBQUMifQ==' );
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
+			var loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
 			assert.equal( loc.line, 1 );
