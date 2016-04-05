@@ -480,6 +480,24 @@ describe( 'MagicString', function () {
 			}, /Cannot move a selection inside itself/ );
 		});
 
+		it( 'allows edits of moved content', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.move( 3, 6, 9 );
+			s.overwrite( 3, 6, 'DEF' );
+
+			assert.equal( s.toString(), 'abcghiDEFjkl' );
+
+			s = new MagicString( 'abcdefghijkl' );
+
+			s.move( 3, 6, 9 );
+			s.overwrite( 4, 5, 'E' );
+
+			assert.equal( s.toString(), 'abcghidEfjkl' );
+		});
+
+		// TODO sourcemaps, editing post-move
+
 		it( 'returns this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.move( 3, 6, 9 ), s );
@@ -500,7 +518,7 @@ describe( 'MagicString', function () {
 			s.overwrite( 7, 11, 'xx' );
 			assert.throws( function () {
 				s.overwrite( 8, 12, 'yy' );
-			}, /Cannot overwrite the same content twice: \'ijkl\'/ );
+			}, /Cannot split a chunk that has already been edited/ );
 			assert.equal( s.toString(), 'abcdefgxxl' );
 
 			s.overwrite( 6, 12, 'yes' );

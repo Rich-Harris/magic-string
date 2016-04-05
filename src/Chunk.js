@@ -28,7 +28,7 @@ Chunk.prototype = {
 	},
 
 	split ( index ) {
-		if ( this.edited ) throw new Error( 'Cannot split edited chunk' );
+		if ( this.edited ) throw new Error( `Cannot split a chunk that has already been edited ("${this.original}")` );
 
 		if ( index === this.start ) return this;
 
