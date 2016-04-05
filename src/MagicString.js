@@ -224,8 +224,9 @@ MagicString.prototype = {
 
 	remove ( start, end ) {
 		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
+		if ( start > end ) throw new Error( 'end must be greater than start' );
 
-		this.overwrite( start, end, '', false );
+		if ( start < end ) this.overwrite( start, end, '', false );
 		return this;
 	},
 
