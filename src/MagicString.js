@@ -189,6 +189,8 @@ MagicString.prototype = {
 	},
 
 	move ( start, end, index ) {
+		if ( index >= start && index <= end ) throw new Error( 'Cannot move a selection inside itself' );
+
 		this._split( start );
 		this._split( end );
 		this._split( index );
