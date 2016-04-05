@@ -29,6 +29,9 @@ Chunk.prototype = {
 
 	split ( index ) {
 		if ( this.edited ) throw new Error( 'Cannot split edited chunk' );
+
+		if ( index === this.start ) return this;
+
 		const sliceIndex = index - this.start;
 		const before = this.content.slice( 0, sliceIndex );
 		const after = this.content.slice( sliceIndex );

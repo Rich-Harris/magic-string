@@ -125,7 +125,7 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 10 );
 		});
 
-		it.only( 'should generate a correct sourcemap for indented content', function () {
+		it( 'should generate a correct sourcemap for indented content', function () {
 			var s, map, smc, originLoc;
 
 			s = new MagicString( 'var answer = 42;\nconsole.log("the answer is %s", answer);' );
@@ -139,9 +139,14 @@ describe( 'MagicString', function () {
 				hires: true
 			});
 
+			console.log( s.toString() )
+
+			console.log( 'map', map )
+
 			smc = new SourceMapConsumer( map );
 
 			originLoc = smc.originalPositionFor({ line: 5, column: 1 });
+			console.log( 'originLoc', originLoc )
 			assert.equal( originLoc.line, 2 );
 			assert.equal( originLoc.column, 0 );
 		});

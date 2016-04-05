@@ -110,45 +110,54 @@ MagicString.prototype = {
 
 		this.intro = this.intro.replace( pattern, replacer );
 
+		let chunkIndex;
 		let charIndex = 0;
-		let chunkIndex = 0;
 
-		const indentUntil = end => {
-			while ( charIndex < end ) {
+		for ( chunkIndex = 0; chunkIndex < this.chunks.length; chunkIndex += 1 ) { // can't cache this.chunks.length, it may change
+			let chunk = this.chunks[ chunkIndex ];
+			const end = chunk.end;
+
+			if ( chunk.edited ) {
 				if ( !isExcluded[ charIndex ] ) {
-					const char = this.original[ charIndex ];
+					chunk.content = chunk.content.replace( pattern, replacer );
 
-					if ( char === '\n' ) {
-						shouldIndentNextCharacter = true;
-					} else if ( char !== '\r' && shouldIndentNextCharacter ) {
-						this.chunks.splice( chunkIndex, 0, new Chunk( charIndex, charIndex, '' ).edit( indentStr, false ) );
-						shouldIndentNextCharacter = false;
-
-						chunkIndex += 1;
+					if ( chunk.content.length ) {
+						shouldIndentNextCharacter = chunk.content[ chunk.content.length - 1 ] === '\n';
 					}
 				}
+			} else {
+				charIndex = chunk.start;
 
-				charIndex += 1;
-			}
-		};
+				while ( charIndex < end ) {
+					if ( !isExcluded[ charIndex ] ) {
+						const char = this.original[ charIndex ];
 
-		for ( ; chunkIndex < this.chunks.length; chunkIndex += 1 ) { // can't cache this.chunks.length, it may change
-			const chunk = this.chunks[ chunkIndex ];
+						if ( char === '\n' ) {
+							shouldIndentNextCharacter = true;
+						} else if ( char !== '\r' && shouldIndentNextCharacter ) {
+							shouldIndentNextCharacter = false;
 
-			indentUntil( chunk.start );
+							const indentation = new Chunk( charIndex, charIndex, '' ).edit( indentStr, false );
+							const remainder = chunk.split( charIndex );
 
-			if ( !isExcluded[ charIndex ] ) {
-				chunk.content = chunk.content.replace( pattern, replacer );
+							if ( charIndex === chunk.start ) {
+								this.chunks.splice( chunkIndex, 0, indentation );
+								chunkIndex += 1;
+							} else {
+								this.chunks.splice( chunkIndex + 1, 0, indentation, remainder );
+								chunkIndex += 2;
+							}
 
-				if ( chunk.content.length ) {
-					shouldIndentNextCharacter = chunk.content[ chunk.content.length - 1 ] === '\n';
+							chunk = remainder;
+						}
+					}
+
+					charIndex += 1;
 				}
 			}
 
 			charIndex = chunk.end;
 		}
-
-		indentUntil( this.original.length );
 
 		this.outro = this.outro.replace( pattern, replacer );
 
