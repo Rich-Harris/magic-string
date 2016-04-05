@@ -15,6 +15,7 @@ export default function MagicString ( string, options = {} ) {
 		outro:                 { writable: true, value: '' },
 		intro:                 { writable: true, value: '' },
 		chunks:                { writable: true, value: [ chunk ] },
+		moves:                 { writable: true, value: [] },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
@@ -188,6 +189,12 @@ MagicString.prototype = {
 	},
 
 	move ( start, end, index ) {
+		this._split( start );
+		this._split( end );
+		this._split( index );
+
+		this.moves.push({ start, end, index });
+
 		return this;
 	},
 
@@ -245,6 +252,8 @@ MagicString.prototype = {
 
 		let result = '';
 
+		// TODO handle moves
+
 		for ( let i = 0; i < this.chunks.length; i += 1 ) {
 			const chunk = this.chunks[i];
 
@@ -274,6 +283,28 @@ MagicString.prototype = {
 		return clone;
 	},
 
+	_sortChunks () {
+		let chunks = this.chunks.slice();
+
+		// TODO there must be a better way than this...
+
+		this.moves.forEach( move => {
+			let firstIndex = chunks.findIndex( chunk => chunk.start === move.start );
+			let lastIndex = chunks.findIndex( chunk => chunk.start === move.end );
+			if ( !~lastIndex ) lastIndex = chunks.length;
+
+			let insertionIndex = chunks.findIndex( chunk => chunk.start === move.index );
+			const num = lastIndex - firstIndex;
+
+			if ( firstIndex < insertionIndex ) insertionIndex -= num;
+
+			const toMove = chunks.splice( firstIndex, num );
+			chunks.splice.apply( chunks, [ insertionIndex, 0 ].concat( toMove ) );
+		});
+
+		return chunks;
+	},
+
 	_split ( index ) {
 		// TODO bisect
 		for ( let i = 0; i < this.chunks.length; i += 1 ) {
@@ -289,7 +320,7 @@ MagicString.prototype = {
 	},
 
 	toString () {
-		return this.intro + this.chunks.map( chunk => chunk.content ).join( '' ) + this.outro;
+		return this.intro + this._sortChunks().map( chunk => chunk.content ).join( '' ) + this.outro;
 	},
 
 	trimLines () {
