@@ -139,14 +139,9 @@ describe( 'MagicString', function () {
 				hires: true
 			});
 
-			console.log( s.toString() )
-
-			console.log( 'map', map )
-
 			smc = new SourceMapConsumer( map );
 
 			originLoc = smc.originalPositionFor({ line: 5, column: 1 });
-			console.log( 'originLoc', originLoc )
 			assert.equal( originLoc.line, 2 );
 			assert.equal( originLoc.column, 0 );
 		});

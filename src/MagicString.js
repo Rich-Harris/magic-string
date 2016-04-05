@@ -199,6 +199,11 @@ MagicString.prototype = {
 		this._split( start );
 		this._split( end );
 
+		if ( storeName ) {
+			const original = this.original.slice( start, end );
+			this.storedNames[ original ] = true;
+		}
+
 		let firstIndex = this.chunks.findIndex( chunk => chunk.start === start );
 		let lastIndex = this.chunks.findIndex( chunk => chunk.start === end );
 		if ( !~firstIndex ) firstIndex = this.chunks.length;
