@@ -1,6 +1,6 @@
 import { encode } from 'vlq';
 
-export default function encodeMappings ( original, intro, patches, hires, sourcemapLocations, sourceIndex, offsets, names ) {
+export default function encodeMappings ( original, intro, chunks, hires, sourcemapLocations, sourceIndex, offsets, names ) {
 	let rawLines = [];
 
 	let generatedCodeLine = intro.split( '\n' ).length - 1;
@@ -43,45 +43,44 @@ export default function encodeMappings ( original, intro, patches, hires, source
 		}
 	}
 
-	for ( let i = 0; i < patches.length; i += 1 ) {
-		const patch = patches[i];
-		const addSegmentForPatch = patch.storeName || patch.start > originalCharIndex;
+	for ( let i = 0; i < chunks.length; i += 1 ) {
+		const chunk = chunks[i];
 
-		addSegmentsUntil( patch.start );
-
-		if ( addSegmentForPatch ) {
+		if ( chunk.edited ) {
 			rawSegments.push({
 				generatedCodeLine,
 				generatedCodeColumn,
 				sourceCodeLine,
 				sourceCodeColumn,
-				sourceCodeName: patch.storeName ? names.indexOf( patch.original ) : -1,
+				sourceCodeName: chunk.storeName ? names.indexOf( chunk.original ) : -1,
 				sourceIndex
 			});
-		}
 
-		let lines = patch.content.split( '\n' );
-		let lastLine = lines.pop();
+			let lines = chunk.content.split( '\n' );
+			let lastLine = lines.pop();
 
-		if ( lines.length ) {
-			generatedCodeLine += lines.length;
-			rawLines[ generatedCodeLine ] = rawSegments = [];
-			generatedCodeColumn = lastLine.length;
+			if ( lines.length ) {
+				generatedCodeLine += lines.length;
+				rawLines[ generatedCodeLine ] = rawSegments = [];
+				generatedCodeColumn = lastLine.length;
+			} else {
+				generatedCodeColumn += lastLine.length;
+			}
+
+			lines = chunk.original.split( '\n' );
+			lastLine = lines.pop();
+
+			if ( lines.length ) {
+				sourceCodeLine += lines.length;
+				sourceCodeColumn = lastLine.length;
+			} else {
+				sourceCodeColumn += lastLine.length;
+			}
 		} else {
-			generatedCodeColumn += lastLine.length;
+			addSegmentsUntil( chunk.end );
 		}
 
-		lines = patch.original.split( '\n' );
-		lastLine = lines.pop();
-
-		if ( lines.length ) {
-			sourceCodeLine += lines.length;
-			sourceCodeColumn = lastLine.length;
-		} else {
-			sourceCodeColumn += lastLine.length;
-		}
-
-		originalCharIndex = patch.end;
+		originalCharIndex = chunk.end;
 	}
 
 	addSegmentsUntil( original.length );

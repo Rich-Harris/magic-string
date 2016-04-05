@@ -125,7 +125,7 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 10 );
 		});
 
-		it( 'should generate a correct sourcemap for indented content', function () {
+		it.only( 'should generate a correct sourcemap for indented content', function () {
 			var s, map, smc, originLoc;
 
 			s = new MagicString( 'var answer = 42;\nconsole.log("the answer is %s", answer);' );
