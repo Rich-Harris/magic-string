@@ -415,11 +415,69 @@ describe( 'MagicString', function () {
 	});
 
 	describe( 'move', function () {
-		it( 'moves content to a new location', function () {
+		it( 'moves content from the start', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 0, 3, 6 );
+
+			assert.equal( s.toString(), 'defabcghijkl' );
+		});
+
+		it( 'moves content to the start', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 3, 6, 0 );
+
+			assert.equal( s.toString(), 'defabcghijkl' );
+		});
+
+		it( 'moves content from the end', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 9, 12, 6 );
+
+			assert.equal( s.toString(), 'abcdefjklghi' );
+		});
+
+		it( 'moves content to the end', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 6, 9, 12 );
+
+			assert.equal( s.toString(), 'abcdefjklghi' );
+		});
+
+		it( 'moves content to the middle', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			s.move( 3, 6, 9 );
 
 			assert.equal( s.toString(), 'abcghidefjkl' );
+		});
+
+		it( 'handles multiple moves of the same snippet', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 0, 3, 6 ).move( 0, 3, 9 );
+
+			assert.equal( s.toString(), 'defghiabcjkl' );
+		});
+
+		it( 'handles moves of adjacent snippets', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 0, 2, 6 ).move( 4, 5, 6 );
+
+			assert.equal( s.toString(), 'cfabdeghijkl' );
+		});
+
+		it( 'refuses to move a selection to inside itself', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			assert.throws( function () {
+				s.move( 3, 6, 3 );
+			}, /Cannot move a selection inside itself/ );
+
+			assert.throws( function () {
+				s.move( 3, 6, 4 );
+			}, /Cannot move a selection inside itself/ );
+
+			assert.throws( function () {
+				s.move( 3, 6, 6 );
+			}, /Cannot move a selection inside itself/ );
 		});
 
 		it( 'returns this', function () {
