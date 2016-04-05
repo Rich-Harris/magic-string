@@ -407,124 +407,6 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.throws( function () { s.locate( 6 ); }, /deprecated/ );
 		});
-		// it( 'should correctly locate characters in an unmodified string', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		// 	assert.equal( s.locate( 0 ), 0 );
-		// 	assert.equal( s.locate( 6 ), 6 );
-		// 	assert.equal( s.locate( 11 ), 11 );
-		// });
-		//
-		// it ( 'should throw an error if character is out of bounds', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	assert.throws( function () { s.locate( -1 ); });
-		// 	assert.throws( function () { s.locate( 13 ); });
-		// });
-		//
-		// it( 'should correctly locate characters in a string with characters removed', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	s.remove( 1, 5 );
-		// 	assert.equal( s.locate( 0 ), 0 );
-		// 	assert.equal( s.locate( 1 ), null );
-		// 	assert.equal( s.locate( 2 ), null );
-		// 	assert.equal( s.locate( 5 ), 1 );
-		// 	assert.equal( s.locate( 11 ), 7 );
-		// });
-		//
-		// it( 'should correctly locate characters in a string with characters replaced', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	s.overwrite( 5, 8, 'FGH' );
-		// 	assert.equal( s.locate( 0 ), 0 );
-		// 	assert.equal( s.locate( 4 ), 4 );
-		// 	assert.equal( s.locate( 5 ), null );
-		// 	assert.equal( s.locate( 7 ), null );
-		// 	assert.equal( s.locate( 8 ), 8 );
-		//
-		// 	s.overwrite( 1, 4, 'X' );
-		// 	assert.equal( s.toString(), 'aXeFGHijkl' );
-		// 	assert.equal( s.locate( 2 ), null );
-		// 	assert.equal( s.locate( 4 ), 2 );
-		// 	assert.equal( s.locate( 8 ), 6 );
-		// });
-		//
-		// it( 'should correctly locate characters in a string that has had content prepended', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	s.prepend( 'xyz' );
-		// 	assert.equal( s.locate( 0 ), 3 );
-		// 	assert.equal( s.locate( 11 ), 14 );
-		//
-		// 	s.prepend( 'xyz' );
-		// 	assert.equal( s.locate( 0 ), 6 );
-		// 	assert.equal( s.locate( 11 ), 17 );
-		// });
-		//
-		// it( 'should correctly locate characters in a string that has had content appended', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	s.append( 'xyz' );
-		// 	assert.equal( s.locate( 0 ), 0 );
-		// 	assert.equal( s.locate( 11 ), 11 );
-		//
-		// 	s.append( 'xyz' );
-		// 	assert.equal( s.locate( 0 ), 0 );
-		// 	assert.equal( s.locate( 11 ), 11 );
-		// });
-		//
-		// it( 'should correctly locate characters in indented code', function () {
-		// 	var s = new MagicString( 'abc\ndef\nghi\njkl' );
-		//
-		// 	s.indent();
-		//
-		// 	assert.equal( s.locate( 0 ), 1 );
-		// 	assert.equal( s.locate( 4 ), 6 );
-		// 	assert.equal( s.locate( 5 ), 7 );
-		// 	assert.equal( s.locate( 8 ), 11 );
-		// 	assert.equal( s.locate( 12 ), 16 );
-		// 	assert.equal( s.locate( 13 ), 17 );
-		//
-		// 	s.indent();
-		//
-		// 	assert.equal( s.locate( 0 ), 2 );
-		// 	assert.equal( s.locate( 4 ), 8 );
-		// 	assert.equal( s.locate( 8 ), 14 );
-		// 	assert.equal( s.locate( 12 ), 20 );
-		// });
-		//
-		// it( 'should correctly locate characters in trimmed original content', function () {
-		// 	var s = new MagicString( '   abcdefghijkl   ' );
-		//
-		// 	s.trim();
-		// 	assert.equal( s.locate( 0 ), null );
-		// 	assert.equal( s.locate( 2 ), null );
-		// 	assert.equal( s.locate( 3 ), 0 );
-		// 	assert.equal( s.locate( 14 ), 11 );
-		// 	assert.equal( s.locate( 15 ), null );
-		// });
-		//
-		// it( 'should correctly locate characters in trimmed replaced content', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	s.overwrite( 0, 3, '   ' ).overwrite( 9, 12, '   ' ).trim();
-		// 	assert.equal( s.locate( 0 ), null );
-		// 	assert.equal( s.locate( 2 ), null );
-		// 	assert.equal( s.locate( 3 ), 0 );
-		//
-		// 	assert.equal( s.locate( 8 ), 5 );
-		// 	assert.equal( s.locate( 9 ), null );
-		// });
-		//
-		// it( 'should correctly locate characters in trimmed appended/prepended content', function () {
-		// 	var s = new MagicString( ' abcdefghijkl ' );
-		//
-		// 	s.prepend( '  ' ).append( '  ' ).trim();
-		// 	assert.equal( s.locate( 0 ), null );
-		// 	assert.equal( s.locate( 1 ), 0 );
-		// 	assert.equal( s.locate( 12 ), 11 );
-		// 	assert.equal( s.locate( 13 ), null );
-		// });
 	});
 
 	describe( 'locateOrigin', function () {
@@ -532,18 +414,20 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.throws( function () { s.locateOrigin( 6 ); }, /deprecated/ );
 		});
+	});
 
-		// it( 'should locate the origin of characters in the generated string', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
-		//
-		// 	assert.equal( s.locateOrigin( 4 ), 4 );
-		// 	assert.equal( s.locateOrigin( 11 ), 11 );
-		//
-		// 	s.remove( 1, 3 );
-		// 	assert.equal( s.locateOrigin( 0 ), 0 );
-		// 	assert.equal( s.locateOrigin( 1 ), 3 );
-		// 	assert.equal( s.locateOrigin( 2 ), 4 );
-		// });
+	describe( 'move', function () {
+		it( 'moves content to a new location', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 3, 6, 9 );
+
+			assert.equal( s.toString(), 'abcghidefjkl' );
+		});
+
+		it( 'returns this', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.move( 3, 6, 9 ), s );
+		});
 	});
 
 	describe( 'overwrite', function () {

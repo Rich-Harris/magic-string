@@ -1,4 +1,4 @@
-import Patch from './Patch.js';
+import Chunk from './Chunk.js';
 import SourceMap from './utils/SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
 import encodeMappings from './utils/encodeMappings.js';
@@ -8,11 +8,13 @@ import isObject from './utils/isObject.js';
 let warned = false;
 
 export default function MagicString ( string, options = {} ) {
+	const chunk = new Chunk( 0, string.length, string );
+
 	Object.defineProperties( this, {
 		original:              { writable: true, value: string },
 		outro:                 { writable: true, value: '' },
 		intro:                 { writable: true, value: '' },
-		patches:               { writable: true, value: [] },
+		chunks:                { writable: true, value: [ chunk ] },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
@@ -36,7 +38,7 @@ MagicString.prototype = {
 	clone () {
 		let cloned = new MagicString( this.original, { filename: this.filename });
 
-		cloned.patches = this.patches.map( patch => patch.clone() );
+		cloned.chunks = this.chunks.map( chunk => chunk.clone() );
 
 		if ( this.indentExclusionRanges ) {
 			cloned.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ?
@@ -70,7 +72,7 @@ MagicString.prototype = {
 	},
 
 	getMappings ( hires, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.intro, this.patches, hires, this.sourcemapLocations, sourceIndex, offsets, names );
+		return encodeMappings( this.original, this.intro, this.chunks, hires, this.sourcemapLocations, sourceIndex, offsets, names );
 	},
 
 	indent ( indentStr, options ) {
@@ -109,7 +111,7 @@ MagicString.prototype = {
 		this.intro = this.intro.replace( pattern, replacer );
 
 		let charIndex = 0;
-		let patchIndex = 0;
+		let chunkIndex = 0;
 
 		const indentUntil = end => {
 			while ( charIndex < end ) {
@@ -119,10 +121,10 @@ MagicString.prototype = {
 					if ( char === '\n' ) {
 						shouldIndentNextCharacter = true;
 					} else if ( char !== '\r' && shouldIndentNextCharacter ) {
-						this.patches.splice( patchIndex, 0, new Patch( charIndex, charIndex, indentStr, '', false ) );
+						this.chunks.splice( chunkIndex, 0, new Chunk( charIndex, charIndex, '' ).edit( indentStr, false ) );
 						shouldIndentNextCharacter = false;
 
-						patchIndex += 1;
+						chunkIndex += 1;
 					}
 				}
 
@@ -130,20 +132,20 @@ MagicString.prototype = {
 			}
 		};
 
-		for ( ; patchIndex < this.patches.length; patchIndex += 1 ) { // can't cache this.patches.length, it may change
-			const patch = this.patches[ patchIndex ];
+		for ( ; chunkIndex < this.chunks.length; chunkIndex += 1 ) { // can't cache this.chunks.length, it may change
+			const chunk = this.chunks[ chunkIndex ];
 
-			indentUntil( patch.start );
+			indentUntil( chunk.start );
 
 			if ( !isExcluded[ charIndex ] ) {
-				patch.content = patch.content.replace( pattern, replacer );
+				chunk.content = chunk.content.replace( pattern, replacer );
 
-				if ( patch.content.length ) {
-					shouldIndentNextCharacter = patch.content[ patch.content.length - 1 ] === '\n';
+				if ( chunk.content.length ) {
+					shouldIndentNextCharacter = chunk.content[ chunk.content.length - 1 ] === '\n';
 				}
 			}
 
-			charIndex = patch.end;
+			charIndex = chunk.end;
 		}
 
 		indentUntil( this.original.length );
@@ -154,11 +156,16 @@ MagicString.prototype = {
 	},
 
 	insert ( index, content ) {
-		if ( typeof content !== 'string' ) {
-			throw new TypeError( 'inserted content must be a string' );
-		}
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		this.patch( index, index, content );
+		this._split( index );
+
+		let next = this.chunks.findIndex( chunk => chunk.end > index );
+		if ( !~next ) next = this.chunks.length;
+
+		const newChunk = new Chunk( index, index, '' ).edit( content, false );
+
+		this.chunks.splice( next, 0, newChunk );
 		return this;
 	},
 
@@ -171,55 +178,27 @@ MagicString.prototype = {
 		throw new Error( 'magicString.locateOrigin is deprecated' );
 	},
 
+	move ( start, end, index ) {
+		return this;
+	},
+
 	overwrite ( start, end, content, storeName ) {
 		if ( typeof content !== 'string' ) {
 			throw new TypeError( 'replacement content must be a string' );
 		}
 
-		this.patch( start, end, content, storeName );
+		this._split( start );
+		this._split( end );
+
+		let firstIndex = this.chunks.findIndex( chunk => chunk.start === start );
+		let lastIndex = this.chunks.findIndex( chunk => chunk.start === end );
+		if ( !~firstIndex ) firstIndex = this.chunks.length;
+		if ( !~lastIndex ) lastIndex = this.chunks.length;
+
+		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( content, storeName );
+
+		this.chunks.splice( firstIndex, lastIndex - firstIndex, newChunk );
 		return this;
-	},
-
-	patch ( start, end, content, storeName ) {
-		const original = this.original.slice( start, end );
-		if ( storeName ) this.storedNames[ original ] = true;
-
-		let i = this.patches.length;
-		while ( i-- ) {
-			const previous = this.patches[i];
-
-			// TODO can we tidy this up?
-
-			// if this completely covers previous patch, remove it
-			if ( start !== end && start <= previous.start && end >= previous.end ) {
-				// unless it's an insert at the start
-				if ( previous.start === previous.end && previous.start === start ) break;
-				// or it's an insert at the end
-				if ( previous.start === previous.end && previous.end === end ) continue;
-				this.patches.splice( i, 1 );
-			}
-
-			// if it overlaps, throw error
-			else if ( start < previous.end && end > previous.start ) {
-				// special case – it's okay to remove overlapping ranges
-				if ( !previous.content.length && !content.length ) {
-					previous.start = Math.min( start, previous.start );
-					previous.end = Math.max( end, previous.end );
-					return;
-				}
-
-				throw new Error( `Cannot overwrite the same content twice: '${original}'` );
-			}
-
-			// if this precedes previous patch, stop search
-			else if ( start >= previous.end ) {
-				break;
-			}
-		}
-
-		const patch = new Patch( start, end, content, original, storeName );
-		this.patches.splice( i + 1, 0, patch );
-		return patch;
 	},
 
 	prepend ( content ) {
@@ -230,11 +209,9 @@ MagicString.prototype = {
 	},
 
 	remove ( start, end ) {
-		if ( start < 0 || end > this.original.length ) {
-			throw new Error( 'Character is out of bounds' );
-		}
+		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
 
-		this.patch( start, end, '' );
+		this.overwrite( start, end, '', false );
 		return this;
 	},
 
@@ -251,39 +228,25 @@ MagicString.prototype = {
 		while ( start < 0 ) start += this.original.length;
 		while ( end < 0 ) end += this.original.length;
 
-		let firstPatchIndex = 0;
-		let lastPatchIndex = this.patches.length;
+		let result = '';
 
-		while ( lastPatchIndex-- ) {
-			const patch = this.patches[ lastPatchIndex ];
-			if ( end >= patch.start && end < patch.end ) throw new Error( `Cannot use replaced characters (${start}, ${end}) as slice anchors` );
+		for ( let i = 0; i < this.chunks.length; i += 1 ) {
+			const chunk = this.chunks[i];
 
-			// TODO this is weird, rewrite it
-			if ( patch.start > end ) continue;
-			break;
-		}
+			if ( chunk.end <= start ) continue;
+			if ( chunk.start >= end ) break;
 
-		for ( firstPatchIndex = 0; firstPatchIndex <= lastPatchIndex; firstPatchIndex += 1 ) {
-			const patch = this.patches[ firstPatchIndex ];
-			if ( start > patch.start && start <= patch.end ) throw new Error( `Cannot use replaced characters (${start}, ${end}) as slice anchors` );
+			if ( chunk.start < start || chunk.end > end ) {
+				if ( chunk.edited ) throw new Error( `Cannot use replaced characters (${start}, ${end}) as slice anchors` );
 
-			if ( start <= patch.start ) {
-				break;
+				const sliceStart = Math.max( start - chunk.start, 0 );
+				const sliceEnd = Math.min( chunk.content.length - ( chunk.end - end ), chunk.content.length );
+
+				result += chunk.content.slice( sliceStart, sliceEnd );
+			} else {
+				result += chunk.content;
 			}
 		}
-
-		let result = '';
-		let lastIndex = start;
-
-		for ( let i = firstPatchIndex; i <= lastPatchIndex; i += 1 ) {
-			const patch = this.patches[i];
-			result += this.original.slice( lastIndex, patch.start );
-			result += patch.content;
-
-			lastIndex = patch.end;
-		}
-
-		result += this.original.slice( lastIndex, end );
 
 		return result;
 	},
@@ -296,8 +259,22 @@ MagicString.prototype = {
 		return clone;
 	},
 
+	_split ( index ) {
+		// TODO bisect
+		for ( let i = 0; i < this.chunks.length; i += 1 ) {
+			const chunk = this.chunks[i];
+			if ( chunk.start === index || chunk.end === index ) return;
+
+			if ( chunk.start < index && chunk.end > index ) {
+				const newChunk = chunk.split( index );
+				this.chunks.splice( i + 1, 0, newChunk );
+				return;
+			}
+		}
+	},
+
 	toString () {
-		return this.intro + this.slice( 0, this.original.length ) + this.outro;
+		return this.intro + this.chunks.map( chunk => chunk.content ).join( '' ) + this.outro;
 	},
 
 	trimLines () {
@@ -315,35 +292,35 @@ MagicString.prototype = {
 		if ( this.outro.length ) return this;
 
 		let charIndex = this.original.length;
-		let i = this.patches.length;
+		let i = this.chunks.length;
 
 		while ( i-- ) {
-			const patch = this.patches[i];
+			const chunk = this.chunks[i];
 
-			if ( charIndex > patch.end ) {
-				const slice = this.original.slice( patch.end, charIndex );
+			if ( charIndex > chunk.end ) {
+				const slice = this.original.slice( chunk.end, charIndex );
 
 				const match = rx.exec( slice );
 				if ( match ) {
-					this.patch( charIndex - match[0].length, charIndex, '' );
+					this.chunk( charIndex - match[0].length, charIndex, '' );
 				}
 
 				if ( !match || match[0].length < slice.length ) {
-					// there is non-whitespace after the patch
+					// there is non-whitespace after the chunk
 					return this;
 				}
 			}
 
-			patch.content = patch.content.replace( rx, '' );
-			if ( patch.content ) return this;
+			chunk.content = chunk.content.replace( rx, '' );
+			if ( chunk.content ) return this;
 
-			charIndex = patch.start;
+			charIndex = chunk.start;
 		}
 
 		const slice = this.original.slice( 0, charIndex );
 
 		const match = rx.exec( slice );
-		if ( match ) this.patch( charIndex - match[0].length, charIndex, '' );
+		if ( match ) this.chunk( charIndex - match[0].length, charIndex, '' );
 
 		return this;
 	},
@@ -356,31 +333,31 @@ MagicString.prototype = {
 
 		let charIndex = 0;
 
-		for ( let i = 0; i < this.patches.length; i += 1 ) {
-			const patch = this.patches[i];
+		for ( let i = 0; i < this.chunks.length; i += 1 ) {
+			const chunk = this.chunks[i];
 
-			if ( charIndex < patch.start ) {
-				const slice = this.original.slice( charIndex, patch.start );
+			if ( charIndex < chunk.start ) {
+				const slice = this.original.slice( charIndex, chunk.start );
 
 				const match = rx.exec( slice );
-				if ( match ) this.patch( charIndex, charIndex + match[0].length, '' );
+				if ( match ) this.chunk( charIndex, charIndex + match[0].length, '' );
 
 				if ( !match || match[0].length < slice.length ) {
-					// there is non-whitespace before the patch
+					// there is non-whitespace before the chunk
 					return this;
 				}
 			}
 
-			patch.content = patch.content.replace( rx, '' );
-			if ( patch.content ) return this;
+			chunk.content = chunk.content.replace( rx, '' );
+			if ( chunk.content ) return this;
 
-			charIndex = patch.end;
+			charIndex = chunk.end;
 		}
 
 		const slice = this.original.slice( charIndex, this.original.length );
 
 		const match = rx.exec( slice );
-		if ( match ) this.patch( charIndex, charIndex + match[0].length, '' );
+		if ( match ) this.chunk( charIndex, charIndex + match[0].length, '' );
 
 		return this;
 	}
