@@ -318,10 +318,10 @@ MagicString.prototype = {
 
 		// TODO there must be a better way than this...
 
-		this.moves.forEach( move => {
+		this.moves.forEach( ( move, i ) => {
 			let firstIndex = chunks.findIndex( chunk => chunk.start === move.start );
-			let lastIndex = chunks.findIndex( chunk => chunk.start === move.end );
-			if ( !~lastIndex ) lastIndex = chunks.length;
+			let lastIndex = chunks.findIndex( ( chunk, i ) => i >= firstIndex && chunk.end === move.end ) + 1;
+			if ( !lastIndex ) lastIndex = chunks.length;
 
 			let insertionIndex = chunks.findIndex( chunk => chunk.start === move.index );
 			if ( !~insertionIndex ) insertionIndex = chunks.length;
