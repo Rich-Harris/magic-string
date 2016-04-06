@@ -459,7 +459,14 @@ describe( 'MagicString', function () {
 
 		it( 'handles moves of adjacent snippets', function () {
 			var s = new MagicString( 'abcdefghijkl' );
-			s.move( 0, 2, 6 ).move( 4, 5, 6 );
+			s.move( 0, 2, 6 ).move( 2, 4, 6 );
+
+			assert.equal( s.toString(), 'efabcdghijkl' );
+		});
+
+		it( 'handles moves to same index', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 0, 2, 6 ).move( 3, 5, 6 );
 
 			assert.equal( s.toString(), 'cfabdeghijkl' );
 		});
