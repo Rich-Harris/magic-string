@@ -324,6 +324,7 @@ MagicString.prototype = {
 			if ( !~lastIndex ) lastIndex = chunks.length;
 
 			let insertionIndex = chunks.findIndex( chunk => chunk.start === move.index );
+			if ( !~insertionIndex ) insertionIndex = chunks.length;
 			const num = lastIndex - firstIndex;
 
 			if ( firstIndex < insertionIndex ) insertionIndex -= num;
