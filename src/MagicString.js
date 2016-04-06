@@ -232,10 +232,38 @@ MagicString.prototype = {
 	},
 
 	remove ( start, end ) {
+		while ( start < 0 ) start += this.original.length;
+		while ( end < 0 ) end += this.original.length;
+
+		if ( start === end ) return this;
+
 		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
 		if ( start > end ) throw new Error( 'end must be greater than start' );
 
-		if ( start < end ) this.overwrite( start, end, '', false );
+		let firstIndex = this.chunks.findIndex( chunk => chunk.start <= start && chunk.end > start );
+		let chunk = this.chunks[ firstIndex ];
+
+		// if the chunk contains `start`, split
+		if ( chunk.start < start ) {
+			if ( chunk.edited && chunk.content.length ) throw new Error( 'nope' );
+			this._split( start );
+			firstIndex += 1;
+		}
+
+		let lastIndex = this.chunks.findIndex( chunk => chunk.start < end && chunk.end >= end );
+		chunk = this.chunks[ lastIndex ];
+
+		// if the chunk contains `end`, split
+		if ( chunk.start < end ) {
+			if ( chunk.edited && chunk.content.length ) throw new Error( 'nope' );
+			this._split( end );
+		}
+
+		lastIndex += 1;
+
+		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( '', false );
+		this.chunks.splice( firstIndex, lastIndex - firstIndex, newChunk );
+
 		return this;
 	},
 

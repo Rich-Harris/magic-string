@@ -619,6 +619,27 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'afghi' );
 		});
 
+		it( 'should remove from the start', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.remove( 0, 6 );
+			assert.equal( s.toString(), 'ghijkl' );
+		});
+
+		it( 'should remove from the end', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.remove( 6, 12 );
+			assert.equal( s.toString(), 'abcdef' );
+		});
+
+		it( 'should treat zero-length removals as a no-op', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.remove( 0, 0 ).remove( 6, 6 ).remove( 9, -3 );
+			assert.equal( s.toString(), 'abcdefghijkl' );
+		});
+
 		it( 'should remove overlapping ranges', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
@@ -721,6 +742,20 @@ describe( 'MagicString', function () {
 			var snippet = s.snip( 3, 9 );
 			assert.equal( snippet.toString(), 'defGHI' );
 			assert.equal( snippet.filename, 'foo.js' );
+		});
+
+		it( 'should snip from the start', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			var snippet = s.snip( 0, 6 );
+
+			assert.equal( snippet.toString(), 'abcdef' );
+		});
+
+		it( 'should snip from the end', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			var snippet = s.snip( 6, 12 );
+
+			assert.equal( snippet.toString(), 'ghijkl' );
 		});
 
 		it( 'should respect original indices', function () {

@@ -28,18 +28,27 @@ Chunk.prototype = {
 	},
 
 	split ( index ) {
-		if ( this.edited ) throw new Error( `Cannot split a chunk that has already been edited ("${this.original}")` );
-
 		if ( index === this.start ) return this;
 
 		const sliceIndex = index - this.start;
-		const before = this.content.slice( 0, sliceIndex );
-		const after = this.content.slice( sliceIndex );
 
-		const newChunk = new Chunk( index, this.end, after );
+		const originalBefore = this.original.slice( 0, sliceIndex );
+		const originalAfter = this.original.slice( sliceIndex );
 
+		this.original = originalBefore;
+
+		const newChunk = new Chunk( index, this.end, originalAfter );
 		this.end = index;
-		this.original = this.content = before;
+
+		if ( this.edited ) {
+			if ( this.content.length ) throw new Error( `Cannot split a chunk that has already been edited ("${this.original}")` );
+
+			// zero-length edited chunks are a special case (overlapping replacements)
+			newChunk.edit( '', false );
+			this.content = '';
+		} else {
+			this.content = originalBefore;
+		}
 
 		return newChunk;
 	}
