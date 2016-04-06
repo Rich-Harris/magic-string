@@ -503,6 +503,13 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcghidEfjkl' );
 		});
 
+		it( 'move follows inserts', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( 3, 'X' ).move( 6, 9, 3 );
+			assert.equal( s.toString(), 'abcXghidefjkl' );
+		});
+
 		// TODO sourcemaps, editing post-move
 
 		it( 'returns this', function () {

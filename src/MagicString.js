@@ -323,7 +323,7 @@ MagicString.prototype = {
 			let lastIndex = chunks.findIndex( ( chunk, i ) => i >= firstIndex && chunk.end === move.end ) + 1;
 			if ( !lastIndex ) lastIndex = chunks.length;
 
-			let insertionIndex = chunks.findIndex( chunk => chunk.start === move.index );
+			let insertionIndex = chunks.findIndex( chunk => chunk.original.length && chunk.start === move.index );
 			if ( !~insertionIndex ) insertionIndex = chunks.length;
 			const num = lastIndex - firstIndex;
 
