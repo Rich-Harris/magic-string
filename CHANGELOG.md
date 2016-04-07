@@ -1,8 +1,8 @@
 # changelog
 
-## 0.11.0-alpha
+## 0.11.0
 
-* Add `move()` method (WIP – no sourcemap support yet)
+* Add experimental `move()` method
 * Refactor internals to support `move()`
 
 ## 0.10.2

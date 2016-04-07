@@ -130,6 +130,10 @@ Inserts the specified `content` at the `index` in the original string. Returns `
 
 **DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
+### s.move( start, end, newIndex )
+
+Moves the characters from `start` and `end` to `index`
+
 ### s.overwrite( start, end, content[, storeName] )
 
 Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`. If `storeName` is `true`, the original name will be stored for later inclusion in a sourcemap's `names` array.
