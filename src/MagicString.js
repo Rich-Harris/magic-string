@@ -170,7 +170,7 @@ MagicString.prototype = {
 
 		this._split( index );
 
-		let next = this.chunks.findIndex( chunk => chunk.end > index );
+		let next = this.chunks.findIndex( chunk => chunk.original.length && chunk.start === index );
 		if ( !~next ) next = this.chunks.length;
 
 		const newChunk = new Chunk( index, index, '' ).edit( content, false );
@@ -195,7 +195,15 @@ MagicString.prototype = {
 		this._split( end );
 		this._split( index );
 
-		this.moves.push({ start, end, index });
+		const firstIndex = this.chunks.findIndex( chunk => chunk.start === start );
+		let lastIndex = this.chunks.findIndex( chunk => chunk.end === end );
+
+		const toMove = this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
+
+		let insertionIndex = this.chunks.findIndex( chunk => chunk.original.length && chunk.start === index );
+		if ( !~insertionIndex ) insertionIndex = this.chunks.length;
+
+		this.chunks.splice.apply( this.chunks, [ insertionIndex, 0 ].concat( toMove ) );
 
 		return this;
 	},
@@ -214,13 +222,12 @@ MagicString.prototype = {
 		}
 
 		let firstIndex = this.chunks.findIndex( chunk => chunk.start === start && chunk.original.length );
-		let lastIndex = this.chunks.findIndex( chunk => chunk.start === end );
 		if ( !~firstIndex ) firstIndex = this.chunks.length;
-		if ( !~lastIndex ) lastIndex = this.chunks.length;
+		let lastIndex = this.chunks.findIndex( chunk => chunk.end === end );
 
 		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( content, storeName );
 
-		this.chunks.splice( firstIndex, lastIndex - firstIndex, newChunk );
+		this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex, newChunk );
 		return this;
 	},
 
@@ -313,29 +320,6 @@ MagicString.prototype = {
 		return clone;
 	},
 
-	_sortChunks () {
-		let chunks = this.chunks.slice();
-
-		// TODO there must be a better way than this...
-
-		this.moves.forEach( ( move, i ) => {
-			let firstIndex = chunks.findIndex( chunk => chunk.start === move.start );
-			let lastIndex = chunks.findIndex( ( chunk, i ) => i >= firstIndex && chunk.end === move.end ) + 1;
-			if ( !lastIndex ) lastIndex = chunks.length;
-
-			let insertionIndex = chunks.findIndex( chunk => chunk.original.length && chunk.start === move.index );
-			if ( !~insertionIndex ) insertionIndex = chunks.length;
-			const num = lastIndex - firstIndex;
-
-			if ( firstIndex < insertionIndex ) insertionIndex -= num;
-
-			const toMove = chunks.splice( firstIndex, num );
-			chunks.splice.apply( chunks, [ insertionIndex, 0 ].concat( toMove ) );
-		});
-
-		return chunks;
-	},
-
 	_split ( index ) {
 		// TODO bisect
 		for ( let i = 0; i < this.chunks.length; i += 1 ) {
@@ -351,13 +335,14 @@ MagicString.prototype = {
 	},
 
 	toString () {
-		return this.intro + this._sortChunks().map( chunk => chunk.content ).join( '' ) + this.outro;
+		return this.intro + this.chunks.map( chunk => chunk.content ).join( '' ) + this.outro;
 	},
 
 	trimLines () {
 		return this.trim('[\\r\\n]');
 	},
 
+	// TODO rewrite these methods, post-refactor
 	trim ( charType ) {
 		return this.trimStart( charType ).trimEnd( charType );
 	},
