@@ -180,11 +180,11 @@ MagicString.prototype = {
 	},
 
 	// get current location of character in original string
-	locate ( character ) {
+	locate () {
 		throw new Error( 'magicString.locate is deprecated' );
 	},
 
-	locateOrigin ( character ) {
+	locateOrigin () {
 		throw new Error( 'magicString.locateOrigin is deprecated' );
 	},
 
@@ -289,8 +289,6 @@ MagicString.prototype = {
 
 		let result = '';
 
-		// TODO handle moves
-
 		for ( let i = 0; i < this.chunks.length; i += 1 ) {
 			const chunk = this.chunks[i];
 
@@ -353,36 +351,18 @@ MagicString.prototype = {
 		this.outro = this.outro.replace( rx, '' );
 		if ( this.outro.length ) return this;
 
-		let charIndex = this.original.length;
-		let i = this.chunks.length;
-
-		while ( i-- ) {
-			const chunk = this.chunks[i];
-
-			if ( charIndex > chunk.end ) {
-				const slice = this.original.slice( chunk.end, charIndex );
-
-				const match = rx.exec( slice );
-				if ( match ) {
-					this.chunk( charIndex - match[0].length, charIndex, '' );
-				}
-
-				if ( !match || match[0].length < slice.length ) {
-					// there is non-whitespace after the chunk
-					return this;
-				}
+		do {
+			let lastChunk = this.chunks[ this.chunks.length - 1 ];
+			if ( rx.test( lastChunk.content ) ) {
+				lastChunk.edit( lastChunk.content.replace( rx, '' ) );
 			}
 
-			chunk.content = chunk.content.replace( rx, '' );
-			if ( chunk.content ) return this;
-
-			charIndex = chunk.start;
-		}
-
-		const slice = this.original.slice( 0, charIndex );
-
-		const match = rx.exec( slice );
-		if ( match ) this.chunk( charIndex - match[0].length, charIndex, '' );
+			if ( lastChunk.content.length || this.chunks.length === 1 ) {
+				break;
+			} else {
+				this.chunks.pop();
+			}
+		} while ( true );
 
 		return this;
 	},
@@ -393,34 +373,19 @@ MagicString.prototype = {
 		this.intro = this.intro.replace( rx, '' );
 		if ( this.intro.length ) return this;
 
-		let charIndex = 0;
-
-		for ( let i = 0; i < this.chunks.length; i += 1 ) {
-			const chunk = this.chunks[i];
-
-			if ( charIndex < chunk.start ) {
-				const slice = this.original.slice( charIndex, chunk.start );
-
-				const match = rx.exec( slice );
-				if ( match ) this.chunk( charIndex, charIndex + match[0].length, '' );
-
-				if ( !match || match[0].length < slice.length ) {
-					// there is non-whitespace before the chunk
-					return this;
-				}
+		do {
+			let firstChunk = this.chunks[0];
+			if ( rx.test( firstChunk.content ) ) {
+				firstChunk.edit( firstChunk.content.replace( rx, '' ) );
 			}
 
-			chunk.content = chunk.content.replace( rx, '' );
-			if ( chunk.content ) return this;
-
-			charIndex = chunk.end;
-		}
-
-		const slice = this.original.slice( charIndex, this.original.length );
-
-		const match = rx.exec( slice );
-		if ( match ) this.chunk( charIndex, charIndex + match[0].length, '' );
+			if ( firstChunk.content.length || this.chunks.length === 1 ) {
+				break;
+			} else {
+				this.chunks.shift();
+			}
+		} while ( true );
 
 		return this;
 	}
-}
+};
