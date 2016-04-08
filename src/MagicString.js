@@ -4,6 +4,7 @@ import guessIndent from './utils/guessIndent.js';
 import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
+import findIndex from './utils/findIndex.js';
 
 let warned = false;
 
@@ -170,7 +171,7 @@ MagicString.prototype = {
 
 		this._split( index );
 
-		let next = this.chunks.findIndex( chunk => chunk.original.length && chunk.start === index );
+		let next = findIndex( this.chunks, chunk => chunk.original.length && chunk.start === index );
 		if ( !~next ) next = this.chunks.length;
 
 		const newChunk = new Chunk( index, index, '' ).edit( content, false );
@@ -195,12 +196,12 @@ MagicString.prototype = {
 		this._split( end );
 		this._split( index );
 
-		const firstIndex = this.chunks.findIndex( chunk => chunk.start === start );
-		let lastIndex = this.chunks.findIndex( chunk => chunk.end === end );
+		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
+		let lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
 
 		const toMove = this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
 
-		let insertionIndex = this.chunks.findIndex( chunk => chunk.original.length && chunk.start === index );
+		let insertionIndex = findIndex( this.chunks, chunk => chunk.original.length && chunk.start === index );
 		if ( !~insertionIndex ) insertionIndex = this.chunks.length;
 
 		this.chunks.splice.apply( this.chunks, [ insertionIndex, 0 ].concat( toMove ) );
@@ -221,9 +222,9 @@ MagicString.prototype = {
 			this.storedNames[ original ] = true;
 		}
 
-		let firstIndex = this.chunks.findIndex( chunk => chunk.start === start && chunk.original.length );
+		let firstIndex = findIndex( this.chunks, chunk => chunk.start === start && chunk.original.length );
 		if ( !~firstIndex ) firstIndex = this.chunks.length;
-		let lastIndex = this.chunks.findIndex( chunk => chunk.end === end );
+		let lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
 
 		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( content, storeName );
 
@@ -247,7 +248,7 @@ MagicString.prototype = {
 		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
 		if ( start > end ) throw new Error( 'end must be greater than start' );
 
-		let firstIndex = this.chunks.findIndex( chunk => chunk.start <= start && chunk.end > start );
+		let firstIndex = findIndex( this.chunks, chunk => chunk.start <= start && chunk.end > start );
 		let chunk = this.chunks[ firstIndex ];
 
 		// if the chunk contains `start`, split
@@ -257,7 +258,7 @@ MagicString.prototype = {
 			firstIndex += 1;
 		}
 
-		let lastIndex = this.chunks.findIndex( chunk => chunk.start < end && chunk.end >= end );
+		let lastIndex = findIndex( this.chunks, chunk => chunk.start < end && chunk.end >= end );
 		chunk = this.chunks[ lastIndex ];
 
 		// if the chunk contains `end`, split
