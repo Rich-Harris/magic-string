@@ -1,4 +1,4 @@
-import babel from 'rollup-plugin-babel';
+import buble from 'rollup-plugin-buble';
 import npm from 'rollup-plugin-npm';
 
 var external = process.env.DEPS ? null : [ 'vlq' ];
@@ -6,7 +6,7 @@ var external = process.env.DEPS ? null : [ 'vlq' ];
 export default {
 	entry: 'src/index.js',
 	plugins: [
-		babel({ exclude: 'node_modules/**' }),
+		buble({ exclude: 'node_modules/**' }),
 		npm({ jsnext: true, skip: external })
 	],
 	moduleName: 'MagicString',
