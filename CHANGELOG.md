@@ -1,5 +1,9 @@
 # changelog
 
+## 0.11.2
+
+* Support sourcemaps with moved content
+
 ## 0.11.1
 
 * Use `findIndex` helper for 0.12 support
