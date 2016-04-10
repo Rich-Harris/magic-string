@@ -1,40 +1,60 @@
 import { encode } from 'vlq';
 
+function getLocator ( source ) {
+	let originalLines = source.split( '\n' );
+
+	return function locate ( index ) {
+		const len = originalLines.length;
+
+		let lineStart = 0;
+
+		for ( let i = 0; i < len; i += 1 ) {
+			const line = originalLines[i];
+			const lineEnd =  lineStart + line.length + 1; // +1 for newline
+
+			if ( lineEnd > index ) return { line: i, column: index - lineStart };
+
+			lineStart = lineEnd;
+		}
+	};
+}
+
 export default function encodeMappings ( original, intro, chunks, hires, sourcemapLocations, sourceIndex, offsets, names ) {
 	let rawLines = [];
 
 	let generatedCodeLine = intro.split( '\n' ).length - 1;
 	let rawSegments = rawLines[ generatedCodeLine ] = [];
 
-	let originalCharIndex = 0;
-
 	let generatedCodeColumn = 0;
-	let sourceCodeLine = 0;
-	let sourceCodeColumn = 0;
 
-	function addSegmentsUntil ( end ) {
+	const locate = getLocator( original );
+
+	function addUneditedChunk ( chunk ) {
+		let originalCharIndex = chunk.start;
 		let first = true;
 
-		while ( originalCharIndex < end ) {
+		let { line, column } = locate( originalCharIndex );
+
+		while ( originalCharIndex < chunk.end ) {
 			if ( hires || first || sourcemapLocations[ originalCharIndex ] ) {
 				rawSegments.push({
 					generatedCodeLine,
 					generatedCodeColumn,
-					sourceCodeLine,
-					sourceCodeColumn,
+					sourceCodeLine: line,
+					sourceCodeColumn: column,
 					sourceCodeName: -1,
 					sourceIndex
 				});
 			}
 
 			if ( original[ originalCharIndex ] === '\n' ) {
-				sourceCodeLine += 1;
-				sourceCodeColumn = 0;
+				line += 1;
+				column = 0;
 				generatedCodeLine += 1;
 				rawLines[ generatedCodeLine ] = rawSegments = [];
 				generatedCodeColumn = 0;
 			} else {
-				sourceCodeColumn += 1;
+				column += 1;
 				generatedCodeColumn += 1;
 			}
 
@@ -45,14 +65,15 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 
 	for ( let i = 0; i < chunks.length; i += 1 ) {
 		const chunk = chunks[i];
+		let { line, column } = locate( chunk.start );
 
 		if ( chunk.edited ) {
 			if ( i > 0 || chunk.content.length ) {
 				rawSegments.push({
 					generatedCodeLine,
 					generatedCodeColumn,
-					sourceCodeLine,
-					sourceCodeColumn,
+					sourceCodeLine: line,
+					sourceCodeColumn: column,
 					sourceCodeName: chunk.storeName ? names.indexOf( chunk.original ) : -1,
 					sourceIndex
 				});
@@ -73,19 +94,15 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 			lastLine = lines.pop();
 
 			if ( lines.length ) {
-				sourceCodeLine += lines.length;
-				sourceCodeColumn = lastLine.length;
+				line += lines.length;
+				column = lastLine.length;
 			} else {
-				sourceCodeColumn += lastLine.length;
+				column += lastLine.length;
 			}
 		} else {
-			addSegmentsUntil( chunk.end );
+			addUneditedChunk( chunk );
 		}
-
-		originalCharIndex = chunk.end;
 	}
-
-	addSegmentsUntil( original.length );
 
 	offsets.sourceIndex = offsets.sourceIndex || 0;
 	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;

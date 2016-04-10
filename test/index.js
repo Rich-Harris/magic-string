@@ -237,6 +237,29 @@ describe( 'MagicString', function () {
 
 			assert.equal( numMappings, 3 ); // one at 0, one at the edit, one afterwards
 		});
+
+		it( 'should generate a sourcemap that correctly locates moved content', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.move( 3, 6, 9 );
+
+			var result = s.toString();
+			var map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true,
+				hires: true
+			});
+
+			var smc = new SourceMapConsumer( map );
+
+			'abcdefghijkl'.split( '' ).forEach( function ( letter, i ) {
+				var column = result.indexOf( letter );
+				var loc = smc.originalPositionFor({ line: 1, column: column });
+
+				assert.equal( loc.line, 1 );
+				assert.equal( loc.column, i );
+			});
+		});
 	});
 
 	describe( 'getIndentString', function () {
