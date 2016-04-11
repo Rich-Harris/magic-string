@@ -354,18 +354,19 @@ MagicString.prototype = {
 
 		do {
 			let lastChunk = this.chunks[ this.chunks.length - 1 ];
-			if ( rx.test( lastChunk.content ) ) {
-				lastChunk.edit( lastChunk.content.replace( rx, '' ) );
-			}
 
-			if ( lastChunk.content.length || this.chunks.length === 1 ) {
-				break;
+			const match = rx.exec( lastChunk.content );
+			if ( !match ) return this;
+
+			if ( lastChunk.edited ) {
+				lastChunk.edit( lastChunk.content.slice( 0, match.index ) );
 			} else {
-				this.chunks.pop();
+				lastChunk.split( match.index + lastChunk.start ); // generated chunk is discarded
 			}
-		} while ( true );
 
-		return this;
+			if ( match.index > 0 || this.chunks.length === 1 ) return this;
+			this.chunks.pop();
+		} while ( true );
 	},
 
 	trimStart ( charType ) {
@@ -376,17 +377,21 @@ MagicString.prototype = {
 
 		do {
 			let firstChunk = this.chunks[0];
-			if ( rx.test( firstChunk.content ) ) {
-				firstChunk.edit( firstChunk.content.replace( rx, '' ) );
-			}
 
-			if ( firstChunk.content.length || this.chunks.length === 1 ) {
-				break;
+			const match = rx.exec( firstChunk.content );
+			if ( !match ) return this;
+
+			const end = match.index + match[0].length;
+
+			if ( firstChunk.edited ) {
+				firstChunk.edit( firstChunk.content.slice( match.index ) );
 			} else {
-				this.chunks.shift();
+				const newChunk = firstChunk.split( end + firstChunk.start ); // existing chunk is discarded
+				this.chunks[0] = newChunk;
 			}
-		} while ( true );
 
-		return this;
+			if ( end < firstChunk.content.length || this.chunks.length === 1 ) return this;
+			this.chunks.shift();
+		} while ( true );
 	}
 };

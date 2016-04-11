@@ -260,6 +260,34 @@ describe( 'MagicString', function () {
 				assert.equal( loc.column, i );
 			});
 		});
+
+		it.only( 'generates a map with trimmed content (#53)', function () {
+			var s = new MagicString( 'abcdefghijkl ' ).trim();
+			var map = s.generateMap({
+				file: 'output',
+				source: 'input',
+				includeContent: true,
+				hires: true
+			});
+
+			var smc = new SourceMapConsumer( map );
+			var loc = smc.originalPositionFor({ line: 1, column: 11 });
+
+			assert.equal( loc.column, 11 );
+
+			s = new MagicString( ' abcdefghijkl' ).trim();
+			map = s.generateMap({
+				file: 'output',
+				source: 'input',
+				includeContent: true,
+				hires: true
+			});
+
+			smc = new SourceMapConsumer( map );
+			loc = smc.originalPositionFor({ line: 1, column: 1 });
+
+			assert.equal( loc.column, 2 );
+		});
 	});
 
 	describe( 'getIndentString', function () {
