@@ -1,5 +1,9 @@
 # changelog
 
+## 0.11.3
+
+* Fix trim methods to ensure correct sourcemaps with trimmed content ([#53](https://github.com/Rich-Harris/magic-string/pull/53))
+
 ## 0.11.2
 
 * Support sourcemaps with moved content
