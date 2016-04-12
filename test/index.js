@@ -261,7 +261,7 @@ describe( 'MagicString', function () {
 			});
 		});
 
-		it.only( 'generates a map with trimmed content (#53)', function () {
+		it( 'generates a map with trimmed content (#53)', function () {
 			var s = new MagicString( 'abcdefghijkl ' ).trim();
 			var map = s.generateMap({
 				file: 'output',
@@ -741,11 +741,6 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abhi' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.remove( 3, 4 ), s );
-		});
-
 		it( 'should not remove content inserted after the end of removed range', function () {
 			var s = new MagicString( 'ab.c;' );
 
@@ -753,6 +748,21 @@ describe( 'MagicString', function () {
 			s.insert( 4, ')' );
 			s.remove( 2, 4 );
 			assert.equal( s.toString(), '(ab);' );
+		});
+
+		it( 'should provide a useful error when illegal removals are attempted', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.overwrite( 5, 7, 'XX' );
+
+			assert.throws( function () {
+				s.remove( 4, 6 );
+			}, /Cannot remove edited content \("ef"\)/ );
+		});
+
+		it( 'should return this', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.remove( 3, 4 ), s );
 		});
 	});
 

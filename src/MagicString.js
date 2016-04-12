@@ -253,7 +253,7 @@ MagicString.prototype = {
 
 		// if the chunk contains `start`, split
 		if ( chunk.start < start ) {
-			if ( chunk.edited && chunk.content.length ) throw new Error( 'nope' );
+			if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
 			this._split( start );
 			firstIndex += 1;
 		}
@@ -263,7 +263,7 @@ MagicString.prototype = {
 
 		// if the chunk contains `end`, split
 		if ( chunk.start < end ) {
-			if ( chunk.edited && chunk.content.length ) throw new Error( 'nope' );
+			if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
 			this._split( end );
 		}
 
@@ -355,16 +355,20 @@ MagicString.prototype = {
 		do {
 			let lastChunk = this.chunks[ this.chunks.length - 1 ];
 
-			const match = rx.exec( lastChunk.content );
-			if ( !match ) return this;
+			if ( lastChunk.content.length ) {
+				const match = rx.exec( lastChunk.content );
+				if ( !match ) return this;
 
-			if ( lastChunk.edited ) {
-				lastChunk.edit( lastChunk.content.slice( 0, match.index ) );
-			} else {
-				lastChunk.split( match.index + lastChunk.start ); // generated chunk is discarded
+				if ( lastChunk.edited ) {
+					lastChunk.edit( lastChunk.content.slice( 0, match.index ) );
+				} else {
+					lastChunk.split( match.index + lastChunk.start ); // generated chunk is discarded
+				}
+
+				if ( match.index > 0 ) return this;
 			}
 
-			if ( match.index > 0 || this.chunks.length === 1 ) return this;
+			if ( this.chunks.length === 1 ) return this;
 			this.chunks.pop();
 		} while ( true );
 	},
@@ -378,19 +382,25 @@ MagicString.prototype = {
 		do {
 			let firstChunk = this.chunks[0];
 
-			const match = rx.exec( firstChunk.content );
-			if ( !match ) return this;
+			if ( firstChunk.content.length ) {
+				const match = rx.exec( firstChunk.content );
+				if ( !match ) return this;
 
-			const end = match.index + match[0].length;
+				const end = match.index + match[0].length;
 
-			if ( firstChunk.edited ) {
-				firstChunk.edit( firstChunk.content.slice( match.index ) );
-			} else {
-				const newChunk = firstChunk.split( end + firstChunk.start ); // existing chunk is discarded
-				this.chunks[0] = newChunk;
+				if ( firstChunk.edited ) {
+					firstChunk.edit( firstChunk.content.slice( match.index ) );
+				} else {
+					const newChunk = firstChunk.split( end + firstChunk.start ); // existing chunk is discarded
+					this.chunks[0] = newChunk;
+
+					continue;
+				}
+
+				if ( end < firstChunk.content.length ) return this;
 			}
 
-			if ( end < firstChunk.content.length || this.chunks.length === 1 ) return this;
+			if ( this.chunks.length === 1 ) return this;
 			this.chunks.shift();
 		} while ( true );
 	}
