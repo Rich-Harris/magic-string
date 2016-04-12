@@ -362,7 +362,11 @@ MagicString.prototype = {
 				if ( lastChunk.edited ) {
 					lastChunk.edit( lastChunk.content.slice( 0, match.index ) );
 				} else {
-					lastChunk.split( match.index + lastChunk.start ); // generated chunk is discarded
+					if ( match.index ) {
+						lastChunk.split( match.index + lastChunk.start ); // generated chunk is discarded
+					} else {
+						lastChunk.edit( '' );
+					}
 				}
 
 				if ( match.index > 0 ) return this;
