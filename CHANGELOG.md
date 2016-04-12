@@ -1,5 +1,10 @@
 # changelog
 
+## 0.11.4
+
+* Fix two regression bugs with `trim()`
+* More informative error message on illegal removals
+
 ## 0.11.3
 
 * Fix trim methods to ensure correct sourcemaps with trimmed content ([#53](https://github.com/Rich-Harris/magic-string/pull/53))
