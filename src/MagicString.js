@@ -189,7 +189,7 @@ MagicString.prototype = {
 		throw new Error( 'magicString.locateOrigin is deprecated' );
 	},
 
-	move ( start, end, index ) {
+	move ( start, end, index, options = {} ) {
 		if ( index >= start && index <= end ) throw new Error( 'Cannot move a selection inside itself' );
 
 		this._split( start );
@@ -197,7 +197,11 @@ MagicString.prototype = {
 		this._split( index );
 
 		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
-		let lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
+		let lastIndex = options.includeEnd ?
+			findIndex( this.chunks, chunk => chunk.start === end ) :
+			findIndex( this.chunks, chunk => chunk.end === end );
+
+		if ( !~lastIndex ) lastIndex = this.chunks.length;
 
 		const toMove = this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
 

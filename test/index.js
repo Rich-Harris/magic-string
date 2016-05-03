@@ -568,7 +568,19 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcXghiYdefjkl' );
 		});
 
-		// TODO sourcemaps, editing post-move
+		it( 'discards inserts at end of move by default', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( 6, 'X' ).move( 3, 6, 9 );
+			assert.equal( s.toString(), 'abcXghidefjkl' );
+		});
+
+		it( 'includes inserts at end', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( 6, 'X' ).move( 3, 6, 9, { includeEnd: true });
+			assert.equal( s.toString(), 'abcghidefXjkl' );
+		});
 
 		it( 'returns this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
