@@ -1,5 +1,9 @@
 # changelog
 
+## 0.12.1
+
+* Fix sourcemap generation with `insertAfter` and `insertBefore`
+
 ## 0.12.0
 
 * Add `insertAfter` and `insertBefore` methods
