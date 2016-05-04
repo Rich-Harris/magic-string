@@ -201,6 +201,24 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 9 );
 		});
 
+		it( 'should yield consistent results between insert, insertAfter and insertBefore', function () {
+			var s1 = new MagicString( 'abcdefghijkl' );
+			s1.insert( 6, 'X' );
+
+			var s2 = new MagicString( 'abcdefghijkl' );
+			s2.insertAfter( 6, 'X' );
+
+			var s3 = new MagicString( 'abcdefghijkl' );
+			s3.insertBefore( 6, 'X' );
+
+			var m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
+			var m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
+			var m3 = s3.generateMap({ file: 'output', source: 'input', includeContent: true });
+
+			assert.deepEqual( m1, m2 );
+			assert.deepEqual( m1, m3 );
+		});
+
 		it( 'should recover original names', function () {
 			var s = new MagicString( 'function Foo () {}' );
 

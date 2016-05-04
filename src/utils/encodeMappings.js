@@ -29,32 +29,64 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 
 	const locate = getLocator( original );
 
-	function addUneditedChunk ( chunk ) {
+	function addEdit ( content, original, loc, nameIndex, i ) {
+		if ( i > 0 || content.length ) {
+			rawSegments.push({
+				generatedCodeLine,
+				generatedCodeColumn,
+				sourceCodeLine: loc.line,
+				sourceCodeColumn: loc.column,
+				sourceCodeName: nameIndex,
+				sourceIndex
+			});
+		}
+
+		let lines = content.split( '\n' );
+		let lastLine = lines.pop();
+
+		if ( lines.length ) {
+			generatedCodeLine += lines.length;
+			rawLines[ generatedCodeLine ] = rawSegments = [];
+			generatedCodeColumn = lastLine.length;
+		} else {
+			generatedCodeColumn += lastLine.length;
+		}
+
+		lines = original.split( '\n' );
+		lastLine = lines.pop();
+
+		if ( lines.length ) {
+			loc.line += lines.length;
+			loc.column = lastLine.length;
+		} else {
+			loc.column += lastLine.length;
+		}
+	}
+
+	function addUneditedChunk ( chunk, loc ) {
 		let originalCharIndex = chunk.start;
 		let first = true;
-
-		let { line, column } = locate( originalCharIndex );
 
 		while ( originalCharIndex < chunk.end ) {
 			if ( hires || first || sourcemapLocations[ originalCharIndex ] ) {
 				rawSegments.push({
 					generatedCodeLine,
 					generatedCodeColumn,
-					sourceCodeLine: line,
-					sourceCodeColumn: column,
+					sourceCodeLine: loc.line,
+					sourceCodeColumn: loc.column,
 					sourceCodeName: -1,
 					sourceIndex
 				});
 			}
 
 			if ( original[ originalCharIndex ] === '\n' ) {
-				line += 1;
-				column = 0;
+				loc.line += 1;
+				loc.column = 0;
 				generatedCodeLine += 1;
 				rawLines[ generatedCodeLine ] = rawSegments = [];
 				generatedCodeColumn = 0;
 			} else {
-				column += 1;
+				loc.column += 1;
 				generatedCodeColumn += 1;
 			}
 
@@ -65,42 +97,20 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 
 	for ( let i = 0; i < chunks.length; i += 1 ) {
 		const chunk = chunks[i];
-		let { line, column } = locate( chunk.start );
+		let loc = locate( chunk.start );
+
+		if ( chunk.intro.length ) {
+			addEdit( chunk.intro, '', loc, -1, i );
+		}
 
 		if ( chunk.edited ) {
-			if ( i > 0 || chunk.content.length ) {
-				rawSegments.push({
-					generatedCodeLine,
-					generatedCodeColumn,
-					sourceCodeLine: line,
-					sourceCodeColumn: column,
-					sourceCodeName: chunk.storeName ? names.indexOf( chunk.original ) : -1,
-					sourceIndex
-				});
-			}
-
-			let lines = chunk.content.split( '\n' );
-			let lastLine = lines.pop();
-
-			if ( lines.length ) {
-				generatedCodeLine += lines.length;
-				rawLines[ generatedCodeLine ] = rawSegments = [];
-				generatedCodeColumn = lastLine.length;
-			} else {
-				generatedCodeColumn += lastLine.length;
-			}
-
-			lines = chunk.original.split( '\n' );
-			lastLine = lines.pop();
-
-			if ( lines.length ) {
-				line += lines.length;
-				column = lastLine.length;
-			} else {
-				column += lastLine.length;
-			}
+			addEdit( chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1, i );
 		} else {
-			addUneditedChunk( chunk );
+			addUneditedChunk( chunk, loc );
+		}
+
+		if ( chunk.outro.length ) {
+			addEdit( chunk.outro, '', loc, -1, i );
 		}
 	}
 
