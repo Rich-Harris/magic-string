@@ -4,7 +4,7 @@ import guessIndent from './utils/guessIndent.js';
 import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
-import findIndex from './utils/findIndex.js';
+import { find, findIndex } from './utils/findIndex.js';
 
 let warned = false;
 
@@ -166,17 +166,31 @@ MagicString.prototype = {
 		return this;
 	},
 
-	insert ( index, content ) {
+	insert ( index, content, attachToPrevious ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
 		this._split( index );
 
-		let next = findIndex( this.chunks, chunk => chunk.original.length && chunk.start === index );
-		if ( !~next ) next = this.chunks.length;
+		const chunk = attachToPrevious ?
+			find( this.chunks, chunk => chunk.end === index ) :
+			find( this.chunks, chunk => chunk.start === index );
 
-		const newChunk = new Chunk( index, index, '' ).edit( content, false );
+		if ( chunk ) {
+			if ( attachToPrevious ) {
+				chunk.append( content );
+			} else {
+				chunk.prepend( content );
+			}
+		}
 
-		this.chunks.splice( next, 0, newChunk );
+		else {
+			if ( attachToPrevious ) {
+				this.intro += content;
+			} else {
+				this.outro += content;
+			}
+		}
+
 		return this;
 	},
 
@@ -277,7 +291,7 @@ MagicString.prototype = {
 
 	replace ( start, end, content ) {
 		if ( !warned ) {
-			console.warn( 'magicString.replace(...) is deprecated. Use magicString.overwrite(...) instead' );
+			console.warn( 'magicString.replace(...) is deprecated. Use magicString.overwrite(...) instead' ); // eslint-disable-line no-console
 			warned = true;
 		}
 
@@ -334,7 +348,7 @@ MagicString.prototype = {
 	},
 
 	toString () {
-		return this.intro + this.chunks.map( chunk => chunk.content ).join( '' ) + this.outro;
+		return this.intro + this.chunks.map( chunk => chunk.toString() ).join( '' ) + this.outro;
 	},
 
 	trimLines () {

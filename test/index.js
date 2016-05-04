@@ -557,18 +557,30 @@ describe( 'MagicString', function () {
 		it( 'move follows inserts', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.insert( 3, 'X' ).move( 6, 9, 3 );
+			s.insert( 3, 'X', true ).move( 6, 9, 3 );
 			assert.equal( s.toString(), 'abcXghidefjkl' );
 		});
 
 		it( 'inserts follow move', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.insert( 3, 'X' ).move( 6, 9, 3 ).insert( 3, 'Y' );
+			s.insert( 3, 'X', true ).move( 6, 9, 3 ).insert( 3, 'Y' );
 			assert.equal( s.toString(), 'abcXghiYdefjkl' );
 		});
 
-		// TODO sourcemaps, editing post-move
+		it( 'discards inserts at end of move by default', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( 6, 'X' ).move( 3, 6, 9 );
+			assert.equal( s.toString(), 'abcXghidefjkl' );
+		});
+
+		it( 'includes inserts at end', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insert( 6, 'X', true ).move( 3, 6, 9 );
+			assert.equal( s.toString(), 'abcghidefXjkl' );
+		});
 
 		it( 'returns this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
@@ -624,7 +636,7 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
-			s.insert( 6, 'DEF' );
+			s.insert( 6, 'DEF', true );
 			s.overwrite( 6, 9, 'GHI' );
 			assert.equal( s.toString(), 'DEFGHIjkl' );
 		});

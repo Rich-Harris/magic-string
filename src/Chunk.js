@@ -3,12 +3,19 @@ export default function Chunk ( start, end, content ) {
 	this.end = end;
 	this.original = content;
 
+	this.intro = '';
+	this.outro = '';
+
 	this.content = content;
 	this.storeName = false;
 	this.edited = false;
 }
 
 Chunk.prototype = {
+	append ( content ) {
+		this.outro += content;
+	},
+
 	clone () {
 		const chunk = new Chunk( this.start, this.end, this.original );
 		chunk.content = this.content;
@@ -27,6 +34,10 @@ Chunk.prototype = {
 		return this;
 	},
 
+	prepend ( content ) {
+		this.intro += content;
+	},
+
 	split ( index ) {
 		if ( index === this.start ) return this;
 
@@ -38,6 +49,9 @@ Chunk.prototype = {
 		this.original = originalBefore;
 
 		const newChunk = new Chunk( index, this.end, originalAfter );
+		newChunk.outro = this.outro;
+		this.outro = '';
+
 		this.end = index;
 
 		if ( this.edited ) {
@@ -51,5 +65,9 @@ Chunk.prototype = {
 		}
 
 		return newChunk;
+	},
+
+	toString () {
+		return this.intro + this.content + this.outro;
 	}
 };
