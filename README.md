@@ -118,9 +118,19 @@ Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the
 
 The `options` argument can have an `exclude` property, which is an array of `[start, end]` character ranges. These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
 
-### s.insert( index, content[ , attachToPrevious] )
+### s.insert( index, content )
 
-Inserts the specified `content` at the `index` in the original string. If `attachToPrevious` is `true`, the inserted content will be attached to the previous chunk for the purposes of `move`, `slice` and `overwrite` operations. Returns `this`.
+**This method is deprecated. In future versions, usage will result in a warning, and eventually an error. Use `insertAfter` and `insertBefore` instead.**
+
+Inserts the specified `content` at the `index` in the original string. Returns `this`.
+
+### s.insertAfter( index, content )
+
+Inserts the specified `content` at the `index` in the original string. If a range *ending* with `index` is subsequently moved, the insert will be moved with it. Returns `this`.
+
+### s.insertBefore( index, content )
+
+Inserts the specified `content` at the `index` in the original string. If a range *starting* with `index` is subsequently moved, the insert will be moved with it. Returns `this`.
 
 ### s.locate( index )
 
