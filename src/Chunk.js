@@ -35,7 +35,7 @@ Chunk.prototype = {
 	},
 
 	prepend ( content ) {
-		this.intro += content;
+		this.intro = content + this.intro;
 	},
 
 	split ( index ) {

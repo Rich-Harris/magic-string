@@ -166,29 +166,47 @@ MagicString.prototype = {
 		return this;
 	},
 
-	insert ( index, content, attachToPrevious ) {
+	insert ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
 		this._split( index );
 
-		const chunk = attachToPrevious ?
-			find( this.chunks, chunk => chunk.end === index ) :
-			find( this.chunks, chunk => chunk.start === index );
+		let next = findIndex( this.chunks, chunk => chunk.original.length && chunk.start === index );
+		if ( !~next ) next = this.chunks.length;
+
+		const newChunk = new Chunk( index, index, '' ).edit( content, false );
+
+		this.chunks.splice( next, 0, newChunk );
+		return this;
+	},
+
+	insertAfter ( index, content ) {
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		this._split( index );
+
+		const chunk = find( this.chunks, chunk => chunk.end === index );
 
 		if ( chunk ) {
-			if ( attachToPrevious ) {
-				chunk.append( content );
-			} else {
-				chunk.prepend( content );
-			}
+			chunk.append( content );
+		} else {
+			this.intro += content;
 		}
 
-		else {
-			if ( attachToPrevious ) {
-				this.intro += content;
-			} else {
-				this.outro += content;
-			}
+		return this;
+	},
+
+	insertBefore ( index, content ) {
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		this._split( index );
+
+		const chunk = find( this.chunks, chunk => chunk.start === index );
+
+		if ( chunk ) {
+			chunk.prepend( content );
+		} else {
+			this.outro += content;
 		}
 
 		return this;
@@ -240,7 +258,10 @@ MagicString.prototype = {
 		if ( !~firstIndex ) firstIndex = this.chunks.length;
 		let lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
 
+		const firstChunk = this.chunks[ firstIndex ];
+
 		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( content, storeName );
+		if ( firstChunk ) newChunk.intro = firstChunk.intro;
 
 		this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex, newChunk );
 		return this;
