@@ -1,5 +1,9 @@
 # changelog
 
+## 0.12.0
+
+* Add `insertAfter` and `insertBefore` methods
+
 ## 0.11.4
 
 * Fix two regression bugs with `trim()`
