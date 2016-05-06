@@ -85,6 +85,8 @@ Chunk.prototype = {
 	},
 
 	trim ( rx ) {
+		if ( !this.content.length ) return false;
+
 		const content = this.content.replace( rx, '' );
 
 		if ( content === this.content ) return true;

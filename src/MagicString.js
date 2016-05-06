@@ -336,24 +336,30 @@ MagicString.prototype = {
 		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
 		if ( start > end ) throw new Error( 'end must be greater than start' );
 
-		this._split( start );
-		this._split( end );
+		return this.overwrite( start, end, '', false );
 
-		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
-		const lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
+		// this._split( start );
+		// this._split( end );
+		//
+		// const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
+		// const lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
+		//
+		// const first = this.chunks[ firstIndex ];
+		// const last = this.chunks[ lastIndex ];
+		// this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
+		//
+		// const previous = first.previous;
+		// const next = last.next;
+		//
+		// if ( next ) next.previous = previous;
+		// if ( previous ) previous.next = next;
+		//
+		// if ( !previous ) this.firstChunk = next;
+		// if ( !next ) this.lastChunk = previous;
 
-		const first = this.chunks[ firstIndex ];
-		const last = this.chunks[ lastIndex ];
-		this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
 
-		const previous = first.previous;
-		const next = last.next;
 
-		if ( next ) next.previous = previous;
-		if ( previous ) previous.next = next;
 
-		if ( !previous ) this.firstChunk = next;
-		if ( !next ) this.lastChunk = previous;
 
 
 		// let firstIndex = findIndex( this.chunks, chunk => chunk.start <= start && chunk.end > start );
@@ -438,6 +444,9 @@ MagicString.prototype = {
 			if ( chunk.start < index && chunk.end > index ) {
 				const newChunk = chunk.split( index );
 				this.chunks.splice( i + 1, 0, newChunk );
+
+				if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
+
 				return;
 			}
 		}
