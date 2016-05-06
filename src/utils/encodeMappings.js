@@ -113,10 +113,6 @@ export default function encodeMappings ( original, intro, chunk, hires, sourcema
 		}
 
 		const nextChunk = chunk.next;
-		if ( nextChunk && nextChunk.start !== chunk.end ) {
-			addEdit( '', original.slice( chunk.end, nextChunk.start ), loc, -1, true );
-		}
-
 		chunk = nextChunk;
 	}
 
