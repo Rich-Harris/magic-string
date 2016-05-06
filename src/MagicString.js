@@ -7,7 +7,6 @@ import isObject from './utils/isObject.js';
 import { find, findIndex } from './utils/findIndex.js';
 
 let warned = false;
-let moveIndex = 1;
 
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
@@ -227,8 +226,8 @@ MagicString.prototype = {
 		const first = find( this.chunks, chunk => chunk.start === start );
 		const last = find( this.chunks, chunk => chunk.end === end );
 
-		const oldLeft = find( this.chunks, chunk => chunk.end === start );
-		const oldRight = find( this.chunks, chunk => chunk.start === end );
+		const oldLeft = first.previous;//find( this.chunks, chunk => chunk.end === start );
+		const oldRight = last.next;//find( this.chunks, chunk => chunk.start === end );
 
 		const newLeft = find( this.chunks, chunk => chunk.end === index );
 		const newRight = find( this.chunks, chunk => chunk.start === index );
@@ -238,6 +237,9 @@ MagicString.prototype = {
 
 		if ( newLeft ) newLeft.next = first;
 		if ( newRight ) newRight.previous = last;
+
+		if ( !first.previous ) this.firstChunk = last.next;
+		if ( !last.next ) this.lastChunk = first.previous;
 
 		first.previous = newLeft;
 		last.next = newRight;
@@ -406,6 +408,8 @@ MagicString.prototype = {
 	},
 
 	_split ( index ) {
+		// TODO if split point already exists, bug out
+
 		// TODO bisect
 		for ( let i = 0; i < this.chunks.length; i += 1 ) {
 			const chunk = this.chunks[i];
@@ -446,29 +450,16 @@ MagicString.prototype = {
 		this.outro = this.outro.replace( rx, '' );
 		if ( this.outro.length ) return this;
 
+		let chunk = this.lastChunk;
+
 		do {
-			let lastChunk = this.chunks[ this.chunks.length - 1 ];
+			if ( chunk.trimEnd( rx ) ) return this;
 
-			if ( lastChunk.content.length ) {
-				const match = rx.exec( lastChunk.content );
-				if ( !match ) return this;
+			chunk.next = null;
+			this.lastChunk = chunk;
 
-				if ( lastChunk.edited ) {
-					lastChunk.edit( lastChunk.content.slice( 0, match.index ) );
-				} else {
-					if ( match.index ) {
-						lastChunk.split( match.index + lastChunk.start ); // generated chunk is discarded
-					} else {
-						lastChunk.edit( '' );
-					}
-				}
-
-				if ( match.index > 0 ) return this;
-			}
-
-			if ( this.chunks.length === 1 ) return this;
-			this.chunks.pop();
-		} while ( true );
+			chunk = chunk.previous;
+		} while ( chunk );
 	},
 
 	trimStart ( charType ) {
@@ -477,29 +468,15 @@ MagicString.prototype = {
 		this.intro = this.intro.replace( rx, '' );
 		if ( this.intro.length ) return this;
 
+		let chunk = this.firstChunk;
+
 		do {
-			let firstChunk = this.chunks[0];
+			if ( chunk.trimStart( rx ) ) return this;
 
-			if ( firstChunk.content.length ) {
-				const match = rx.exec( firstChunk.content );
-				if ( !match ) return this;
+			chunk.previous = null;
+			this.firstChunk = chunk;
 
-				const end = match.index + match[0].length;
-
-				if ( firstChunk.edited ) {
-					firstChunk.edit( firstChunk.content.slice( match.index ) );
-				} else {
-					const newChunk = firstChunk.split( end + firstChunk.start ); // existing chunk is discarded
-					this.chunks[0] = newChunk;
-
-					continue;
-				}
-
-				if ( end < firstChunk.content.length ) return this;
-			}
-
-			if ( this.chunks.length === 1 ) return this;
-			this.chunks.shift();
-		} while ( true );
+			chunk = chunk.next;
+		} while ( chunk );
 	}
 };

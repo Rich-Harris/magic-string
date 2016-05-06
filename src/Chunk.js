@@ -79,5 +79,30 @@ Chunk.prototype = {
 
 	toString () {
 		return this.intro + this.content + this.outro;
+	},
+
+	trim ( rx ) {
+		const content = this.content.replace( rx, '' );
+
+		if ( content === this.content ) return true;
+
+		this.edited = true;
+		this.content = content;
+
+		return !!content;
+	},
+
+	trimEnd ( rx ) {
+		this.outro = this.outro.replace( rx, '' );
+		if ( this.outro.length ) return true;
+
+		return this.trim( rx );
+	},
+
+	trimStart ( rx ) {
+		this.intro = this.intro.replace( rx, '' );
+		if ( this.intro.length ) return true;
+
+		return this.trim( rx );
 	}
 };
