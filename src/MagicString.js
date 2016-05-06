@@ -41,7 +41,27 @@ MagicString.prototype = {
 	clone () {
 		let cloned = new MagicString( this.original, { filename: this.filename });
 
-		cloned.chunks = this.chunks.map( chunk => chunk.clone() );
+		cloned.chunks = [];
+		let originalChunk = this.firstChunk;
+		let clonedChunk = cloned.firstChunk = originalChunk.clone();
+
+		while ( originalChunk ) {
+			cloned.chunks.push( clonedChunk );
+
+			const nextOriginalChunk = originalChunk.next;
+			const nextClonedChunk = nextOriginalChunk && nextOriginalChunk.clone();
+
+			if ( nextClonedChunk ) {
+				clonedChunk.next = nextClonedChunk;
+				nextClonedChunk.previous = clonedChunk;
+
+				clonedChunk = nextClonedChunk;
+			}
+
+			originalChunk = nextOriginalChunk;
+		}
+
+		cloned.lastChunk = clonedChunk;
 
 		if ( this.indentExclusionRanges ) {
 			cloned.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ?

@@ -24,6 +24,9 @@ Chunk.prototype = {
 
 	clone () {
 		const chunk = new Chunk( this.start, this.end, this.original );
+
+		chunk.intro = this.intro;
+		chunk.outro = this.outro;
 		chunk.content = this.content;
 		chunk.storeName = this.storeName;
 		chunk.edited = this.edited;
