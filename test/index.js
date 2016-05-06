@@ -102,6 +102,7 @@ describe( 'MagicString', function () {
 			assert.equal( map.file, 'output.md' );
 			assert.deepEqual( map.sources, [ 'input.md' ]);
 			assert.deepEqual( map.sourcesContent, [ 'abcdefghijkl' ]);
+			assert.equal( map.mappings, 'AAAA,CAAC,CAAC,CAAC,AAAM,CAAC,CAAC' );
 
 			assert.equal( map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,AAAM,CAAC,CAAC"}' );
 			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQUMsQUFBTSxDQUFDLENBQUMifQ==' );

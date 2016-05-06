@@ -19,7 +19,7 @@ function getLocator ( source ) {
 	};
 }
 
-export default function encodeMappings ( original, intro, chunks, hires, sourcemapLocations, sourceIndex, offsets, names ) {
+export default function encodeMappings ( original, intro, chunk, hires, sourcemapLocations, sourceIndex, offsets, names ) {
 	let rawLines = [];
 
 	let generatedCodeLine = intro.split( '\n' ).length - 1;
@@ -30,7 +30,7 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 	const locate = getLocator( original );
 
 	function addEdit ( content, original, loc, nameIndex, i ) {
-		if ( i > 0 || content.length ) {
+		if ( i || content.length ) {
 			rawSegments.push({
 				generatedCodeLine,
 				generatedCodeColumn,
@@ -95,23 +95,29 @@ export default function encodeMappings ( original, intro, chunks, hires, sourcem
 		}
 	}
 
-	for ( let i = 0; i < chunks.length; i += 1 ) {
-		const chunk = chunks[i];
+	while ( chunk ) {
 		let loc = locate( chunk.start );
 
 		if ( chunk.intro.length ) {
-			addEdit( chunk.intro, '', loc, -1, i );
+			addEdit( chunk.intro, '', loc, -1, !!chunk.previous );
 		}
 
 		if ( chunk.edited ) {
-			addEdit( chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1, i );
+			addEdit( chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1, !!chunk.previous );
 		} else {
 			addUneditedChunk( chunk, loc );
 		}
 
 		if ( chunk.outro.length ) {
-			addEdit( chunk.outro, '', loc, -1, i );
+			addEdit( chunk.outro, '', loc, -1, !!chunk.previous );
 		}
+
+		const nextChunk = chunk.next;
+		if ( nextChunk && nextChunk.start !== chunk.end ) {
+			addEdit( '', original.slice( chunk.end, nextChunk.start ), loc, -1, true );
+		}
+
+		chunk = nextChunk;
 	}
 
 	offsets.sourceIndex = offsets.sourceIndex || 0;
