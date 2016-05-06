@@ -9,6 +9,12 @@ export default function Chunk ( start, end, content ) {
 	this.content = content;
 	this.storeName = false;
 	this.edited = false;
+
+	// we make these non-enumerable, for sanity while debugging
+	Object.defineProperties( this, {
+		previous: { writable: true, value: null },
+		next: { writable: true, value: null }
+	});
 }
 
 Chunk.prototype = {
@@ -63,6 +69,10 @@ Chunk.prototype = {
 		} else {
 			this.content = originalBefore;
 		}
+
+		newChunk.next = this.next;
+		newChunk.previous = this;
+		this.next = newChunk;
 
 		return newChunk;
 	},

@@ -7,6 +7,7 @@ import isObject from './utils/isObject.js';
 import { find, findIndex } from './utils/findIndex.js';
 
 let warned = false;
+let moveIndex = 1;
 
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
@@ -16,7 +17,8 @@ export default function MagicString ( string, options = {} ) {
 		outro:                 { writable: true, value: '' },
 		intro:                 { writable: true, value: '' },
 		chunks:                { writable: true, value: [ chunk ] },
-		moves:                 { writable: true, value: [] },
+		firstChunk:            { writable: true, value: chunk },
+		lastChunk:             { writable: true, value: chunk },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
@@ -139,18 +141,22 @@ MagicString.prototype = {
 						} else if ( char !== '\r' && shouldIndentNextCharacter ) {
 							shouldIndentNextCharacter = false;
 
-							const indentation = new Chunk( charIndex, charIndex, '' ).edit( indentStr, false );
-							const remainder = chunk.split( charIndex );
+							// const rhs = chunk.split( charIndex );
+							// rhs.prepend( indentStr );
+							// this.chunks.splice( chunkIndex + 1, 0, rhs );
 
 							if ( charIndex === chunk.start ) {
-								this.chunks.splice( chunkIndex, 0, indentation );
-								chunkIndex += 1;
+								chunk.prepend( indentStr );
+								// chunkIndex += 1;
 							} else {
-								this.chunks.splice( chunkIndex + 1, 0, indentation, remainder );
-								chunkIndex += 2;
+								const rhs = chunk.split( charIndex );
+								rhs.prepend( indentStr );
+
+								this.chunks.splice( chunkIndex + 1, 0, rhs );
+								chunkIndex += 1;
+								chunk = rhs;
 							}
 
-							chunk = remainder;
 						}
 					}
 
@@ -166,18 +172,8 @@ MagicString.prototype = {
 		return this;
 	},
 
-	insert ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
-
-		this._split( index );
-
-		let next = findIndex( this.chunks, chunk => chunk.original.length && chunk.start === index );
-		if ( !~next ) next = this.chunks.length;
-
-		const newChunk = new Chunk( index, index, '' ).edit( content, false );
-
-		this.chunks.splice( next, 0, newChunk );
-		return this;
+	insert () {
+		throw new Error( 'magicString.insert(...) is deprecated. Use insertBefore(...) or insertAfter(...)' );
 	},
 
 	insertAfter ( index, content ) {
@@ -228,15 +224,26 @@ MagicString.prototype = {
 		this._split( end );
 		this._split( index );
 
-		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
-		let lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
+		const first = find( this.chunks, chunk => chunk.start === start );
+		const last = find( this.chunks, chunk => chunk.end === end );
 
-		const toMove = this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
+		const oldLeft = find( this.chunks, chunk => chunk.end === start );
+		const oldRight = find( this.chunks, chunk => chunk.start === end );
 
-		let insertionIndex = findIndex( this.chunks, chunk => chunk.original.length && chunk.start === index );
-		if ( !~insertionIndex ) insertionIndex = this.chunks.length;
+		const newLeft = find( this.chunks, chunk => chunk.end === index );
+		const newRight = find( this.chunks, chunk => chunk.start === index );
 
-		this.chunks.splice.apply( this.chunks, [ insertionIndex, 0 ].concat( toMove ) );
+		if ( oldLeft ) oldLeft.next = oldRight;
+		if ( oldRight ) oldRight.previous = oldLeft;
+
+		if ( newLeft ) newLeft.next = first;
+		if ( newRight ) newRight.previous = last;
+
+		first.previous = newLeft;
+		last.next = newRight;
+
+		if ( !newLeft ) this.firstChunk = first;
+		if ( !newRight ) this.lastChunk = last;
 
 		return this;
 	},
@@ -246,6 +253,11 @@ MagicString.prototype = {
 			throw new TypeError( 'replacement content must be a string' );
 		}
 
+		while ( start < 0 ) start += this.original.length;
+		while ( end < 0 ) end += this.original.length;
+
+		if ( end > this.original.length ) throw new Error( 'end is out of bounds' );
+
 		this._split( start );
 		this._split( end );
 
@@ -254,16 +266,35 @@ MagicString.prototype = {
 			this.storedNames[ original ] = true;
 		}
 
-		let firstIndex = findIndex( this.chunks, chunk => chunk.start === start && chunk.original.length );
-		if ( !~firstIndex ) firstIndex = this.chunks.length;
-		let lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
+		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
+		const lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
 
-		const firstChunk = this.chunks[ firstIndex ];
+		const first = this.chunks[ firstIndex ];
+		const last = this.chunks[ lastIndex ];
 
-		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( content, storeName );
-		if ( firstChunk ) newChunk.intro = firstChunk.intro;
+		if ( first ) {
+			first.edit( content, storeName );
 
-		this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex, newChunk );
+			if ( first !== last ) {
+				first.next = last.next;
+				first.end = last.end;
+				first.outro = last.outro;
+
+				this.chunks.splice( firstIndex + 1, lastIndex - firstIndex );
+			}
+		}
+
+		else {
+			// must be inserting at the end
+			const newChunk = new Chunk( start, end, '' ).edit( content, storeName );
+
+			// TODO last chunk in the array may not be the last chunk, if it's moved...
+			last.next = newChunk;
+			newChunk.previous = last;
+
+			this.chunks.push( newChunk );
+		}
+
 		return this;
 	},
 
@@ -283,30 +314,50 @@ MagicString.prototype = {
 		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
 		if ( start > end ) throw new Error( 'end must be greater than start' );
 
-		let firstIndex = findIndex( this.chunks, chunk => chunk.start <= start && chunk.end > start );
-		let chunk = this.chunks[ firstIndex ];
+		this._split( start );
+		this._split( end );
 
-		// if the chunk contains `start`, split
-		if ( chunk.start < start ) {
-			if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
-			this._split( start );
-			firstIndex += 1;
-		}
+		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
+		const lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
 
-		let lastIndex = findIndex( this.chunks, chunk => chunk.start < end && chunk.end >= end );
-		chunk = this.chunks[ lastIndex ];
+		const first = this.chunks[ firstIndex ];
+		const last = this.chunks[ lastIndex ];
+		this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
 
-		// if the chunk contains `end`, split
-		if ( chunk.start < end ) {
-			if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
-			this._split( end );
-		}
+		const previous = first.previous;
+		const next = last.next;
 
-		lastIndex += 1;
+		if ( next ) next.previous = previous;
+		if ( previous ) previous.next = next;
 
-		const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( '', false );
-		this.chunks.splice( firstIndex, lastIndex - firstIndex, newChunk );
+		if ( !previous ) this.firstChunk = next;
+		if ( !next ) this.lastChunk = previous;
 
+
+		// let firstIndex = findIndex( this.chunks, chunk => chunk.start <= start && chunk.end > start );
+		// let chunk = this.chunks[ firstIndex ];
+		//
+		// // if the chunk contains `start`, split
+		// if ( chunk.start < start ) {
+		// 	if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
+		// 	this._split( start );
+		// 	firstIndex += 1;
+		// }
+		//
+		// let lastIndex = findIndex( this.chunks, chunk => chunk.start < end && chunk.end >= end );
+		// chunk = this.chunks[ lastIndex ];
+		//
+		// // if the chunk contains `end`, split
+		// if ( chunk.start < end ) {
+		// 	if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
+		// 	this._split( end );
+		// }
+		//
+		// lastIndex += 1;
+		//
+		// const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( '', false );
+		// this.chunks.splice( firstIndex, lastIndex - firstIndex, newChunk );
+		//
 		return this;
 	},
 
@@ -369,7 +420,15 @@ MagicString.prototype = {
 	},
 
 	toString () {
-		return this.intro + this.chunks.map( chunk => chunk.toString() ).join( '' ) + this.outro;
+		let str = this.intro;
+
+		let chunk = this.firstChunk;
+		while ( chunk ) {
+			str += chunk.toString();
+			chunk = chunk.next;
+		}
+
+		return str + this.outro;
 	},
 
 	trimLines () {

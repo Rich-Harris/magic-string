@@ -44,11 +44,10 @@ describe( 'MagicString', function () {
 
 	describe( 'clone', function () {
 		it( 'should clone a magic string', function () {
-			var s = new MagicString( 'abcdefghijkl' ),
-				c;
+			var s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 3, 9, 'XYZ' );
-			c = s.clone();
+			var c = s.clone();
 
 			assert.notEqual( s, c );
 			assert.equal( c.toString(), 'abcXYZjkl' );
@@ -201,22 +200,17 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 9 );
 		});
 
-		it( 'should yield consistent results between insert, insertAfter and insertBefore', function () {
+		it( 'should yield consistent results between insertAfter and insertBefore', function () {
 			var s1 = new MagicString( 'abcdefghijkl' );
-			s1.insert( 6, 'X' );
+			s1.insertAfter( 6, 'X' );
 
 			var s2 = new MagicString( 'abcdefghijkl' );
-			s2.insertAfter( 6, 'X' );
-
-			var s3 = new MagicString( 'abcdefghijkl' );
-			s3.insertBefore( 6, 'X' );
+			s2.insertBefore( 6, 'X' );
 
 			var m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
 			var m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
-			var m3 = s3.generateMap({ file: 'output', source: 'input', includeContent: true });
 
 			assert.deepEqual( m1, m2 );
-			assert.deepEqual( m1, m3 );
 		});
 
 		it( 'should recover original names', function () {
@@ -426,47 +420,54 @@ describe( 'MagicString', function () {
 	});
 
 	describe( 'insert', function () {
-		it( 'should insert characters in the correct location', function () {
+		it( 'is deprecated', function () {
 			var s = new MagicString( 'abcdefghijkl' );
-
-			s.insert( 0, '>>>' );
-			s.insert( 6, '***' );
-			s.insert( 12, '<<<' );
-
-			assert.equal( s.toString(), '>>>abcdef***ghijkl<<<' );
+			assert.throws( function () { s.insert( 6, 'X' ); }, /deprecated/ );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.insert( 0, 'a' ), s );
-		});
+		// TODO move this into insertBefore and insertAfter tests
 
-		it( 'should insert repeatedly at the same position correctly', function () {
-			var s = new MagicString( 'ab' );
-			assert.equal( s.insert(1, '1').toString(), 'a1b' );
-			assert.equal( s.insert(1, '2').toString(), 'a12b' );
-		});
-
-		it( 'should insert repeatedly at the beginning correctly', function () {
-			var s = new MagicString( 'ab' );
-			assert.equal( s.insert(0, '1').toString(), '1ab' );
-			assert.equal( s.insert(0, '2').toString(), '12ab' );
-		});
-
-		it( 'should throw when given non-string content', function () {
-			var s = new MagicString( '' );
-			assert.throws(
-				function () { s.insert( 0, [] ); },
-				TypeError
-			);
-		});
-
-		it( 'should allow inserting after removed range', function () {
-			var s = new MagicString( 'abcd' );
-			s.remove( 1, 2 );
-			s.insert( 2, 'z' );
-			assert.equal( s.toString(), 'azcd' );
-		});
+		// it( 'should insert characters in the correct location', function () {
+		// 	var s = new MagicString( 'abcdefghijkl' );
+		//
+		// 	s.insert( 0, '>>>' );
+		// 	s.insert( 6, '***' );
+		// 	s.insert( 12, '<<<' );
+		//
+		// 	assert.equal( s.toString(), '>>>abcdef***ghijkl<<<' );
+		// });
+		//
+		// it( 'should return this', function () {
+		// 	var s = new MagicString( 'abcdefghijkl' );
+		// 	assert.strictEqual( s.insert( 0, 'a' ), s );
+		// });
+		//
+		// it( 'should insert repeatedly at the same position correctly', function () {
+		// 	var s = new MagicString( 'ab' );
+		// 	assert.equal( s.insert(1, '1').toString(), 'a1b' );
+		// 	assert.equal( s.insert(1, '2').toString(), 'a12b' );
+		// });
+		//
+		// it( 'should insert repeatedly at the beginning correctly', function () {
+		// 	var s = new MagicString( 'ab' );
+		// 	assert.equal( s.insert(0, '1').toString(), '1ab' );
+		// 	assert.equal( s.insert(0, '2').toString(), '12ab' );
+		// });
+		//
+		// it( 'should throw when given non-string content', function () {
+		// 	var s = new MagicString( '' );
+		// 	assert.throws(
+		// 		function () { s.insert( 0, [] ); },
+		// 		TypeError
+		// 	);
+		// });
+		//
+		// it( 'should allow inserting after removed range', function () {
+		// 	var s = new MagicString( 'abcd' );
+		// 	s.remove( 1, 2 );
+		// 	s.insert( 2, 'z' );
+		// 	assert.equal( s.toString(), 'azcd' );
+		// });
 	});
 
 	describe( 'insertAfter', function () {
@@ -598,26 +599,26 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcghidEfjkl' );
 		});
 
-		it( 'move follows inserts', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.insert( 3, 'X' ).move( 6, 9, 3 );
-			assert.equal( s.toString(), 'abcXghidefjkl' );
-		});
-
-		it( 'inserts follow move', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.insert( 3, 'X' ).move( 6, 9, 3 ).insert( 3, 'Y' );
-			assert.equal( s.toString(), 'abcXghiYdefjkl' );
-		});
-
-		it( 'discards inserts at end of move by default', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.insert( 6, 'X' ).move( 3, 6, 9 );
-			assert.equal( s.toString(), 'abcXghidefjkl' );
-		});
+		// it( 'move follows inserts', function () {
+		// 	var s = new MagicString( 'abcdefghijkl' );
+		//
+		// 	s.insertAfter( 3, 'X' ).move( 6, 9, 3 );
+		// 	assert.equal( s.toString(), 'abcXghidefjkl' );
+		// });
+		//
+		// it( 'inserts follow move', function () {
+		// 	var s = new MagicString( 'abcdefghijkl' );
+		//
+		// 	s.insert( 3, 'X' ).move( 6, 9, 3 ).insert( 3, 'Y' );
+		// 	assert.equal( s.toString(), 'abcXghiYdefjkl' );
+		// });
+		//
+		// it( 'discards inserts at end of move by default', function () {
+		// 	var s = new MagicString( 'abcdefghijkl' );
+		//
+		// 	s.insert( 6, 'X' ).move( 3, 6, 9 );
+		// 	assert.equal( s.toString(), 'abcXghidefjkl' );
+		// });
 
 		it( 'moves content inserted at end of range', function () {
 			var s = new MagicString( 'abcdefghijkl' );
@@ -680,7 +681,7 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
-			s.insert( 6, 'DEF' );
+			s.insertBefore( 6, 'DEF' );
 			s.overwrite( 6, 9, 'GHI' );
 			assert.equal( s.toString(), 'DEFGHIjkl' );
 		});
@@ -688,7 +689,7 @@ describe( 'MagicString', function () {
 		it( 'replaces zero-length inserts inside overwrite', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.insert( 6, 'XXX' );
+			s.insertAfter( 6, 'XXX' );
 			s.overwrite( 3, 9, 'DEFGHI' );
 			assert.equal( s.toString(), 'abcDEFGHIjkl' );
 		});
@@ -800,8 +801,8 @@ describe( 'MagicString', function () {
 		it( 'should not remove content inserted after the end of removed range', function () {
 			var s = new MagicString( 'ab.c;' );
 
-			s.insert( 0, '(' );
-			s.insert( 4, ')' );
+			s.insertBefore( 0, '(' );
+			s.insertBefore( 4, ')' );
 			s.remove( 2, 4 );
 			assert.equal( s.toString(), '(ab);' );
 		});
