@@ -386,8 +386,12 @@ MagicString.prototype = {
 	_split ( index ) {
 		if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
 
-		// TODO bisect
-		for ( let i = 0; i < this.chunks.length; i += 1 ) {
+		// binary search
+		let low = 0;
+		let high = this.chunks.length - 1;
+
+		while ( low <= high ) {
+			let i = ~~( ( low + high ) / 2 );
 			const chunk = this.chunks[i];
 
 			if ( chunk.start < index && chunk.end > index ) {
@@ -402,6 +406,9 @@ MagicString.prototype = {
 
 				return;
 			}
+
+			if ( chunk.end < index ) low = i + 1;
+			else if ( chunk.start > index ) high = i - 1;
 		}
 	},
 
