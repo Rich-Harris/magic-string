@@ -53,6 +53,9 @@ MagicString.prototype = {
 		while ( originalChunk ) {
 			cloned.chunks.push( clonedChunk );
 
+			cloned.byStart[ clonedChunk.start ] = clonedChunk;
+			cloned.byEnd[ clonedChunk.end ] = clonedChunk;
+
 			const nextOriginalChunk = originalChunk.next;
 			const nextClonedChunk = nextOriginalChunk && nextOriginalChunk.clone();
 
