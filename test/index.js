@@ -497,20 +497,6 @@ describe( 'MagicString', function () {
 		});
 	});
 
-	describe( 'locate', function () {
-		it( 'is deprecated', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			assert.throws( function () { s.locate( 6 ); }, /deprecated/ );
-		});
-	});
-
-	describe( 'locateOrigin', function () {
-		it( 'is deprecated', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			assert.throws( function () { s.locateOrigin( 6 ); }, /deprecated/ );
-		});
-	});
-
 	describe( 'move', function () {
 		it( 'moves content from the start', function () {
 			var s = new MagicString( 'abcdefghijkl' );
@@ -652,9 +638,11 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 7, 11, 'xx' );
+
 			assert.throws( function () {
 				s.overwrite( 8, 12, 'yy' );
 			}, /Cannot split a chunk that has already been edited/ );
+
 			assert.equal( s.toString(), 'abcdefgxxl' );
 
 			s.overwrite( 6, 12, 'yes' );
