@@ -360,7 +360,7 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abc\ndef\nghi\njkl' );
 		});
 
-		it.skip( 'should prevent excluded characters from being indented', function () {
+		it( 'should prevent excluded characters from being indented', function () {
 			var s = new MagicString( 'abc\ndef\nghi\njkl' );
 
 			s.indent( '  ', { exclude: [ 7, 15 ] });
@@ -526,7 +526,7 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'defabcghijkl' );
 		});
 
-		it.skip( 'moves content from the end', function () {
+		it( 'moves content from the end', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			s.move( 9, 12, 6 );
 
