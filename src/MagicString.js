@@ -249,8 +249,8 @@ MagicString.prototype = {
 		const oldLeft = first.previous;//find( this.chunks, chunk => chunk.end === start );
 		const oldRight = last.next;//find( this.chunks, chunk => chunk.start === end );
 
-		const newLeft = find( this.chunks, chunk => chunk.end === index );
 		const newRight = find( this.chunks, chunk => chunk.start === index );
+		const newLeft = newRight ? newRight.previous : this.lastChunk;
 
 		if ( oldLeft ) oldLeft.next = oldRight;
 		if ( oldRight ) oldRight.previous = oldLeft;
