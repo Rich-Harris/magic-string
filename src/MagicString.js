@@ -18,12 +18,17 @@ export default function MagicString ( string, options = {} ) {
 		chunks:                { writable: true, value: [ chunk ] },
 		firstChunk:            { writable: true, value: chunk },
 		lastChunk:             { writable: true, value: chunk },
+		byStart:               { writable: true, value: {} },
+		byEnd:                 { writable: true, value: {} },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
 		storedNames:           { writable: true, value: {} },
 		indentStr:             { writable: true, value: guessIndent( string ) }
 	});
+
+	this.byStart[ 0 ] = chunk;
+	this.byEnd[ string.length ] = chunk;
 }
 
 MagicString.prototype = {
@@ -160,16 +165,14 @@ MagicString.prototype = {
 						} else if ( char !== '\r' && shouldIndentNextCharacter ) {
 							shouldIndentNextCharacter = false;
 
-							// const rhs = chunk.split( charIndex );
-							// rhs.prepend( indentStr );
-							// this.chunks.splice( chunkIndex + 1, 0, rhs );
-
 							if ( charIndex === chunk.start ) {
 								chunk.prepend( indentStr );
-								// chunkIndex += 1;
 							} else {
 								const rhs = chunk.split( charIndex );
 								rhs.prepend( indentStr );
+
+								this.byStart[ charIndex ] = rhs;
+								this.byEnd[ charIndex ] = chunk;
 
 								this.chunks.splice( chunkIndex + 1, 0, rhs );
 								chunkIndex += 1;
@@ -200,7 +203,7 @@ MagicString.prototype = {
 
 		this._split( index );
 
-		const chunk = find( this.chunks, chunk => chunk.end === index );
+		const chunk = this.byEnd[ index ];
 
 		if ( chunk ) {
 			chunk.append( content );
@@ -216,7 +219,7 @@ MagicString.prototype = {
 
 		this._split( index );
 
-		const chunk = find( this.chunks, chunk => chunk.start === index );
+		const chunk = this.byStart[ index ];
 
 		if ( chunk ) {
 			chunk.prepend( content );
@@ -227,15 +230,6 @@ MagicString.prototype = {
 		return this;
 	},
 
-	// get current location of character in original string
-	locate () {
-		throw new Error( 'magicString.locate is deprecated' );
-	},
-
-	locateOrigin () {
-		throw new Error( 'magicString.locateOrigin is deprecated' );
-	},
-
 	move ( start, end, index ) {
 		if ( index >= start && index <= end ) throw new Error( 'Cannot move a selection inside itself' );
 
@@ -243,15 +237,13 @@ MagicString.prototype = {
 		this._split( end );
 		this._split( index );
 
-		const first = find( this.chunks, chunk => chunk.start === start );
-		const last = find( this.chunks, chunk => chunk.end === end );
-
-		console.log( 'first', first )
+		const first = this.byStart[ start ];
+		const last = this.byEnd[ end ];
 
 		const oldLeft = first.previous;
 		const oldRight = last.next;
 
-		const newRight = find( this.chunks, chunk => chunk.start === index );
+		const newRight = this.byStart[ index ];
 		const newLeft = newRight ? newRight.previous : this.lastChunk;
 
 		if ( oldLeft ) oldLeft.next = oldRight;
@@ -293,11 +285,12 @@ MagicString.prototype = {
 			this.storedNames[ original ] = true;
 		}
 
-		const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
-		const lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
+		const first = this.byStart[ start ];
+		const last = this.byEnd[ end ];
 
-		const first = this.chunks[ firstIndex ];
-		const last = this.chunks[ lastIndex ];
+		// TODO is there a way around indexOf?
+		const firstIndex = this.chunks.indexOf( first );
+		const lastIndex = this.chunks.indexOf( last );
 
 		if ( first ) {
 			first.edit( content, storeName );
@@ -307,7 +300,12 @@ MagicString.prototype = {
 				first.end = last.end;
 				first.outro = last.outro;
 
-				this.chunks.splice( firstIndex + 1, lastIndex - firstIndex );
+				this.chunks.splice( firstIndex + 1, lastIndex - firstIndex ).forEach( chunk => {
+					this.byStart[ chunk.start ] = null;
+					this.byEnd[ chunk.end ] = null;
+				});
+
+				this.byEnd[ first.end ] = first;
 			}
 		}
 
@@ -343,64 +341,7 @@ MagicString.prototype = {
 
 		return this.overwrite( start, end, '', false );
 
-		// this._split( start );
-		// this._split( end );
-		//
-		// const firstIndex = findIndex( this.chunks, chunk => chunk.start === start );
-		// const lastIndex = findIndex( this.chunks, chunk => chunk.end === end );
-		//
-		// const first = this.chunks[ firstIndex ];
-		// const last = this.chunks[ lastIndex ];
-		// this.chunks.splice( firstIndex, lastIndex + 1 - firstIndex );
-		//
-		// const previous = first.previous;
-		// const next = last.next;
-		//
-		// if ( next ) next.previous = previous;
-		// if ( previous ) previous.next = next;
-		//
-		// if ( !previous ) this.firstChunk = next;
-		// if ( !next ) this.lastChunk = previous;
-
-
-
-
-
-
-		// let firstIndex = findIndex( this.chunks, chunk => chunk.start <= start && chunk.end > start );
-		// let chunk = this.chunks[ firstIndex ];
-		//
-		// // if the chunk contains `start`, split
-		// if ( chunk.start < start ) {
-		// 	if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
-		// 	this._split( start );
-		// 	firstIndex += 1;
-		// }
-		//
-		// let lastIndex = findIndex( this.chunks, chunk => chunk.start < end && chunk.end >= end );
-		// chunk = this.chunks[ lastIndex ];
-		//
-		// // if the chunk contains `end`, split
-		// if ( chunk.start < end ) {
-		// 	if ( chunk.edited && chunk.content.length ) throw new Error( `Cannot remove edited content ("${this.original.slice(start, end)}")` );
-		// 	this._split( end );
-		// }
-		//
-		// lastIndex += 1;
-		//
-		// const newChunk = new Chunk( start, end, this.original.slice( start, end ) ).edit( '', false );
-		// this.chunks.splice( firstIndex, lastIndex - firstIndex, newChunk );
-		//
 		return this;
-	},
-
-	replace ( start, end, content ) {
-		if ( !warned ) {
-			console.warn( 'magicString.replace(...) is deprecated. Use magicString.overwrite(...) instead' ); // eslint-disable-line no-console
-			warned = true;
-		}
-
-		return this.overwrite( start, end, content );
 	},
 
 	slice ( start, end = this.original.length ) {
@@ -430,6 +371,7 @@ MagicString.prototype = {
 		return result;
 	},
 
+	// TODO deprecate this? not really very useful
 	snip ( start, end ) {
 		const clone = this.clone();
 		clone.remove( 0, start );
@@ -439,16 +381,19 @@ MagicString.prototype = {
 	},
 
 	_split ( index ) {
-		// TODO if split point already exists, bug out
+		if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
 
 		// TODO bisect
 		for ( let i = 0; i < this.chunks.length; i += 1 ) {
 			const chunk = this.chunks[i];
-			if ( chunk.start === index || chunk.end === index ) return;
 
 			if ( chunk.start < index && chunk.end > index ) {
 				const newChunk = chunk.split( index );
 				this.chunks.splice( i + 1, 0, newChunk );
+
+				this.byEnd[ index ] = chunk;
+				this.byStart[ index ] = newChunk;
+				this.byEnd[ newChunk.end ] = newChunk;
 
 				if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
 
