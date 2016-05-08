@@ -7,6 +7,8 @@ import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
 import Stats from './utils/Stats.js';
 
+console.log( 'DEBUG', typeof DEBUG )
+
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
 
@@ -23,9 +25,12 @@ export default function MagicString ( string, options = {} ) {
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
 		storedNames:           { writable: true, value: {} },
-		indentStr:             { writable: true, value: guessIndent( string ) },
-		stats:                 { writable: false, value: new Stats() }
+		indentStr:             { writable: true, value: guessIndent( string ) }
 	});
+
+	if ( DEBUG ) {
+		Object.defineProperty( this, 'stats', { value: new Stats() });
+	}
 
 	this.byStart[ 0 ] = chunk;
 	this.byEnd[ string.length ] = chunk;
@@ -86,7 +91,7 @@ MagicString.prototype = {
 
 		const names = Object.keys( this.storedNames );
 
-		this.stats.time( 'generateMap' );
+		if ( DEBUG ) this.stats.time( 'generateMap' );
 		const map = new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
@@ -94,7 +99,7 @@ MagicString.prototype = {
 			names,
 			mappings: this.getMappings( options.hires, 0, {}, names )
 		});
-		this.stats.timeEnd( 'generateMap' );
+		if ( DEBUG ) this.stats.timeEnd( 'generateMap' );
 
 		return map;
 	},
@@ -203,7 +208,7 @@ MagicString.prototype = {
 	insertAfter ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		this.stats.time( 'insertAfter' );
+		if ( DEBUG ) this.stats.time( 'insertAfter' );
 
 		this._split( index );
 
@@ -215,14 +220,14 @@ MagicString.prototype = {
 			this.intro += content;
 		}
 
-		this.stats.timeEnd( 'insertAfter' );
+		if ( DEBUG ) this.stats.timeEnd( 'insertAfter' );
 		return this;
 	},
 
 	insertBefore ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		this.stats.time( 'insertBefore' );
+		if ( DEBUG ) this.stats.time( 'insertBefore' );
 
 		this._split( index );
 
@@ -234,14 +239,14 @@ MagicString.prototype = {
 			this.outro += content;
 		}
 
-		this.stats.timeEnd( 'insertBefore' );
+		if ( DEBUG ) this.stats.timeEnd( 'insertBefore' );
 		return this;
 	},
 
 	move ( start, end, index ) {
 		if ( index >= start && index <= end ) throw new Error( 'Cannot move a selection inside itself' );
 
-		this.stats.time( 'move' );
+		if ( DEBUG ) this.stats.time( 'move' );
 
 		this._split( start );
 		this._split( end );
@@ -274,7 +279,7 @@ MagicString.prototype = {
 		if ( !newLeft ) this.firstChunk = first;
 		if ( !newRight ) this.lastChunk = last;
 
-		this.stats.timeEnd( 'move' );
+		if ( DEBUG ) this.stats.timeEnd( 'move' );
 		return this;
 	},
 
@@ -286,7 +291,7 @@ MagicString.prototype = {
 
 		if ( end > this.original.length ) throw new Error( 'end is out of bounds' );
 
-		this.stats.time( 'overwrite' );
+		if ( DEBUG ) this.stats.time( 'overwrite' );
 
 		this._split( start );
 		this._split( end );
@@ -326,7 +331,7 @@ MagicString.prototype = {
 			newChunk.previous = last;
 		}
 
-		this.stats.timeEnd( 'overwrite' );
+		if ( DEBUG ) this.stats.timeEnd( 'overwrite' );
 		return this;
 	},
 
@@ -386,7 +391,7 @@ MagicString.prototype = {
 	_split ( index ) {
 		if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
 
-		this.stats.time( '_split' );
+		if ( DEBUG ) this.stats.time( '_split' );
 
 		let chunk = this.lastSearchedChunk;
 		const searchForward = index > chunk.end;
@@ -415,7 +420,7 @@ MagicString.prototype = {
 		if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
 
 		this.lastSearchedChunk = chunk;
-		this.stats.timeEnd( '_split' );
+		if ( DEBUG ) this.stats.timeEnd( '_split' );
 		return true;
 	},
 

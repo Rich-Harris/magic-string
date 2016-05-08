@@ -21,6 +21,9 @@
         "es6": true,
         "browser": true
     },
+    "globals": {
+        "DEBUG": true
+    },
     "extends": "eslint:recommended",
     "parserOptions": {
         "ecmaVersion": 6,
