@@ -5,6 +5,7 @@ import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
+import Stats from './utils/Stats.js';
 
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
@@ -18,11 +19,13 @@ export default function MagicString ( string, options = {} ) {
 		lastChunk:             { writable: true, value: chunk },
 		byStart:               { writable: true, value: {} },
 		byEnd:                 { writable: true, value: {} },
+		lastSearch:            { writable: true, value: 0 },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
 		storedNames:           { writable: true, value: {} },
-		indentStr:             { writable: true, value: guessIndent( string ) }
+		indentStr:             { writable: true, value: guessIndent( string ) },
+		stats:                 { writable: false, value: new Stats() }
 	});
 
 	this.byStart[ 0 ] = chunk;
@@ -87,13 +90,17 @@ MagicString.prototype = {
 
 		const names = Object.keys( this.storedNames );
 
-		return new SourceMap({
+		this.stats.time( 'generateMap' );
+		const map = new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names,
 			mappings: this.getMappings( options.hires, 0, {}, names )
 		});
+		this.stats.timeEnd( 'generateMap' );
+
+		return map;
 	},
 
 	getIndentString () {
@@ -202,6 +209,8 @@ MagicString.prototype = {
 	insertAfter ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
+		this.stats.time( 'insertAfter' );
+
 		this._split( index );
 
 		const chunk = this.byEnd[ index ];
@@ -212,11 +221,14 @@ MagicString.prototype = {
 			this.intro += content;
 		}
 
+		this.stats.timeEnd( 'insertAfter' );
 		return this;
 	},
 
 	insertBefore ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		this.stats.time( 'insertBefore' );
 
 		this._split( index );
 
@@ -228,11 +240,14 @@ MagicString.prototype = {
 			this.outro += content;
 		}
 
+		this.stats.timeEnd( 'insertBefore' );
 		return this;
 	},
 
 	move ( start, end, index ) {
 		if ( index >= start && index <= end ) throw new Error( 'Cannot move a selection inside itself' );
+
+		this.stats.time( 'move' );
 
 		this._split( start );
 		this._split( end );
@@ -265,18 +280,19 @@ MagicString.prototype = {
 		if ( !newLeft ) this.firstChunk = first;
 		if ( !newRight ) this.lastChunk = last;
 
+		this.stats.timeEnd( 'move' );
 		return this;
 	},
 
 	overwrite ( start, end, content, storeName ) {
-		if ( typeof content !== 'string' ) {
-			throw new TypeError( 'replacement content must be a string' );
-		}
+		if ( typeof content !== 'string' ) throw new TypeError( 'replacement content must be a string' );
 
 		while ( start < 0 ) start += this.original.length;
 		while ( end < 0 ) end += this.original.length;
 
 		if ( end > this.original.length ) throw new Error( 'end is out of bounds' );
+
+		this.stats.time( 'overwrite' );
 
 		this._split( start );
 		this._split( end );
@@ -289,24 +305,21 @@ MagicString.prototype = {
 		const first = this.byStart[ start ];
 		const last = this.byEnd[ end ];
 
-		// TODO is there a way around indexOf?
-		const firstIndex = this.chunks.indexOf( first );
-		const lastIndex = this.chunks.indexOf( last );
-
 		if ( first ) {
 			first.edit( content, storeName );
 
 			if ( first !== last ) {
-				first.next = last.next;
-				first.end = last.end;
-				first.outro = last.outro;
+				first.outro = '';
 
-				this.chunks.splice( firstIndex + 1, lastIndex - firstIndex ).forEach( chunk => {
-					this.byStart[ chunk.start ] = null;
-					this.byEnd[ chunk.end ] = null;
-				});
+				let chunk = first.next;
+				while ( chunk !== last ) {
+					chunk.edit( '', false );
+					chunk.intro = chunk.outro = '';
+					chunk = chunk.next;
+				}
 
-				this.byEnd[ first.end ] = first;
+				chunk.edit( '', false );
+				chunk.intro = '';
 			}
 		}
 
@@ -321,6 +334,7 @@ MagicString.prototype = {
 			this.chunks.push( newChunk );
 		}
 
+		this.stats.timeEnd( 'overwrite' );
 		return this;
 	},
 
@@ -382,36 +396,80 @@ MagicString.prototype = {
 	_split ( index ) {
 		if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
 
-		// binary search
-		let low = 0;
-		let high = this.chunks.length - 1;
+		this.stats.time( '_split' );
 
-		while ( low <= high ) {
-			let i = ~~( ( low + high ) / 2 );
-			const chunk = this.chunks[i];
+		let i = Math.min( this.lastSearch, this.chunks.length - 1 );
+		let chunk = this.chunks[i];
 
-			if ( chunk.start < index && chunk.end > index ) {
-				if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
-					const loc = getLocator( this.original )( index );
-					throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
-				}
-
-				const newChunk = chunk.split( index );
-				this.chunks.splice( i + 1, 0, newChunk );
-
-				this.byEnd[ index ] = chunk;
-				this.byStart[ index ] = newChunk;
-				this.byEnd[ newChunk.end ] = newChunk;
-
-				if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
-
-				return;
-			}
-
-			if ( chunk.end < index ) low = i + 1;
-			else if ( chunk.start > index ) high = i - 1;
+		if ( chunk.start < index && index < chunk.end ) {
+			return this._splitChunk( chunk, index, i );
 		}
+
+		const d = index < chunk.start ? -1 : 1;
+
+		do {
+			i += d;
+			chunk = this.chunks[i];
+
+			if ( chunk.start < index && index < chunk.end ) {
+				return this._splitChunk( chunk, index, i );
+			}
+		} while ( true );
 	},
+
+	_splitChunk ( chunk, index, i ) {
+		if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
+			const loc = getLocator( this.original )( index );
+			throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
+		}
+
+		const newChunk = chunk.split( index );
+		this.chunks.splice( i + 1, 0, newChunk );
+
+		this.byEnd[ index ] = chunk;
+		this.byStart[ index ] = newChunk;
+		this.byEnd[ newChunk.end ] = newChunk;
+
+		if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
+
+		this.lastSearch = i + 1;
+		this.stats.timeEnd( '_split' );
+		return true;
+	},
+
+	// _split ( index ) {
+	// 	if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
+	//
+	// 	// binary search
+	// 	let low = 0;
+	// 	let high = this.chunks.length - 1;
+	//
+	// 	while ( low <= high ) {
+	// 		let i = ~~( ( low + high ) / 2 );
+	// 		const chunk = this.chunks[i];
+	//
+	// 		if ( chunk.start < index && chunk.end > index ) {
+	// 			if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
+	// 				const loc = getLocator( this.original )( index );
+	// 				throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
+	// 			}
+	//
+	// 			const newChunk = chunk.split( index );
+	// 			this.chunks.splice( i + 1, 0, newChunk );
+	//
+	// 			this.byEnd[ index ] = chunk;
+	// 			this.byStart[ index ] = newChunk;
+	// 			this.byEnd[ newChunk.end ] = newChunk;
+	//
+	// 			if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
+	//
+	// 			return;
+	// 		}
+	//
+	// 		if ( chunk.end < index ) low = i + 1;
+	// 		else if ( chunk.start > index ) high = i - 1;
+	// 	}
+	// },
 
 	toString () {
 		let str = this.intro;
