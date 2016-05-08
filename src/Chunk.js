@@ -48,8 +48,6 @@ Chunk.prototype = {
 	},
 
 	split ( index ) {
-		if ( index === this.start ) return this;
-
 		const sliceIndex = index - this.start;
 
 		const originalBefore = this.original.slice( 0, sliceIndex );
@@ -64,9 +62,7 @@ Chunk.prototype = {
 		this.end = index;
 
 		if ( this.edited ) {
-			if ( this.content.length ) throw new Error( `Cannot split a chunk that has already been edited ("${this.original}")` );
-
-			// zero-length edited chunks are a special case (overlapping replacements)
+			// TODO is this block necessary?...
 			newChunk.edit( '', false );
 			this.content = '';
 		} else {

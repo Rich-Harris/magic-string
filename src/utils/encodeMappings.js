@@ -1,23 +1,5 @@
 import { encode } from 'vlq';
-
-function getLocator ( source ) {
-	let originalLines = source.split( '\n' );
-
-	return function locate ( index ) {
-		const len = originalLines.length;
-
-		let lineStart = 0;
-
-		for ( let i = 0; i < len; i += 1 ) {
-			const line = originalLines[i];
-			const lineEnd =  lineStart + line.length + 1; // +1 for newline
-
-			if ( lineEnd > index ) return { line: i, column: index - lineStart };
-
-			lineStart = lineEnd;
-		}
-	};
-}
+import getLocator from './getLocator.js';
 
 export default function encodeMappings ( original, intro, chunk, hires, sourcemapLocations, sourceIndex, offsets, names ) {
 	let rawLines = [];

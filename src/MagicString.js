@@ -4,9 +4,7 @@ import guessIndent from './utils/guessIndent.js';
 import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
-import { find, findIndex } from './utils/findIndex.js';
-
-let warned = false;
+import getLocator from './utils/getLocator.js';
 
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
@@ -343,8 +341,6 @@ MagicString.prototype = {
 		if ( start > end ) throw new Error( 'end must be greater than start' );
 
 		return this.overwrite( start, end, '', false );
-
-		return this;
 	},
 
 	slice ( start, end = this.original.length ) {
@@ -395,6 +391,11 @@ MagicString.prototype = {
 			const chunk = this.chunks[i];
 
 			if ( chunk.start < index && chunk.end > index ) {
+				if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
+					const loc = getLocator( this.original )( index );
+					throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
+				}
+
 				const newChunk = chunk.split( index );
 				this.chunks.splice( i + 1, 0, newChunk );
 
