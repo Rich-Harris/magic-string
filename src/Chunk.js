@@ -34,6 +34,10 @@ Chunk.prototype = {
 		return chunk;
 	},
 
+	contains ( index ) {
+		return this.start < index && index < this.end;
+	},
+
 	edit ( content, storeName ) {
 		this.content = content;
 		this.storeName = storeName;

@@ -14,11 +14,9 @@ export default function MagicString ( string, options = {} ) {
 		original:              { writable: true, value: string },
 		outro:                 { writable: true, value: '' },
 		intro:                 { writable: true, value: '' },
-		chunks:                { writable: true, value: [ chunk ] },
 		firstChunk:            { writable: true, value: chunk },
 		lastChunk:             { writable: true, value: chunk },
 		lastSearchedChunk:     { writable: true, value: chunk },
-		lastSearch:            { writable: true, value: 0 },
 		byStart:               { writable: true, value: {} },
 		byEnd:                 { writable: true, value: {} },
 		filename:              { writable: true, value: options.filename },
@@ -48,13 +46,10 @@ MagicString.prototype = {
 	clone () {
 		let cloned = new MagicString( this.original, { filename: this.filename });
 
-		cloned.chunks = [];
 		let originalChunk = this.firstChunk;
-		let clonedChunk = cloned.firstChunk = originalChunk.clone();
+		let clonedChunk = cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone();
 
 		while ( originalChunk ) {
-			cloned.chunks.push( clonedChunk );
-
 			cloned.byStart[ clonedChunk.start ] = clonedChunk;
 			cloned.byEnd[ clonedChunk.end ] = clonedChunk;
 
@@ -329,8 +324,6 @@ MagicString.prototype = {
 			// TODO last chunk in the array may not be the last chunk, if it's moved...
 			last.next = newChunk;
 			newChunk.previous = last;
-
-			this.chunks.push( newChunk );
 		}
 
 		this.stats.timeEnd( 'overwrite' );
@@ -395,33 +388,25 @@ MagicString.prototype = {
 
 		this.stats.time( '_split' );
 
-		let i = Math.min( this.lastSearch, this.chunks.length - 1 );
-		let chunk = this.chunks[i];
+		let chunk = this.lastSearchedChunk;
+		const searchForward = index > chunk.end;
 
-		if ( chunk.start < index && index < chunk.end ) {
-			return this._splitChunk( chunk, index, i );
+		while ( true ) {
+			if ( chunk.contains( index ) ) return this._splitChunk( chunk, index );
+
+			chunk = searchForward ?
+				this.byStart[ chunk.end ] :
+				this.byEnd[ chunk.start ];
 		}
-
-		const d = index < chunk.start ? -1 : 1;
-
-		do {
-			i += d;
-			chunk = this.chunks[i];
-
-			if ( chunk.start < index && index < chunk.end ) {
-				return this._splitChunk( chunk, index, i );
-			}
-		} while ( true );
 	},
 
-	_splitChunk ( chunk, index, i ) {
+	_splitChunk ( chunk, index ) {
 		if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
 			const loc = getLocator( this.original )( index );
 			throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
 		}
 
 		const newChunk = chunk.split( index );
-		this.chunks.splice( i + 1, 0, newChunk );
 
 		this.byEnd[ index ] = chunk;
 		this.byStart[ index ] = newChunk;
@@ -429,44 +414,10 @@ MagicString.prototype = {
 
 		if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
 
-		this.lastSearch = i + 1;
+		this.lastSearchedChunk = chunk;
 		this.stats.timeEnd( '_split' );
 		return true;
 	},
-
-	// _split ( index ) {
-	// 	if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
-	//
-	// 	// binary search
-	// 	let low = 0;
-	// 	let high = this.chunks.length - 1;
-	//
-	// 	while ( low <= high ) {
-	// 		let i = ~~( ( low + high ) / 2 );
-	// 		const chunk = this.chunks[i];
-	//
-	// 		if ( chunk.start < index && chunk.end > index ) {
-	// 			if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
-	// 				const loc = getLocator( this.original )( index );
-	// 				throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
-	// 			}
-	//
-	// 			const newChunk = chunk.split( index );
-	// 			this.chunks.splice( i + 1, 0, newChunk );
-	//
-	// 			this.byEnd[ index ] = chunk;
-	// 			this.byStart[ index ] = newChunk;
-	// 			this.byEnd[ newChunk.end ] = newChunk;
-	//
-	// 			if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
-	//
-	// 			return;
-	// 		}
-	//
-	// 		if ( chunk.end < index ) low = i + 1;
-	// 		else if ( chunk.start > index ) high = i - 1;
-	// 	}
-	// },
 
 	toString () {
 		let str = this.intro;
