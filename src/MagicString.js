@@ -17,9 +17,10 @@ export default function MagicString ( string, options = {} ) {
 		chunks:                { writable: true, value: [ chunk ] },
 		firstChunk:            { writable: true, value: chunk },
 		lastChunk:             { writable: true, value: chunk },
+		lastSearchedChunk:     { writable: true, value: chunk },
+		lastSearch:            { writable: true, value: 0 },
 		byStart:               { writable: true, value: {} },
 		byEnd:                 { writable: true, value: {} },
-		lastSearch:            { writable: true, value: 0 },
 		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 		sourcemapLocations:    { writable: true, value: {} },
@@ -146,11 +147,11 @@ MagicString.prototype = {
 
 		this.intro = this.intro.replace( pattern, replacer );
 
-		let chunkIndex;
 		let charIndex = 0;
 
-		for ( chunkIndex = 0; chunkIndex < this.chunks.length; chunkIndex += 1 ) { // can't cache this.chunks.length, it may change
-			let chunk = this.chunks[ chunkIndex ];
+		let chunk = this.firstChunk;
+
+		while ( chunk ) {
 			const end = chunk.end;
 
 			if ( chunk.edited ) {
@@ -182,11 +183,8 @@ MagicString.prototype = {
 								this.byStart[ charIndex ] = rhs;
 								this.byEnd[ charIndex ] = chunk;
 
-								this.chunks.splice( chunkIndex + 1, 0, rhs );
-								chunkIndex += 1;
 								chunk = rhs;
 							}
-
 						}
 					}
 
@@ -195,6 +193,7 @@ MagicString.prototype = {
 			}
 
 			charIndex = chunk.end;
+			chunk = chunk.next;
 		}
 
 		this.outro = this.outro.replace( pattern, replacer );
@@ -363,12 +362,8 @@ MagicString.prototype = {
 
 		let result = '';
 
-		for ( let i = 0; i < this.chunks.length; i += 1 ) {
-			const chunk = this.chunks[i];
-
-			if ( chunk.end <= start ) continue;
-			if ( chunk.start >= end ) break;
-
+		let chunk = this.firstChunk;
+		while ( chunk ) {
 			if ( chunk.start < start || chunk.end > end ) {
 				if ( chunk.edited ) throw new Error( `Cannot use replaced characters (${start}, ${end}) as slice anchors` );
 
@@ -376,9 +371,11 @@ MagicString.prototype = {
 				const sliceEnd = Math.min( chunk.content.length - ( chunk.end - end ), chunk.content.length );
 
 				result += chunk.content.slice( sliceStart, sliceEnd );
-			} else {
+			} else if ( chunk.end > start && chunk.start < end ) {
 				result += chunk.content;
 			}
+
+			chunk = chunk.next;
 		}
 
 		return result;
