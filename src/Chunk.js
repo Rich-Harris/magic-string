@@ -38,6 +38,22 @@ Chunk.prototype = {
 		return this.start < index && index < this.end;
 	},
 
+	eachNext ( fn ) {
+		let chunk = this;
+		while ( chunk ) {
+			fn( chunk );
+			chunk = chunk.next;
+		}
+	},
+
+	eachPrevious ( fn ) {
+		let chunk = this;
+		while ( chunk ) {
+			fn( chunk );
+			chunk = chunk.previous;
+		}
+	},
+
 	edit ( content, storeName ) {
 		this.content = content;
 		this.storeName = storeName;
@@ -74,6 +90,7 @@ Chunk.prototype = {
 		}
 
 		newChunk.next = this.next;
+		if ( newChunk.next ) newChunk.next.previous = newChunk;
 		newChunk.previous = this;
 		this.next = newChunk;
 
@@ -84,30 +101,44 @@ Chunk.prototype = {
 		return this.intro + this.content + this.outro;
 	},
 
-	trim ( rx ) {
-		if ( !this.content.length ) return false;
-
-		const content = this.content.replace( rx, '' );
-
-		if ( content === this.content ) return true;
-
-		this.edited = true;
-		this.content = content;
-
-		return !!content;
-	},
-
 	trimEnd ( rx ) {
 		this.outro = this.outro.replace( rx, '' );
 		if ( this.outro.length ) return true;
 
-		return this.trim( rx );
+		const trimmed = this.content.replace( rx, '' );
+
+		if ( trimmed.length ) {
+			if ( trimmed !== this.content ) {
+				this.split( this.start + trimmed.length ).edit( '', false );
+			}
+
+			return true;
+		} else {
+			this.edit( '', false );
+
+			this.intro = this.intro.replace( rx, '' );
+			if ( this.intro.length ) return true;
+		}
 	},
 
 	trimStart ( rx ) {
 		this.intro = this.intro.replace( rx, '' );
 		if ( this.intro.length ) return true;
 
-		return this.trim( rx );
+		const trimmed = this.content.replace( rx, '' );
+
+		if ( trimmed.length ) {
+			if ( trimmed !== this.content ) {
+				this.split( this.end - trimmed.length );
+				this.edit( '', false );
+			}
+
+			return true;
+		} else {
+			this.edit( '', false );
+
+			this.outro = this.outro.replace( rx, '' );
+			if ( this.outro.length ) return true;
+		}
 	}
 };

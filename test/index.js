@@ -915,32 +915,35 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'defghi' );
 		});
 
-		it( 'should trim original content before or after replaced content', function () {
-			var s = new MagicString( 'abc   defghi' );
+		it( 'should trim original content before replaced content', function () {
+			var s = new MagicString( 'abc   def' );
 
 			s.remove( 6, 9 );
-			s.remove( 9, 12 );
 			assert.equal( s.toString(), 'abc   ' );
 
 			s.trim();
 			assert.equal( s.toString(), 'abc' );
+		});
 
-			s = new MagicString( 'xyz   abc   defghi' );
-
-			s.remove( 0, 3 );
-			s.remove( 12, 18 );
-			assert.equal( s.toString(), '   abc   ' );
-
-			s.trim();
-			assert.equal( s.toString(), 'abc' );
-
-			s = new MagicString( 'xyz   abc' );
+		it( 'should trim original content after replaced content', function () {
+			var s = new MagicString( 'abc   def' );
 
 			s.remove( 0, 3 );
-			assert.equal( s.toString(), '   abc' );
+			assert.equal( s.toString(), '   def' );
 
 			s.trim();
-			assert.equal( s.toString(), 'abc' );
+			assert.equal( s.toString(), 'def' );
+		});
+
+		it( 'should trim original content before and after replaced content', function () {
+			var s = new MagicString( 'abc   def   ghi' );
+
+			s.remove( 0, 3 );
+			s.remove( 12, 15 );
+			assert.equal( s.toString(), '   def   ' );
+
+			s.trim();
+			assert.equal( s.toString(), 'def' );
 		});
 
 		it( 'should trim appended/prepended content', function () {
@@ -948,6 +951,12 @@ describe( 'MagicString', function () {
 
 			s.prepend( '  ' ).append( '  ' ).trim();
 			assert.equal( s.toString(), 'abcdefghijkl' );
+		});
+
+		it( 'should trim empty string', function () {
+			var s = new MagicString( '   ' );
+
+			assert.equal( s.trim().toString(), '' );
 		});
 
 		it( 'should return this', function () {

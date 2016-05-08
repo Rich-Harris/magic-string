@@ -7,8 +7,6 @@ import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
 import Stats from './utils/Stats.js';
 
-console.log( 'DEBUG', typeof DEBUG )
-
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
 
@@ -440,7 +438,6 @@ MagicString.prototype = {
 		return this.trim('[\\r\\n]');
 	},
 
-	// TODO rewrite these methods, post-refactor
 	trim ( charType ) {
 		return this.trimStart( charType ).trimEnd( charType );
 	},
@@ -454,13 +451,22 @@ MagicString.prototype = {
 		let chunk = this.lastChunk;
 
 		do {
-			if ( chunk.trimEnd( rx ) ) return this;
+			const end = chunk.end;
+			const aborted = chunk.trimEnd( rx );
 
-			chunk.next = null;
-			this.lastChunk = chunk;
+			// if chunk was trimmed, we have a new lastChunk
+			if ( chunk.end !== end ) {
+				this.lastChunk = chunk.next;
 
+				this.byEnd[ chunk.end ] = chunk;
+				this.byStart[ chunk.next.start ] = chunk.next;
+			}
+
+			if ( aborted ) return this;
 			chunk = chunk.previous;
 		} while ( chunk );
+
+		return this;
 	},
 
 	trimStart ( charType ) {
@@ -472,12 +478,21 @@ MagicString.prototype = {
 		let chunk = this.firstChunk;
 
 		do {
-			if ( chunk.trimStart( rx ) ) return this;
+			const end = chunk.end;
+			const aborted = chunk.trimStart( rx );
 
-			chunk.previous = null;
-			this.firstChunk = chunk;
+			if ( chunk.end !== end ) {
+				// special case...
+				if ( chunk === this.lastChunk ) this.lastChunk = chunk.next;
 
+				this.byEnd[ chunk.end ] = chunk;
+				this.byStart[ chunk.next.start ] = chunk.next;
+			}
+
+			if ( aborted ) return this;
 			chunk = chunk.next;
 		} while ( chunk );
+
+		return this;
 	}
 };
