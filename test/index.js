@@ -809,7 +809,7 @@ describe( 'MagicString', function () {
 
 			assert.throws( function () {
 				s.remove( 4, 6 );
-			}, /Cannot remove edited content \("ef"\)/ );
+			}, /Cannot split a chunk that has already been edited/ );
 		});
 
 		it( 'should return this', function () {
