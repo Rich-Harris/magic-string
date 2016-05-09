@@ -22,7 +22,9 @@
         "browser": true
     },
     "globals": {
-        "DEBUG": true
+        "DEBUG": true,
+        "process": true,
+        "Buffer": true
     },
     "extends": "eslint:recommended",
     "parserOptions": {
