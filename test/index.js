@@ -201,12 +201,12 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 9 );
 		});
 
-		it( 'should yield consistent results between insertAfter and insertBefore', function () {
+		it( 'should yield consistent results between insertLeft and insertRight', function () {
 			var s1 = new MagicString( 'abcdefghijkl' );
-			s1.insertAfter( 6, 'X' );
+			s1.insertLeft( 6, 'X' );
 
 			var s2 = new MagicString( 'abcdefghijkl' );
-			s2.insertBefore( 6, 'X' );
+			s2.insertRight( 6, 'X' );
 
 			var m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
 			var m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
@@ -426,7 +426,7 @@ describe( 'MagicString', function () {
 			assert.throws( function () { s.insert( 6, 'X' ); }, /deprecated/ );
 		});
 
-		// TODO move this into insertBefore and insertAfter tests
+		// TODO move this into insertRight and insertLeft tests
 
 		// it( 'should insert characters in the correct location', function () {
 		// 	var s = new MagicString( 'abcdefghijkl' );
@@ -471,29 +471,29 @@ describe( 'MagicString', function () {
 		// });
 	});
 
-	describe( 'insertAfter', function () {
+	describe( 'insertLeft', function () {
 		it( 'inserts repeatedly in correct order', function () {
 			var s = new MagicString( 'ab' );
-			assert.equal( s.insertAfter(1, '1').toString(), 'a1b' );
-			assert.equal( s.insertAfter(1, '2').toString(), 'a12b' );
+			assert.equal( s.insertLeft(1, '1').toString(), 'a1b' );
+			assert.equal( s.insertLeft(1, '2').toString(), 'a12b' );
 		});
 
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.insertAfter( 0, 'a' ), s );
+			assert.strictEqual( s.insertLeft( 0, 'a' ), s );
 		});
 	});
 
-	describe( 'insertBefore', function () {
+	describe( 'insertRight', function () {
 		it( 'inserts repeatedly in correct order', function () {
 			var s = new MagicString( 'ab' );
-			assert.equal( s.insertBefore(1, '1').toString(), 'a1b' );
-			assert.equal( s.insertBefore(1, '2').toString(), 'a21b' );
+			assert.equal( s.insertRight(1, '1').toString(), 'a1b' );
+			assert.equal( s.insertRight(1, '2').toString(), 'a21b' );
 		});
 
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.insertAfter( 0, 'a' ), s );
+			assert.strictEqual( s.insertLeft( 0, 'a' ), s );
 		});
 	});
 
@@ -595,7 +595,7 @@ describe( 'MagicString', function () {
 		// it( 'move follows inserts', function () {
 		// 	var s = new MagicString( 'abcdefghijkl' );
 		//
-		// 	s.insertAfter( 3, 'X' ).move( 6, 9, 3 );
+		// 	s.insertLeft( 3, 'X' ).move( 6, 9, 3 );
 		// 	assert.equal( s.toString(), 'abcXghidefjkl' );
 		// });
 		//
@@ -616,7 +616,7 @@ describe( 'MagicString', function () {
 		it( 'moves content inserted at end of range', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.insertAfter( 6, 'X' ).move( 3, 6, 9 );
+			s.insertLeft( 6, 'X' ).move( 3, 6, 9 );
 			assert.equal( s.toString(), 'abcghidefXjkl' );
 		});
 
@@ -676,7 +676,7 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
-			s.insertBefore( 6, 'DEF' );
+			s.insertRight( 6, 'DEF' );
 			s.overwrite( 6, 9, 'GHI' );
 			assert.equal( s.toString(), 'DEFGHIjkl' );
 		});
@@ -684,7 +684,7 @@ describe( 'MagicString', function () {
 		it( 'replaces zero-length inserts inside overwrite', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
-			s.insertAfter( 6, 'XXX' );
+			s.insertLeft( 6, 'XXX' );
 			s.overwrite( 3, 9, 'DEFGHI' );
 			assert.equal( s.toString(), 'abcDEFGHIjkl' );
 		});
@@ -796,8 +796,8 @@ describe( 'MagicString', function () {
 		it( 'should not remove content inserted after the end of removed range', function () {
 			var s = new MagicString( 'ab.c;' );
 
-			s.insertBefore( 0, '(' );
-			s.insertBefore( 4, ')' );
+			s.insertRight( 0, '(' );
+			s.insertRight( 4, ')' );
 			s.remove( 2, 4 );
 			assert.equal( s.toString(), '(ab);' );
 		});

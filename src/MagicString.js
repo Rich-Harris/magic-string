@@ -200,13 +200,13 @@ MagicString.prototype = {
 	},
 
 	insert () {
-		throw new Error( 'magicString.insert(...) is deprecated. Use insertBefore(...) or insertAfter(...)' );
+		throw new Error( 'magicString.insert(...) is deprecated. Use insertRight(...) or insertLeft(...)' );
 	},
 
-	insertAfter ( index, content ) {
+	insertLeft ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		if ( DEBUG ) this.stats.time( 'insertAfter' );
+		if ( DEBUG ) this.stats.time( 'insertLeft' );
 
 		this._split( index );
 
@@ -218,14 +218,14 @@ MagicString.prototype = {
 			this.intro += content;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertAfter' );
+		if ( DEBUG ) this.stats.timeEnd( 'insertLeft' );
 		return this;
 	},
 
-	insertBefore ( index, content ) {
+	insertRight ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		if ( DEBUG ) this.stats.time( 'insertBefore' );
+		if ( DEBUG ) this.stats.time( 'insertRight' );
 
 		this._split( index );
 
@@ -237,7 +237,7 @@ MagicString.prototype = {
 			this.outro += content;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertBefore' );
+		if ( DEBUG ) this.stats.timeEnd( 'insertRight' );
 		return this;
 	},
 
