@@ -1,5 +1,11 @@
 # changelog
 
+## 0.13.0
+
+* Breaking: `insertAfter` is now `insertLeft`, `insertBefore` is now `insertRight`
+* Breaking: `insert` is no longer available. Use `insertLeft` and `insertRight`
+* Significant performance improvements
+
 ## 0.12.1
 
 * Fix sourcemap generation with `insertAfter` and `insertBefore`
