@@ -23,21 +23,13 @@ export default function getLocator ( source ) {
 	return function locate ( index ) {
 		let range = lineRanges[i];
 
-		if ( rangeContains( range, index ) ) return getLocation( range, index );
+		const d = index >= range.end ? 1 : -1;
 
-		// go forwards (most likely) or backwards
-		if ( index >= range.end ) {
-			for ( ; i < lineRanges.length; i += 1 ) {
-				range = lineRanges[i];
-				if ( rangeContains( range, index ) ) return getLocation( range, index );
-			}
-		}
+		while ( range ) {
+			if ( rangeContains( range, index ) ) return getLocation( range, index );
 
-		else {
-			for ( ; i > 0; i -= 1 ) {
-				range = lineRanges[i];
-				if ( rangeContains( range, index ) ) return getLocation( range, index );
-			}
+			i += d;
+			range = lineRanges[i];
 		}
 	};
 }
