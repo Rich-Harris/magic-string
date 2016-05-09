@@ -6,7 +6,9 @@ if ( typeof window !== 'undefined' && typeof window.btoa === 'function' ) {
 	/* global Buffer */
 	_btoa = str => new Buffer( str ).toString( 'base64' );
 } else {
-	throw new Error( 'Unsupported environment: `window.btoa` or `Buffer` should be supported.' );
+	_btoa = () => {
+		throw new Error( 'Unsupported environment: `window.btoa` or `Buffer` should be supported.' );
+	};
 }
 
 export default _btoa;
