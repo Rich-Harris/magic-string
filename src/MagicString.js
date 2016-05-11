@@ -352,23 +352,46 @@ MagicString.prototype = {
 		return this.overwrite( start, end, '', false );
 	},
 
-	slice ( start, end = this.original.length ) {
+	slice ( start = 0, end = this.original.length ) {
 		while ( start < 0 ) start += this.original.length;
 		while ( end < 0 ) end += this.original.length;
 
 		let result = '';
 
+		// find start chunk
 		let chunk = this.firstChunk;
+		while ( chunk && ( chunk.start > start || chunk.end <= start ) ) {
+
+			// found end chunk before start
+			if ( chunk.start < end && chunk.end >= end ) {
+				return result;
+			}
+
+			chunk = chunk.next;
+		}
+
+		if ( chunk && chunk.edited && chunk.start !== start ) throw new Error(`Cannot use replaced character ${start} as slice start anchor.`);
+
+		let startChunk = chunk;
 		while ( chunk ) {
-			if ( chunk.start < start || chunk.end > end ) {
-				if ( chunk.edited ) throw new Error( `Cannot use replaced characters (${start}, ${end}) as slice anchors` );
+			if ( chunk.intro && ( startChunk !== chunk || chunk.start === start ) ) {
+				result += chunk.intro;
+			}
 
-				const sliceStart = Math.max( start - chunk.start, 0 );
-				const sliceEnd = Math.min( chunk.content.length - ( chunk.end - end ), chunk.content.length );
+			const containsEnd = chunk.start < end && chunk.end >= end;
+			if ( containsEnd && chunk.edited && chunk.end !== end ) throw new Error(`Cannot use replaced character ${end} as slice end anchor.`);
 
-				result += chunk.content.slice( sliceStart, sliceEnd );
-			} else if ( chunk.end > start && chunk.start < end ) {
-				result += chunk.content;
+			const sliceStart = startChunk === chunk ? start - chunk.start : 0;
+			const sliceEnd = containsEnd ? chunk.content.length + end - chunk.end : chunk.content.length;
+
+			result += chunk.content.slice( sliceStart, sliceEnd );
+
+			if ( chunk.outro && ( !containsEnd || chunk.end === end ) ) {
+				result += chunk.outro;
+			}
+
+			if ( containsEnd ) {
+				break;
 			}
 
 			chunk = chunk.next;
