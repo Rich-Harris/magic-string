@@ -1,5 +1,9 @@
 # changelog
 
+## 0.13.1
+
+* Fix a bevy of `s.slice()` issues ([#62](https://github.com/Rich-Harris/magic-string/pull/62))
+
 ## 0.13.0
 
 * Breaking: `insertAfter` is now `insertLeft`, `insertBefore` is now `insertRight`
