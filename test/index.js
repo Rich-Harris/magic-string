@@ -845,23 +845,95 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( 0, -3 ), 'abcdefghi' );
 		});
 
+		it( 'includes inserted characters, respecting insertion direction', function () {
+			var s = new MagicString( 'abefij' );
+
+			s.insertRight( 2, 'cd' );
+			s.insertLeft( 4, 'gh' );
+
+			assert.equal( s.slice(), 'abcdefghij' );
+			assert.equal( s.slice( 1, 5 ), 'bcdefghi' );
+			assert.equal( s.slice( 2, 4 ), 'cdefgh' );
+			assert.equal( s.slice( 3, 4 ), 'fgh' );
+			assert.equal( s.slice( 0, 2 ), 'ab' );
+			assert.equal( s.slice( 0, 3 ), 'abcde' );
+			assert.equal( s.slice( 4, 6 ), 'ij' );
+			assert.equal( s.slice( 3, 6 ), 'fghij' );
+		});
+
+		it( 'supports characters moved outward', function () {
+			var s = new MagicString( 'abcdEFghIJklmn' );
+
+			s.move( 4, 6, 2 );
+			s.move( 8, 10, 12 );
+			assert.equal( s.toString(), 'abEFcdghklIJmn' );
+
+			assert.equal( s.slice( 1, -1 ), 'bEFcdghklIJm' );
+			assert.equal( s.slice( 2, -2 ), 'cdghkl' );
+			assert.equal( s.slice( 3, -3 ), 'dghk' );
+			assert.equal( s.slice( 4, -4 ), 'EFcdghklIJ' );
+			assert.equal( s.slice( 5, -5 ), 'FcdghklI' );
+			assert.equal( s.slice( 6, -6 ), 'gh' );
+		});
+
+		it( 'supports characters moved inward', function () {
+			var s = new MagicString( 'abCDefghijKLmn' );
+
+			s.move( 2, 4, 6 );
+			s.move( 10, 12, 8 );
+			assert.equal( s.toString(), 'abefCDghKLijmn' );
+
+			assert.equal( s.slice( 1, -1 ), 'befCDghKLijm' );
+			assert.equal( s.slice( 2, -2 ), 'CDghKL' );
+			assert.equal( s.slice( 3, -3 ), 'DghK' );
+			assert.equal( s.slice( 4, -4 ), 'efCDghKLij' );
+			assert.equal( s.slice( 5, -5 ), 'fCDghKLi' );
+			assert.equal( s.slice( 6, -6 ), 'gh' );
+		});
+
+		it( 'supports characters moved opposing', function () {
+			var s = new MagicString( 'abCDefghIJkl' );
+
+			s.move( 2, 4, 8 );
+			s.move( 8, 10, 4 );
+			assert.equal( s.toString(), 'abIJefghCDkl' );
+
+			assert.equal( s.slice( 1, -1 ), 'bIJefghCDk' );
+			assert.equal( s.slice( 2, -2 ), '' );
+			assert.equal( s.slice( 3, -3 ), '' );
+			assert.equal( s.slice( -3, 3 ), 'JefghC' );
+			assert.equal( s.slice( 4, -4 ), 'efgh' );
+			assert.equal( s.slice( 0, 3 ), 'abIJefghC' );
+			assert.equal( s.slice( 3 ), 'Dkl' );
+			assert.equal( s.slice( 0, -3 ), 'abI' );
+			assert.equal( s.slice( -3 ), 'JefghCDkl' );
+		});
+
 		it( 'errors if replaced characters are used as slice anchors', function () {
 			var s = new MagicString( 'abcdef' );
 			s.overwrite( 2, 4, 'CD' );
 
 			assert.throws( function () {
 				s.slice( 2, 3 );
-			}, /slice anchors/ );
+			}, /slice end anchor/ );
 
 			assert.throws( function () {
 				s.slice( 3, 4 );
-			}, /slice anchors/ );
+			}, /slice start anchor/ );
 
 			assert.throws( function () {
 				s.slice( 3, 5 );
-			}, /slice anchors/ );
+			}, /slice start anchor/ );
 
 			assert.equal( s.slice( 1, 5 ), 'bCDe' );
+		});
+
+		it( 'does not error if slice is after removed characters', function () {
+			var s = new MagicString( 'abcdef' );
+
+			s.remove( 0, 2 );
+
+			assert.equal( s.slice( 2, 4 ), 'cd' );
 		});
 	});
 
