@@ -1,5 +1,10 @@
 # changelog
 
+## 0.14.0
+
+* Throw if overwrite of zero-length range is attempted
+* Correctly handle redundant move operations
+
 ## 0.13.1
 
 * Fix a bevy of `s.slice()` issues ([#62](https://github.com/Rich-Harris/magic-string/pull/62))
