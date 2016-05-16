@@ -526,6 +526,16 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefjklghi' );
 		});
 
+		it( 'ignores redundant move', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.insertRight( 9, 'X' );
+			s.move( 9, 12, 6 );
+			s.insertLeft( 12, 'Y' );
+			s.move( 6, 9, 12 ); // this is redundant – [6,9] is already after [9,12]
+
+			assert.equal( s.toString(), 'abcdefXjklYghi' );
+		});
+
 		it( 'moves content to the middle', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			s.move( 3, 6, 9 );
@@ -665,13 +675,6 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'ABCDEFGHIJKL' );
 		});
 
-		it( 'should replace characters at the end of the original string', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-
-			s.overwrite( 12, 12, '<<<' );
-			assert.equal( s.toString(), 'abcdefghijkl<<<' );
-		});
-
 		it( 'does not replace zero-length inserts at overwrite start location', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
@@ -704,6 +707,13 @@ describe( 'MagicString', function () {
 		it( 'should return this', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.overwrite( 3, 4, 'D' ), s );
+		});
+
+		it( 'should disallow overwriting zero-length ranges', function () {
+			var s = new MagicString( 'x' );
+			assert.throws( function () {
+				s.overwrite( 0, 0, 'anything' );
+			}, /Cannot overwrite a zero-length range – use insertLeft or insertRight instead/ );
 		});
 
 		it( 'should throw when given non-string content', function () {

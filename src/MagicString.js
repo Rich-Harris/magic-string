@@ -257,6 +257,7 @@ MagicString.prototype = {
 		const oldRight = last.next;
 
 		const newRight = this.byStart[ index ];
+		if ( !newRight && last === this.lastChunk ) return this;
 		const newLeft = newRight ? newRight.previous : this.lastChunk;
 
 		if ( oldLeft ) oldLeft.next = oldRight;
