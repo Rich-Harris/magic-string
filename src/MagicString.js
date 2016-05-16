@@ -288,6 +288,7 @@ MagicString.prototype = {
 		while ( end < 0 ) end += this.original.length;
 
 		if ( end > this.original.length ) throw new Error( 'end is out of bounds' );
+		if ( start === end ) throw new Error( 'Cannot overwrite a zero-length range – use insertLeft or insertRight instead' );
 
 		if ( DEBUG ) this.stats.time( 'overwrite' );
 
