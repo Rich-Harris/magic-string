@@ -1,4 +1,6 @@
 import MagicString from './MagicString.js';
+import Bundle from './Bundle.js';
+
+MagicString.Bundle = Bundle;
 
 export default MagicString;
-export { default as Bundle } from './Bundle.js';

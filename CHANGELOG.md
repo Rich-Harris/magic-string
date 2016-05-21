@@ -1,5 +1,9 @@
 # changelog
 
+## 0.15.0
+
+* Use named export of `Bundle` in ES build, so ES consumers of magic-string can tree-shake it out
+
 ## 0.14.0
 
 * Throw if overwrite of zero-length range is attempted
