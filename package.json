@@ -44,7 +44,8 @@
     "build:umd": "rollup -c --environment DEPS",
     "build": " npm run build:cjs && npm run build:es6 && npm run build:umd",
     "prepublish": "rm -rf dist && npm test && npm run build:es6 && npm run build:umd",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "watch": "rollup -c -w"
   },
   "files": [
     "src/*",
