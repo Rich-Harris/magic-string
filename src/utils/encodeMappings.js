@@ -77,22 +77,26 @@ export default function encodeMappings ( original, intro, chunk, hires, sourcema
 		}
 	}
 
+	let hasContent = false;
+
 	while ( chunk ) {
 		let loc = locate( chunk.start );
 
 		if ( chunk.intro.length ) {
-			addEdit( chunk.intro, '', loc, -1, !!chunk.previous );
+			addEdit( chunk.intro, '', loc, -1, hasContent );
 		}
 
 		if ( chunk.edited ) {
-			addEdit( chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1, !!chunk.previous );
+			addEdit( chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1, hasContent );
 		} else {
 			addUneditedChunk( chunk, loc );
 		}
 
 		if ( chunk.outro.length ) {
-			addEdit( chunk.outro, '', loc, -1, !!chunk.previous );
+			addEdit( chunk.outro, '', loc, -1, hasContent );
 		}
+
+		if ( chunk.content || chunk.intro || chunk.outro ) hasContent = true;
 
 		const nextChunk = chunk.next;
 		chunk = nextChunk;

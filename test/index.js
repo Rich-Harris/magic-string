@@ -301,6 +301,17 @@ describe( 'MagicString', function () {
 
 			assert.equal( loc.column, 2 );
 		});
+
+		it( 'skips empty segments at the start', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.remove( 0, 3 ).remove( 3, 6 );
+
+			var map = s.generateMap();
+			var smc = new SourceMapConsumer( map );
+			var loc = smc.originalPositionFor({ line: 1, column: 6 });
+
+			assert.equal( loc.column, 6 );
+		});
 	});
 
 	describe( 'getIndentString', function () {
