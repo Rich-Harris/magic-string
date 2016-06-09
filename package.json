@@ -45,7 +45,10 @@
     "build": " npm run build:cjs && npm run build:es6 && npm run build:umd",
     "prepublish": "rm -rf dist && npm test && npm run build:es6 && npm run build:umd",
     "lint": "eslint src",
-    "watch": "rollup -c -w"
+    "watch:cjs": "rollup -w -c",
+    "watch:es6": "rollup -w -c --environment ES",
+    "watch:umd": "rollup -w -c --environment DEPS",
+    "watch": "npm run watch:es6"
   },
   "files": [
     "src/*",

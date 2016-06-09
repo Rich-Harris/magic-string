@@ -9,6 +9,7 @@ export default {
 	entry: process.env.ES ? 'src/index.js' : 'src/index-legacy.js',
 	dest: 'dist/magic-string.' + format + '.js',
 	format: format,
+	exports: process.env.ES ? 'named' : 'default',
 	plugins: [
 		buble({ exclude: 'node_modules/**' }),
 		nodeResolve({ jsnext: true, skip: external }),
