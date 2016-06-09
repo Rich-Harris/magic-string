@@ -1,4 +1,8 @@
-# changelog
+# magic-string changelog
+
+## 0.15.1
+
+* Minor sourcemap fixes
 
 ## 0.15.0
 
