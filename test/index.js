@@ -312,6 +312,14 @@ describe( 'MagicString', function () {
 
 			assert.equal( loc.column, 6 );
 		});
+
+		it( 'skips indentation at the start', function () {
+			var s = new MagicString( 'abcdefghijkl' );
+			s.indent( '    ' );
+
+			var map = s.generateMap();
+			assert.equal( map.mappings, 'IAAA' );
+		});
 	});
 
 	describe( 'getIndentString', function () {

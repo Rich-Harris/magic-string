@@ -1,6 +1,8 @@
 import { encode } from 'vlq';
 import getLocator from './getLocator.js';
 
+const nonWhitespace = /\S/;
+
 export default function encodeMappings ( original, intro, chunk, hires, sourcemapLocations, sourceIndex, offsets, names ) {
 	let rawLines = [];
 
@@ -12,7 +14,7 @@ export default function encodeMappings ( original, intro, chunk, hires, sourcema
 	const locate = getLocator( original );
 
 	function addEdit ( content, original, loc, nameIndex, i ) {
-		if ( i || content.length ) {
+		if ( i || ( content.length && nonWhitespace.test( content ) ) ) {
 			rawSegments.push({
 				generatedCodeLine,
 				generatedCodeColumn,
