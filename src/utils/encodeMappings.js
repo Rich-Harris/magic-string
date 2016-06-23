@@ -3,7 +3,7 @@ import getLocator from './getLocator.js';
 
 const nonWhitespace = /\S/;
 
-export default function encodeMappings ( original, intro, chunk, hires, sourcemapLocations, sourceIndex, offsets, names ) {
+export default function encodeMappings ( original, intro, outro, chunk, hires, sourcemapLocations, sourceIndex, offsets, names ) {
 	let rawLines = [];
 
 	let generatedCodeLine = intro.split( '\n' ).length - 1;
@@ -109,6 +109,8 @@ export default function encodeMappings ( original, intro, chunk, hires, sourcema
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 	offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
+	const outroSemis = outro.split( '\n' ).map( () => '' ).join( ';' );
+
 	const encoded = rawLines.map( segments => {
 		let generatedCodeColumn = 0;
 
@@ -132,7 +134,7 @@ export default function encodeMappings ( original, intro, chunk, hires, sourcema
 
 			return encode( arr );
 		}).join( ',' );
-	}).join( ';' );
+	}).join( ';' ) + outroSemis;
 
 	return encoded;
 }
