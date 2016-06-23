@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.15.2
+
+* Generate correct bundle sourcemap with prepended/appended content
+
 ## 0.15.1
 
 * Minor sourcemap fixes
