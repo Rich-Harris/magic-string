@@ -1409,6 +1409,35 @@ describe( 'MagicString.Bundle', function () {
 			loc = smc.originalPositionFor({ line: 2, column: 9 });
 			assert.equal( loc.name, 'two' );
 		});
+
+		it( 'should exclude sources without filename from sourcemap', function () {
+			var b = new MagicString.Bundle();
+
+			var one = new MagicString( 'function one () {}', { filename: 'one.js' });
+			var two = new MagicString( 'function two () {}', { filename: null });
+			var three = new MagicString( 'function three () {}', { filename: 'three.js' });
+
+			b.addSource( one );
+			b.addSource( two );
+			b.addSource( three );
+
+			map = b.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			smc = new SourceMapConsumer( map );
+
+			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			assert.equal( loc.source, 'one.js' );
+
+			loc = smc.originalPositionFor({ line: 2, column: 9 });
+			assert.equal( loc.source, null );
+
+			loc = smc.originalPositionFor({ line: 3, column: 9 });
+			assert.equal( loc.source, 'three.js' );
+		});
 	});
 
 	describe( 'indent', function () {
