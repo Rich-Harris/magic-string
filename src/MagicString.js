@@ -308,17 +308,13 @@ MagicString.prototype = {
 			first.edit( content, storeName );
 
 			if ( first !== last ) {
-				first.outro = '';
-
 				let chunk = first.next;
 				while ( chunk !== last ) {
 					chunk.edit( '', false );
-					chunk.intro = chunk.outro = '';
 					chunk = chunk.next;
 				}
 
 				chunk.edit( '', false );
-				chunk.intro = '';
 			}
 		}
 
