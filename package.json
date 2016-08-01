@@ -13,7 +13,7 @@
   "devDependencies": {
     "codecov.io": "^0.1.6",
     "console-group": "^0.2.1",
-    "eslint": "^2.11.1",
+    "eslint": "^3.2.1",
     "istanbul": "^0.4.3",
     "mocha": "^2.5.3",
     "remap-istanbul": "^0.6.4",
