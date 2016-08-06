@@ -1,5 +1,6 @@
 import MagicString from './MagicString.js';
 import SourceMap from './utils/SourceMap.js';
+import getSemis from './utils/getSemis.js';
 import getRelativePath from './utils/getRelativePath.js';
 import hasOwnProp from './utils/hasOwnProp.js';
 import isObject from './utils/isObject.js';
@@ -235,7 +236,3 @@ Bundle.prototype = {
 		return this;
 	}
 };
-
-function getSemis ( str ) {
-	return new Array( str.split( '\n' ).length ).join( ';' );
-}

@@ -1,4 +1,5 @@
 import { encode } from 'vlq';
+import getSemis from './getSemis.js';
 import getLocator from './getLocator.js';
 
 const nonWhitespace = /\S/;
@@ -109,9 +110,7 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 	offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
-	const outroSemis = outro.split( '\n' ).map( () => '' ).join( ';' );
-
-	const encoded = rawLines.map( segments => {
+	return rawLines.map( segments => {
 		let generatedCodeColumn = 0;
 
 		return segments.map( segment => {
@@ -134,7 +133,5 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 
 			return encode( arr );
 		}).join( ',' );
-	}).join( ';' ) + outroSemis;
-
-	return encoded;
+	}).join( ';' ) + getSemis(outro);
 }
