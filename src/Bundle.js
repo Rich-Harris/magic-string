@@ -80,6 +80,8 @@ Bundle.prototype = {
 	},
 
 	generateMap ( options ) {
+		options = options || {};
+
 		let offsets = {};
 
 		let names = [];
