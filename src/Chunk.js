@@ -56,6 +56,8 @@ Chunk.prototype = {
 
 	edit ( content, storeName ) {
 		this.content = content;
+		this.intro = '';
+		this.outro = '';
 		this.storeName = storeName;
 
 		this.edited = true;

@@ -698,7 +698,7 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
-			s.insertRight( 6, 'DEF' );
+			s.insertLeft( 6, 'DEF' );
 			s.overwrite( 6, 9, 'GHI' );
 			assert.equal( s.toString(), 'DEFGHIjkl' );
 		});
@@ -742,6 +742,17 @@ describe( 'MagicString', function () {
 				TypeError
 			);
 		});
+
+		it ( 'replaces interior inserts', function() {
+			var s = new MagicString( 'abcdefghijkl' );
+
+			s.insertLeft( 1, '&' );
+			s.insertRight( 1, '^' );
+			s.insertLeft( 3, '!' );
+			s.insertRight( 3, '?' );
+			s.overwrite( 1, 3, '...' );
+			assert.equal( s.toString(), 'a&...?defghijkl' );
+		})
 	});
 
 	describe( 'prepend', function () {
@@ -829,6 +840,17 @@ describe( 'MagicString', function () {
 			s.insertRight( 4, ')' );
 			s.remove( 2, 4 );
 			assert.equal( s.toString(), '(ab);' );
+		});
+
+		it( 'should remove interior inserts', function () {
+			var s = new MagicString( 'abc;' );
+
+			s.insertLeft( 1, '[' );
+			s.insertRight( 1, '(' );
+			s.insertLeft( 2, ')' );
+			s.insertRight( 2, ']' );
+			s.remove( 1, 2 );
+			assert.equal( s.toString(), 'a[]c;' );
 		});
 
 		it( 'should provide a useful error when illegal removals are attempted', function () {
