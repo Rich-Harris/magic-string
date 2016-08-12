@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.16.0
+
+* Include inserts in range for `overwrite` and `remove` operations ([#89](https://github.com/Rich-Harris/magic-string/pull/89))
+* Make options optional for `bundle.generateMap(...)` ([#73](https://github.com/Rich-Harris/magic-string/pull/73))
+
 ## 0.15.2
 
 * Generate correct bundle sourcemap with prepended/appended content
