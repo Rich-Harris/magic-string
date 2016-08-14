@@ -47,7 +47,7 @@ MagicString.prototype = {
 	},
 
 	clone () {
-		let cloned = new MagicString( this.original, { filename: this.filename });
+		const cloned = new MagicString( this.original, { filename: this.filename });
 
 		let originalChunk = this.firstChunk;
 		let clonedChunk = cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone();
@@ -95,7 +95,7 @@ MagicString.prototype = {
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names,
-			mappings: this.getMappings( options.hires, 0, {}, names )
+			mappings: this.getMappings( options, 0, {}, names )
 		});
 		if ( DEBUG ) this.stats.timeEnd( 'generateMap' );
 
@@ -106,8 +106,8 @@ MagicString.prototype = {
 		return this.indentStr === null ? '\t' : this.indentStr;
 	},
 
-	getMappings ( hires, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.intro, this.outro, this.firstChunk, hires, this.sourcemapLocations, sourceIndex, offsets, names );
+	getMappings ( options, sourceIndex, offsets, names ) {
+		return encodeMappings( this.original, this.intro, this.outro, this.firstChunk, options.hires, this.sourcemapLocations, sourceIndex, offsets, names );
 	},
 
 	indent ( indentStr, options ) {
@@ -125,10 +125,10 @@ MagicString.prototype = {
 		options = options || {};
 
 		// Process exclusion ranges
-		let isExcluded = {};
+		const isExcluded = {};
 
 		if ( options.exclude ) {
-			let exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
+			const exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
 			exclusions.forEach( exclusion => {
 				for ( let i = exclusion[0]; i < exclusion[1]; i += 1 ) {
 					isExcluded[i] = true;
@@ -370,7 +370,7 @@ MagicString.prototype = {
 
 		if ( chunk && chunk.edited && chunk.start !== start ) throw new Error(`Cannot use replaced character ${start} as slice start anchor.`);
 
-		let startChunk = chunk;
+		const startChunk = chunk;
 		while ( chunk ) {
 			if ( chunk.intro && ( startChunk !== chunk || chunk.start === start ) ) {
 				result += chunk.intro;

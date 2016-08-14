@@ -79,35 +79,13 @@ Bundle.prototype = {
 		return bundle;
 	},
 
-	generateMap ( options ) {
-		options = options || {};
-
-		let offsets = {};
-
-		let names = [];
+	generateMap ( options = {} ) {
+		const names = [];
 		this.sources.forEach( source => {
 			Object.keys( source.content.storedNames ).forEach( name => {
 				if ( !~names.indexOf( name ) ) names.push( name );
 			});
 		});
-
-		const encoded = (
-			getSemis( this.intro ) +
-			this.sources.map( ( source, i ) => {
-				const prefix = ( i > 0 ) ? ( getSemis( source.separator ) || ',' ) : '';
-				let mappings;
-
-				// we don't bother encoding sources without a filename
-				if ( !source.filename ) {
-					mappings = getSemis( source.content.toString() );
-				} else {
-					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
-					mappings = source.content.getMappings( options.hires, sourceIndex, offsets, names );
-				}
-
-				return prefix + mappings;
-			}).join( '' )
-		);
 
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
@@ -118,12 +96,34 @@ Bundle.prototype = {
 				return options.includeContent ? source.content : null;
 			}),
 			names,
-			mappings: encoded
+			mappings: this.getMappings( options, names )
 		});
 	},
 
+	getMappings ( options, names ) {
+		const offsets = {};
+
+		return (
+			getSemis( this.intro ) +
+			this.sources.map( ( source, i ) => {
+				const prefix = ( i > 0 ) ? ( getSemis( source.separator ) || ',' ) : '';
+				let mappings;
+
+				// we don't bother encoding sources without a filename
+				if ( !source.filename ) {
+					mappings = getSemis( source.content.toString() );
+				} else {
+					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
+					mappings = source.content.getMappings( options, sourceIndex, offsets, names );
+				}
+
+				return prefix + mappings;
+			}).join( '' )
+		);
+	},
+
 	getIndentString () {
-		let indentStringCounts = {};
+		const indentStringCounts = {};
 
 		this.sources.forEach( source => {
 			const indentStr = source.content.indentStr;
@@ -178,7 +178,7 @@ Bundle.prototype = {
 	toString () {
 		const body = this.sources.map( ( source, i ) => {
 			const separator = source.separator !== undefined ? source.separator : this.separator;
-			let str = ( i > 0 ? separator : '' ) + source.content.toString();
+			const str = ( i > 0 ? separator : '' ) + source.content.toString();
 
 			return str;
 		}).join( '' );

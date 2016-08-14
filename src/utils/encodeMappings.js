@@ -5,7 +5,7 @@ import getLocator from './getLocator.js';
 const nonWhitespace = /\S/;
 
 export default function encodeMappings ( original, intro, outro, chunk, hires, sourcemapLocations, sourceIndex, offsets, names ) {
-	let rawLines = [];
+	const rawLines = [];
 
 	let generatedCodeLine = intro.split( '\n' ).length - 1;
 	let rawSegments = rawLines[ generatedCodeLine ] = [];
@@ -83,7 +83,7 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 	let hasContent = false;
 
 	while ( chunk ) {
-		let loc = locate( chunk.start );
+		const loc = locate( chunk.start );
 
 		if ( chunk.intro.length ) {
 			addEdit( chunk.intro, '', loc, -1, hasContent );
@@ -114,7 +114,7 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 		let generatedCodeColumn = 0;
 
 		return segments.map( segment => {
-			let arr = [
+			const arr = [
 				segment.generatedCodeColumn - generatedCodeColumn,
 				segment.sourceIndex - offsets.sourceIndex,
 				segment.sourceCodeLine - offsets.sourceCodeLine,
