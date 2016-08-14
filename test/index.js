@@ -188,15 +188,15 @@ describe( 'MagicString', function () {
 
 			s.overwrite( 9, 12, 'Bar' );
 
-			map = s.generateMap({
+			var map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
 
-			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			var loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.line, 1 );
 			assert.equal( loc.column, 9 );
 		});
@@ -219,15 +219,15 @@ describe( 'MagicString', function () {
 
 			s.overwrite( 9, 12, 'Bar', true );
 
-			map = s.generateMap({
+			var map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
 
-			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			var loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.name, 'Foo' );
 		});
 
@@ -235,13 +235,13 @@ describe( 'MagicString', function () {
 			var s = new MagicString( 'var answer = 42' );
 			s.overwrite( 4, 10, 'number', true );
 
-			map = s.generateMap({
+			var map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
 
 			var numMappings = 0;
 			smc.eachMapping( function ( mapping ) {
@@ -1417,13 +1417,14 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( one );
 			b.addSource( two );
 
-			map = b.generateMap({
+			var map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
+			var loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.name, 'one' );
@@ -1443,13 +1444,14 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( two );
 			b.addSource( three );
 
-			map = b.generateMap({
+			var map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
+			var loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.source, 'one.js' );
@@ -1471,13 +1473,14 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( one );
 			b.addSource( two );
 
-			map = b.generateMap({
+			var map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
+			var loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.source, 'one.js' );
@@ -1496,13 +1499,14 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( one );
 			b.addSource( two );
 
-			map = b.generateMap({
+			var map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			var smc = new SourceMapConsumer( map );
+			var loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.source, 'one.js' );
