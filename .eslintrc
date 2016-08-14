@@ -23,8 +23,7 @@
     },
     "env": {
         "es6": true,
-        "browser": true,
-        "mocha": true
+        "browser": true
     },
     "globals": {
         "DEBUG": true,

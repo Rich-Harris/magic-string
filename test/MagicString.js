@@ -1,4 +1,3 @@
-/*global require, console */
 const assert = require( 'assert' );
 const SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
 const MagicString = require( '../' );
