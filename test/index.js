@@ -1,15 +1,15 @@
 /*global require, describe, it, console */
-var assert = require( 'assert' );
-var SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
-var MagicString = require( '../' );
+const assert = require( 'assert' );
+const SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
+const MagicString = require( '../' );
 
 require( 'source-map-support' ).install();
 require( 'console-group' ).install();
 
-describe( 'MagicString', function () {
-	describe( 'options', function () {
-		it( 'stores source file information', function () {
-			var s = new MagicString( 'abc', {
+describe( 'MagicString', () => {
+	describe( 'options', () => {
+		it( 'stores source file information', () => {
+			const s = new MagicString( 'abc', {
 				filename: 'foo.js'
 			});
 
@@ -17,9 +17,9 @@ describe( 'MagicString', function () {
 		});
 	});
 
-	describe( 'append', function () {
-		it( 'should append content', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'append', () => {
+		it( 'should append content', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.append( 'xyz' );
 			assert.equal( s.toString(), 'abcdefghijklxyz' );
@@ -28,70 +28,67 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefghijklxyzxyz' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.append( 'xyz' ), s );
 		});
 
-		it( 'should throw when given non-string content', function () {
-			var s = new MagicString( '' );
-			assert.throws(
-				function () { s.append( [] ); },
-				TypeError
-			);
+		it( 'should throw when given non-string content', () => {
+			const s = new MagicString( '' );
+			assert.throws( () => s.append( [] ), TypeError );
 		});
 	});
 
-	describe( 'clone', function () {
-		it( 'should clone a magic string', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'clone', () => {
+		it( 'should clone a magic string', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 3, 9, 'XYZ' );
-			var c = s.clone();
+			const c = s.clone();
 
 			assert.notEqual( s, c );
 			assert.equal( c.toString(), 'abcXYZjkl' );
 		});
 
-		it( 'should clone filename info', function () {
-			var s = new MagicString( 'abcdefghijkl', { filename: 'foo.js' });
-			var c = s.clone();
+		it( 'should clone filename info', () => {
+			const s = new MagicString( 'abcdefghijkl', { filename: 'foo.js' });
+			const c = s.clone();
 
 			assert.equal( c.filename, 'foo.js' );
 		});
 
-		it( 'should clone indentExclusionRanges', function () {
-			var array = [ 3, 6 ];
-			var source = new MagicString( 'abcdefghijkl', {
+		it( 'should clone indentExclusionRanges', () => {
+			const array = [ 3, 6 ];
+			const source = new MagicString( 'abcdefghijkl', {
 				filename: 'foo.js',
 				indentExclusionRanges: array
 			});
 
-			var clone = source.clone();
+			const clone = source.clone();
 
 			assert.notStrictEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
 			assert.deepEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
 		});
 
-		it( 'should clone sourcemapLocations', function () {
-			var source = new MagicString( 'abcdefghijkl', {
+		it( 'should clone sourcemapLocations', () => {
+			const source = new MagicString( 'abcdefghijkl', {
 				filename: 'foo.js'
 			});
 
 			source.addSourcemapLocation( 3 );
 
-			var clone = source.clone();
+			const clone = source.clone();
 
 			assert.notStrictEqual( source.sourcemapLocations, clone.sourcemapLocations );
 			assert.deepEqual( source.sourcemapLocations, clone.sourcemapLocations );
 		});
 	});
 
-	describe( 'generateMap', function () {
-		it( 'should generate a sourcemap', function () {
-			var s = new MagicString( 'abcdefghijkl' ).remove( 3, 9 );
+	describe( 'generateMap', () => {
+		it( 'should generate a sourcemap', () => {
+			const s = new MagicString( 'abcdefghijkl' ).remove( 3, 9 );
 
-			var map = s.generateMap({
+			const map = s.generateMap({
 				file: 'output.md',
 				source: 'input.md',
 				includeContent: true,
@@ -107,8 +104,8 @@ describe( 'MagicString', function () {
 			assert.equal( map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,AAAM,CAAC,CAAC"}' );
 			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQUMsQUFBTSxDQUFDLENBQUMifQ==' );
 
-			var smc = new SourceMapConsumer( map );
-			var loc;
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
 			assert.equal( loc.line, 1 );
@@ -123,38 +120,34 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 10 );
 		});
 
-		it( 'should generate a correct sourcemap for indented content', function () {
-			var s, map, smc, originLoc;
+		it( 'should generate a correct sourcemap for indented content', () => {
+			const s = new MagicString( 'var answer = 42;\nconsole.log("the answer is %s", answer);' );
 
-			s = new MagicString( 'var answer = 42;\nconsole.log("the answer is %s", answer);' );
-
-			s.prepend( "'use strict';\n\n" );
+			s.prepend( '\'use strict\';\n\n' );
 			s.indent( '\t' ).prepend( '(function () {\n' ).append( '\n}).call(global);' );
 
-			map = s.generateMap({
+			const map = s.generateMap({
 				source: 'input.md',
 				includeContent: true,
 				hires: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
 
-			originLoc = smc.originalPositionFor({ line: 5, column: 1 });
+			const originLoc = smc.originalPositionFor({ line: 5, column: 1 });
 			assert.equal( originLoc.line, 2 );
 			assert.equal( originLoc.column, 0 );
 		});
 
-		it( 'should generate a sourcemap using specified locations', function () {
-			var s, map, smc, loc;
-
-			s = new MagicString( 'abcdefghijkl' );
+		it( 'should generate a sourcemap using specified locations', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.addSourcemapLocation( 0 );
 			s.addSourcemapLocation( 3 );
 			s.addSourcemapLocation( 10 );
 
 			s.remove( 6, 9 );
-			map = s.generateMap({
+			const map = s.generateMap({
 				file: 'output.md',
 				source: 'input.md',
 				includeContent: true
@@ -168,7 +161,8 @@ describe( 'MagicString', function () {
 			assert.equal( map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,GAAG,GAAG,AAAG,CAAC"}' );
 			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsR0FBRyxHQUFHLEFBQUcsQ0FBQyJ9' );
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
 			assert.equal( loc.line, 1 );
@@ -183,160 +177,158 @@ describe( 'MagicString', function () {
 			assert.equal( loc.column, 10 );
 		});
 
-		it( 'should correctly map inserted content', function () {
-			var s = new MagicString( 'function Foo () {}' );
+		it( 'should correctly map inserted content', () => {
+			const s = new MagicString( 'function Foo () {}' );
 
 			s.overwrite( 9, 12, 'Bar' );
 
-			map = s.generateMap({
+			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
 
-			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			const loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.line, 1 );
 			assert.equal( loc.column, 9 );
 		});
 
-		it( 'should yield consistent results between insertLeft and insertRight', function () {
-			var s1 = new MagicString( 'abcdefghijkl' );
+		it( 'should yield consistent results between insertLeft and insertRight', () => {
+			const s1 = new MagicString( 'abcdefghijkl' );
 			s1.insertLeft( 6, 'X' );
 
-			var s2 = new MagicString( 'abcdefghijkl' );
+			const s2 = new MagicString( 'abcdefghijkl' );
 			s2.insertRight( 6, 'X' );
 
-			var m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
-			var m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
+			const m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
+			const m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
 
 			assert.deepEqual( m1, m2 );
 		});
 
-		it( 'should recover original names', function () {
-			var s = new MagicString( 'function Foo () {}' );
+		it( 'should recover original names', () => {
+			const s = new MagicString( 'function Foo () {}' );
 
 			s.overwrite( 9, 12, 'Bar', true );
 
-			map = s.generateMap({
+			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
 
-			loc = smc.originalPositionFor({ line: 1, column: 9 });
+			const loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.name, 'Foo' );
 		});
 
-		it( 'should generate one segment per replacement', function () {
-			var s = new MagicString( 'var answer = 42' );
+		it( 'should generate one segment per replacement', () => {
+			const s = new MagicString( 'var answer = 42' );
 			s.overwrite( 4, 10, 'number', true );
 
-			map = s.generateMap({
+			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
 
-			var numMappings = 0;
-			smc.eachMapping( function ( mapping ) {
-				numMappings += 1;
-			});
+			let numMappings = 0;
+			smc.eachMapping( () => numMappings += 1 );
 
 			assert.equal( numMappings, 3 ); // one at 0, one at the edit, one afterwards
 		});
 
-		it( 'should generate a sourcemap that correctly locates moved content', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should generate a sourcemap that correctly locates moved content', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 3, 6, 9 );
 
-			var result = s.toString();
-			var map = s.generateMap({
+			const result = s.toString();
+			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true,
 				hires: true
 			});
 
-			var smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
 
-			'abcdefghijkl'.split( '' ).forEach( function ( letter, i ) {
-				var column = result.indexOf( letter );
-				var loc = smc.originalPositionFor({ line: 1, column: column });
+			'abcdefghijkl'.split( '' ).forEach( ( letter, i ) => {
+				const column = result.indexOf( letter );
+				const loc = smc.originalPositionFor({ line: 1, column });
 
 				assert.equal( loc.line, 1 );
 				assert.equal( loc.column, i );
 			});
 		});
 
-		it( 'generates a map with trimmed content (#53)', function () {
-			var s = new MagicString( 'abcdefghijkl ' ).trim();
-			var map = s.generateMap({
+		it( 'generates a map with trimmed content (#53)', () => {
+			const s1 = new MagicString( 'abcdefghijkl ' ).trim();
+			const map1 = s1.generateMap({
 				file: 'output',
 				source: 'input',
 				includeContent: true,
 				hires: true
 			});
 
-			var smc = new SourceMapConsumer( map );
-			var loc = smc.originalPositionFor({ line: 1, column: 11 });
+			const smc1 = new SourceMapConsumer( map1 );
+			const loc1 = smc1.originalPositionFor({ line: 1, column: 11 });
 
-			assert.equal( loc.column, 11 );
+			assert.equal( loc1.column, 11 );
 
-			s = new MagicString( ' abcdefghijkl' ).trim();
-			map = s.generateMap({
+			const s2 = new MagicString( ' abcdefghijkl' ).trim();
+			const map2 = s2.generateMap({
 				file: 'output',
 				source: 'input',
 				includeContent: true,
 				hires: true
 			});
 
-			smc = new SourceMapConsumer( map );
-			loc = smc.originalPositionFor({ line: 1, column: 1 });
+			const smc2 = new SourceMapConsumer( map2 );
+			const loc2 = smc2.originalPositionFor({ line: 1, column: 1 });
 
-			assert.equal( loc.column, 2 );
+			assert.equal( loc2.column, 2 );
 		});
 
-		it( 'skips empty segments at the start', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'skips empty segments at the start', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.remove( 0, 3 ).remove( 3, 6 );
 
-			var map = s.generateMap();
-			var smc = new SourceMapConsumer( map );
-			var loc = smc.originalPositionFor({ line: 1, column: 6 });
+			const map = s.generateMap();
+			const smc = new SourceMapConsumer( map );
+			const loc = smc.originalPositionFor({ line: 1, column: 6 });
 
 			assert.equal( loc.column, 6 );
 		});
 
-		it( 'skips indentation at the start', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'skips indentation at the start', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.indent( '    ' );
 
-			var map = s.generateMap();
+			const map = s.generateMap();
 			assert.equal( map.mappings, 'IAAA' );
 		});
 	});
 
-	describe( 'getIndentString', function () {
-		it( 'should guess the indent string', function () {
-			var s = new MagicString( 'abc\n  def\nghi' );
+	describe( 'getIndentString', () => {
+		it( 'should guess the indent string', () => {
+			const s = new MagicString( 'abc\n  def\nghi' );
 			assert.equal( s.getIndentString(), '  ' );
 		});
 
-		it( 'should return a tab if no lines are indented', function () {
-			var s = new MagicString( 'abc\ndef\nghi' );
+		it( 'should return a tab if no lines are indented', () => {
+			const s = new MagicString( 'abc\ndef\nghi' );
 			assert.equal( s.getIndentString(), '\t' );
 		});
 	});
 
-	describe( 'indent', function () {
-		it( 'should indent content with a single tab character by default', function () {
-			var s = new MagicString( 'abc\ndef\nghi\njkl' );
+	describe( 'indent', () => {
+		it( 'should indent content with a single tab character by default', () => {
+			const s = new MagicString( 'abc\ndef\nghi\njkl' );
 
 			s.indent();
 			assert.equal( s.toString(), '\tabc\n\tdef\n\tghi\n\tjkl' );
@@ -345,8 +337,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\t\tabc\n\t\tdef\n\t\tghi\n\t\tjkl' );
 		});
 
-		it( 'should indent content, using existing indentation as a guide', function () {
-			var s = new MagicString( 'abc\n  def\n    ghi\n  jkl' );
+		it( 'should indent content, using existing indentation as a guide', () => {
+			const s = new MagicString( 'abc\n  def\n    ghi\n  jkl' );
 
 			s.indent();
 			assert.equal( s.toString(), '  abc\n    def\n      ghi\n    jkl' );
@@ -355,15 +347,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '    abc\n      def\n        ghi\n      jkl' );
 		});
 
-		it( 'should disregard single-space indentation when auto-indenting', function () {
-			var s = new MagicString( 'abc\n/**\n *comment\n */' );
+		it( 'should disregard single-space indentation when auto-indenting', () => {
+			const s = new MagicString( 'abc\n/**\n *comment\n */' );
 
 			s.indent();
 			assert.equal( s.toString(), '\tabc\n\t/**\n\t *comment\n\t */' );
 		});
 
-		it( 'should indent content using the supplied indent string', function () {
-			var s = new MagicString( 'abc\ndef\nghi\njkl' );
+		it( 'should indent content using the supplied indent string', () => {
+			const s = new MagicString( 'abc\ndef\nghi\njkl' );
 
 			s.indent( '  ');
 			assert.equal( s.toString(), '  abc\n  def\n  ghi\n  jkl' );
@@ -372,15 +364,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '>>  abc\n>>  def\n>>  ghi\n>>  jkl' );
 		});
 
-		it( 'should indent content using the empty string if specified (i.e. noop)', function () {
-			var s = new MagicString( 'abc\ndef\nghi\njkl' );
+		it( 'should indent content using the empty string if specified (i.e. noop)', () => {
+			const s = new MagicString( 'abc\ndef\nghi\njkl' );
 
 			s.indent( '');
 			assert.equal( s.toString(), 'abc\ndef\nghi\njkl' );
 		});
 
-		it( 'should prevent excluded characters from being indented', function () {
-			var s = new MagicString( 'abc\ndef\nghi\njkl' );
+		it( 'should prevent excluded characters from being indented', () => {
+			const s = new MagicString( 'abc\ndef\nghi\njkl' );
 
 			s.indent( '  ', { exclude: [ 7, 15 ] });
 			assert.equal( s.toString(), '  abc\n  def\nghi\njkl' );
@@ -389,8 +381,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '>>  abc\n>>  def\nghi\njkl' );
 		});
 
-		it( 'should not add characters to empty lines', function () {
-			var s = new MagicString( '\n\nabc\ndef\n\nghi\njkl' );
+		it( 'should not add characters to empty lines', () => {
+			const s = new MagicString( '\n\nabc\ndef\n\nghi\njkl' );
 
 			s.indent();
 			assert.equal( s.toString(), '\n\n\tabc\n\tdef\n\n\tghi\n\tjkl' );
@@ -399,8 +391,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\n\n\t\tabc\n\t\tdef\n\n\t\tghi\n\t\tjkl' );
 		});
 
-		it( 'should not add characters to empty lines, even on Windows', function () {
-			var s = new MagicString( '\r\n\r\nabc\r\ndef\r\n\r\nghi\r\njkl' );
+		it( 'should not add characters to empty lines, even on Windows', () => {
+			const s = new MagicString( '\r\n\r\nabc\r\ndef\r\n\r\nghi\r\njkl' );
 
 			s.indent();
 			assert.equal( s.toString(), '\r\n\r\n\tabc\r\n\tdef\r\n\r\n\tghi\r\n\tjkl' );
@@ -409,8 +401,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\r\n\r\n\t\tabc\r\n\t\tdef\r\n\r\n\t\tghi\r\n\t\tjkl' );
 		});
 
-		it( 'should indent content with removals', function () {
-			var s = new MagicString( '/* remove this line */\nvar foo = 1;' );
+		it( 'should indent content with removals', () => {
+			const s = new MagicString( '/* remove this line */\nvar foo = 1;' );
 
 			s.remove( 0, 23 );
 			s.indent();
@@ -418,8 +410,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\tvar foo = 1;' );
 		});
 
-		it( 'should not indent patches in the middle of a line', function () {
-			var s = new MagicString( 'class Foo extends Bar {}' );
+		it( 'should not indent patches in the middle of a line', () => {
+			const s = new MagicString( 'class Foo extends Bar {}' );
 
 			s.overwrite( 18, 21, 'Baz' );
 			assert.equal( s.toString(), 'class Foo extends Baz {}' );
@@ -428,27 +420,27 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '\tclass Foo extends Baz {}' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent(), s );
 		});
 
-		it( 'should return this on noop', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this on noop', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.indent( '' ), s );
 		});
 	});
 
-	describe( 'insert', function () {
-		it( 'is deprecated', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			assert.throws( function () { s.insert( 6, 'X' ); }, /deprecated/ );
+	describe( 'insert', () => {
+		it( 'is deprecated', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			assert.throws( () => s.insert( 6, 'X' ), /deprecated/ );
 		});
 
 		// TODO move this into insertRight and insertLeft tests
 
-		// it( 'should insert characters in the correct location', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
+		// it( 'should insert characters in the correct location', () => {
+		// 	const s = new MagicString( 'abcdefghijkl' );
 		//
 		// 	s.insert( 0, '>>>' );
 		// 	s.insert( 6, '***' );
@@ -457,96 +449,96 @@ describe( 'MagicString', function () {
 		// 	assert.equal( s.toString(), '>>>abcdef***ghijkl<<<' );
 		// });
 		//
-		// it( 'should return this', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
+		// it( 'should return this', () => {
+		// 	const s = new MagicString( 'abcdefghijkl' );
 		// 	assert.strictEqual( s.insert( 0, 'a' ), s );
 		// });
 		//
-		// it( 'should insert repeatedly at the same position correctly', function () {
-		// 	var s = new MagicString( 'ab' );
+		// it( 'should insert repeatedly at the same position correctly', () => {
+		// 	const s = new MagicString( 'ab' );
 		// 	assert.equal( s.insert(1, '1').toString(), 'a1b' );
 		// 	assert.equal( s.insert(1, '2').toString(), 'a12b' );
 		// });
 		//
-		// it( 'should insert repeatedly at the beginning correctly', function () {
-		// 	var s = new MagicString( 'ab' );
+		// it( 'should insert repeatedly at the beginning correctly', () => {
+		// 	const s = new MagicString( 'ab' );
 		// 	assert.equal( s.insert(0, '1').toString(), '1ab' );
 		// 	assert.equal( s.insert(0, '2').toString(), '12ab' );
 		// });
 		//
-		// it( 'should throw when given non-string content', function () {
-		// 	var s = new MagicString( '' );
+		// it( 'should throw when given non-string content', () => {
+		// 	const s = new MagicString( '' );
 		// 	assert.throws(
 		// 		function () { s.insert( 0, [] ); },
 		// 		TypeError
 		// 	);
 		// });
 		//
-		// it( 'should allow inserting after removed range', function () {
-		// 	var s = new MagicString( 'abcd' );
+		// it( 'should allow inserting after removed range', () => {
+		// 	const s = new MagicString( 'abcd' );
 		// 	s.remove( 1, 2 );
 		// 	s.insert( 2, 'z' );
 		// 	assert.equal( s.toString(), 'azcd' );
 		// });
 	});
 
-	describe( 'insertLeft', function () {
-		it( 'inserts repeatedly in correct order', function () {
-			var s = new MagicString( 'ab' );
+	describe( 'insertLeft', () => {
+		it( 'inserts repeatedly in correct order', () => {
+			const s = new MagicString( 'ab' );
 			assert.equal( s.insertLeft(1, '1').toString(), 'a1b' );
 			assert.equal( s.insertLeft(1, '2').toString(), 'a12b' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.insertLeft( 0, 'a' ), s );
 		});
 	});
 
-	describe( 'insertRight', function () {
-		it( 'inserts repeatedly in correct order', function () {
-			var s = new MagicString( 'ab' );
+	describe( 'insertRight', () => {
+		it( 'inserts repeatedly in correct order', () => {
+			const s = new MagicString( 'ab' );
 			assert.equal( s.insertRight(1, '1').toString(), 'a1b' );
 			assert.equal( s.insertRight(1, '2').toString(), 'a21b' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.insertLeft( 0, 'a' ), s );
 		});
 	});
 
-	describe( 'move', function () {
-		it( 'moves content from the start', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'move', () => {
+		it( 'moves content from the start', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 0, 3, 6 );
 
 			assert.equal( s.toString(), 'defabcghijkl' );
 		});
 
-		it( 'moves content to the start', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'moves content to the start', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 3, 6, 0 );
 
 			assert.equal( s.toString(), 'defabcghijkl' );
 		});
 
-		it( 'moves content from the end', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'moves content from the end', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 9, 12, 6 );
 
 			assert.equal( s.toString(), 'abcdefjklghi' );
 		});
 
-		it( 'moves content to the end', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'moves content to the end', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 6, 9, 12 );
 
 			assert.equal( s.toString(), 'abcdefjklghi' );
 		});
 
-		it( 'ignores redundant move', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'ignores redundant move', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.insertRight( 9, 'X' );
 			s.move( 9, 12, 6 );
 			s.insertLeft( 12, 'Y' );
@@ -555,15 +547,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefXjklYghi' );
 		});
 
-		it( 'moves content to the middle', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'moves content to the middle', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 3, 6, 9 );
 
 			assert.equal( s.toString(), 'abcghidefjkl' );
 		});
 
-		it( 'handles multiple moves of the same snippet', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'handles multiple moves of the same snippet', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.move( 0, 3, 6 );
 			assert.equal( s.toString(), 'defabcghijkl' );
@@ -572,8 +564,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'defghiabcjkl' );
 		});
 
-		it( 'handles moves of adjacent snippets', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'handles moves of adjacent snippets', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.move( 0, 2, 6 );
 			assert.equal( s.toString(), 'cdefabghijkl' );
@@ -582,95 +574,87 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'efabcdghijkl' );
 		});
 
-		it( 'handles moves to same index', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'handles moves to same index', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			s.move( 0, 2, 6 ).move( 3, 5, 6 );
 
 			assert.equal( s.toString(), 'cfabdeghijkl' );
 		});
 
-		it( 'refuses to move a selection to inside itself', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'refuses to move a selection to inside itself', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
-			assert.throws( function () {
-				s.move( 3, 6, 3 );
-			}, /Cannot move a selection inside itself/ );
+			assert.throws( () => s.move( 3, 6, 3 ), /Cannot move a selection inside itself/ );
 
-			assert.throws( function () {
-				s.move( 3, 6, 4 );
-			}, /Cannot move a selection inside itself/ );
+			assert.throws( () => s.move( 3, 6, 4 ), /Cannot move a selection inside itself/ );
 
-			assert.throws( function () {
-				s.move( 3, 6, 6 );
-			}, /Cannot move a selection inside itself/ );
+			assert.throws( () => s.move( 3, 6, 6 ), /Cannot move a selection inside itself/ );
 		});
 
-		it( 'allows edits of moved content', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'allows edits of moved content', () => {
+			const s1 = new MagicString( 'abcdefghijkl' );
 
-			s.move( 3, 6, 9 );
-			s.overwrite( 3, 6, 'DEF' );
+			s1.move( 3, 6, 9 );
+			s1.overwrite( 3, 6, 'DEF' );
 
-			assert.equal( s.toString(), 'abcghiDEFjkl' );
+			assert.equal( s1.toString(), 'abcghiDEFjkl' );
 
-			s = new MagicString( 'abcdefghijkl' );
+			const s2 = new MagicString( 'abcdefghijkl' );
 
-			s.move( 3, 6, 9 );
-			s.overwrite( 4, 5, 'E' );
+			s2.move( 3, 6, 9 );
+			s2.overwrite( 4, 5, 'E' );
 
-			assert.equal( s.toString(), 'abcghidEfjkl' );
+			assert.equal( s2.toString(), 'abcghidEfjkl' );
 		});
 
-		// it( 'move follows inserts', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
+		// it( 'move follows inserts', () => {
+		// 	const s = new MagicString( 'abcdefghijkl' );
 		//
 		// 	s.insertLeft( 3, 'X' ).move( 6, 9, 3 );
 		// 	assert.equal( s.toString(), 'abcXghidefjkl' );
 		// });
 		//
-		// it( 'inserts follow move', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
+		// it( 'inserts follow move', () => {
+		// 	const s = new MagicString( 'abcdefghijkl' );
 		//
 		// 	s.insert( 3, 'X' ).move( 6, 9, 3 ).insert( 3, 'Y' );
 		// 	assert.equal( s.toString(), 'abcXghiYdefjkl' );
 		// });
 		//
-		// it( 'discards inserts at end of move by default', function () {
-		// 	var s = new MagicString( 'abcdefghijkl' );
+		// it( 'discards inserts at end of move by default', () => {
+		// 	const s = new MagicString( 'abcdefghijkl' );
 		//
 		// 	s.insert( 6, 'X' ).move( 3, 6, 9 );
 		// 	assert.equal( s.toString(), 'abcXghidefjkl' );
 		// });
 
-		it( 'moves content inserted at end of range', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'moves content inserted at end of range', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.insertLeft( 6, 'X' ).move( 3, 6, 9 );
 			assert.equal( s.toString(), 'abcghidefXjkl' );
 		});
 
-		it( 'returns this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'returns this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.move( 3, 6, 9 ), s );
 		});
 	});
 
-	describe( 'overwrite', function () {
-		it( 'should replace characters', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'overwrite', () => {
+		it( 'should replace characters', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 5, 8, 'FGH' );
 			assert.equal( s.toString(), 'abcdeFGHijkl' );
 		});
 
-		it( 'should throw an error if overlapping replacements are attempted', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should throw an error if overlapping replacements are attempted', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 7, 11, 'xx' );
 
-			assert.throws( function () {
-				s.overwrite( 8, 12, 'yy' );
-			}, /Cannot split a chunk that has already been edited/ );
+			assert.throws( () => s.overwrite( 8, 12, 'yy' ), /Cannot split a chunk that has already been edited/ );
 
 			assert.equal( s.toString(), 'abcdefgxxl' );
 
@@ -678,8 +662,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcdefyes' );
 		});
 
-		it( 'should allow contiguous but non-overlapping replacements', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should allow contiguous but non-overlapping replacements', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 3, 6, 'DEF' );
 			assert.equal( s.toString(), 'abcDEFghijkl' );
@@ -694,8 +678,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'ABCDEFGHIJKL' );
 		});
 
-		it( 'does not replace zero-length inserts at overwrite start location', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'does not replace zero-length inserts at overwrite start location', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
 			s.insertLeft( 6, 'DEF' );
@@ -703,16 +687,16 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'DEFGHIjkl' );
 		});
 
-		it( 'replaces zero-length inserts inside overwrite', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'replaces zero-length inserts inside overwrite', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.insertLeft( 6, 'XXX' );
 			s.overwrite( 3, 9, 'DEFGHI' );
 			assert.equal( s.toString(), 'abcDEFGHIjkl' );
 		});
 
-		it( 'replaces non-zero-length inserts inside overwrite', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'replaces non-zero-length inserts inside overwrite', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 3, 4, 'XXX' );
 			s.overwrite( 3, 5, 'DE' );
@@ -723,28 +707,23 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abcDEfGHijkl' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.overwrite( 3, 4, 'D' ), s );
 		});
 
-		it( 'should disallow overwriting zero-length ranges', function () {
-			var s = new MagicString( 'x' );
-			assert.throws( function () {
-				s.overwrite( 0, 0, 'anything' );
-			}, /Cannot overwrite a zero-length range – use insertLeft or insertRight instead/ );
+		it( 'should disallow overwriting zero-length ranges', () => {
+			const s = new MagicString( 'x' );
+			assert.throws( () => s.overwrite( 0, 0, 'anything' ), /Cannot overwrite a zero-length range – use insertLeft or insertRight instead/ );
 		});
 
-		it( 'should throw when given non-string content', function () {
-			var s = new MagicString( '' );
-			assert.throws(
-				function () { s.overwrite( 0, 1, [] ); },
-				TypeError
-			);
+		it( 'should throw when given non-string content', () => {
+			const s = new MagicString( '' );
+			assert.throws( () => s.overwrite( 0, 1, [] ), TypeError );
 		});
 
-		it ( 'replaces interior inserts', function() {
-			var s = new MagicString( 'abcdefghijkl' );
+		it ( 'replaces interior inserts', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.insertLeft( 1, '&' );
 			s.insertRight( 1, '^' );
@@ -752,12 +731,12 @@ describe( 'MagicString', function () {
 			s.insertRight( 3, '?' );
 			s.overwrite( 1, 3, '...' );
 			assert.equal( s.toString(), 'a&...?defghijkl' );
-		})
+		});
 	});
 
-	describe( 'prepend', function () {
-		it( 'should prepend content', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'prepend', () => {
+		it( 'should prepend content', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.prepend( 'xyz' );
 			assert.equal( s.toString(), 'xyzabcdefghijkl' );
@@ -766,15 +745,15 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '123xyzabcdefghijkl' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.prepend( 'xyz' ), s );
 		});
 	});
 
-	describe( 'remove', function () {
-		it( 'should remove characters from the original string', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'remove', () => {
+		it( 'should remove characters from the original string', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 1, 5 );
 			assert.equal( s.toString(), 'afghijkl' );
@@ -783,49 +762,49 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'afghi' );
 		});
 
-		it( 'should remove from the start', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should remove from the start', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
 			assert.equal( s.toString(), 'ghijkl' );
 		});
 
-		it( 'should remove from the end', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should remove from the end', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 6, 12 );
 			assert.equal( s.toString(), 'abcdef' );
 		});
 
-		it( 'should treat zero-length removals as a no-op', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should treat zero-length removals as a no-op', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 0 ).remove( 6, 6 ).remove( 9, -3 );
 			assert.equal( s.toString(), 'abcdefghijkl' );
 		});
 
-		it( 'should remove overlapping ranges', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should remove overlapping ranges', () => {
+			const s1 = new MagicString( 'abcdefghijkl' );
 
-			s.remove( 3, 7 ).remove( 5, 9 );
-			assert.equal( s.toString(), 'abcjkl' );
+			s1.remove( 3, 7 ).remove( 5, 9 );
+			assert.equal( s1.toString(), 'abcjkl' );
 
-			s = new MagicString( 'abcdefghijkl' );
+			const s2 = new MagicString( 'abcdefghijkl' );
 
-			s.remove( 3, 7 ).remove( 4, 6 );
-			assert.equal( s.toString(), 'abchijkl' );
+			s2.remove( 3, 7 ).remove( 4, 6 );
+			assert.equal( s2.toString(), 'abchijkl' );
 		});
 
-		it( 'should remove overlapping ranges, redux', function () {
-			var s = new MagicString( 'abccde' );
+		it( 'should remove overlapping ranges, redux', () => {
+			const s = new MagicString( 'abccde' );
 
 			s.remove( 2, 3 ); // c
 			s.remove( 1, 3 ); // bc
 			assert.equal( s.toString(), 'acde' );
 		});
 
-		it( 'should remove modified ranges', function () {
-			var s = new MagicString( 'abcdefghi' );
+		it( 'should remove modified ranges', () => {
+			const s = new MagicString( 'abcdefghi' );
 
 			s.overwrite( 3, 6, 'DEF' );
 			s.remove( 2, 7 ); // cDEFg
@@ -833,8 +812,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abhi' );
 		});
 
-		it( 'should not remove content inserted after the end of removed range', function () {
-			var s = new MagicString( 'ab.c;' );
+		it( 'should not remove content inserted after the end of removed range', () => {
+			const s = new MagicString( 'ab.c;' );
 
 			s.insertRight( 0, '(' );
 			s.insertRight( 4, ')' );
@@ -842,8 +821,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), '(ab);' );
 		});
 
-		it( 'should remove interior inserts', function () {
-			var s = new MagicString( 'abc;' );
+		it( 'should remove interior inserts', () => {
+			const s = new MagicString( 'abc;' );
 
 			s.insertLeft( 1, '[' );
 			s.insertRight( 1, '(' );
@@ -853,25 +832,23 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'a[]c;' );
 		});
 
-		it( 'should provide a useful error when illegal removals are attempted', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should provide a useful error when illegal removals are attempted', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 5, 7, 'XX' );
 
-			assert.throws( function () {
-				s.remove( 4, 6 );
-			}, /Cannot split a chunk that has already been edited/ );
+			assert.throws( () => s.remove( 4, 6 ), /Cannot split a chunk that has already been edited/ );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.remove( 3, 4 ), s );
 		});
 	});
 
-	describe( 'slice', function () {
-		it( 'should return the generated content between the specified original characters', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+	describe( 'slice', () => {
+		it( 'should return the generated content between the specified original characters', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			assert.equal( s.slice( 3, 9 ), 'defghi' );
 			s.overwrite( 4, 8, 'XX' );
@@ -880,24 +857,22 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( 1, 11 ), 'bZZk' );
 			assert.equal( s.slice( 2, 10 ), 'ZZ' );
 
-			assert.throws( function () {
-				s.slice( 3, 9 );
-			});
+			assert.throws( () => s.slice( 3, 9 ));
 		});
 
-		it( 'defaults `end` to the original string length', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'defaults `end` to the original string length', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.equal( s.slice( 3 ), 'defghijkl' );
 		});
 
-		it( 'allows negative numbers as arguments', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'allows negative numbers as arguments', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 			assert.equal( s.slice( -3 ), 'jkl' );
 			assert.equal( s.slice( 0, -3 ), 'abcdefghi' );
 		});
 
-		it( 'includes inserted characters, respecting insertion direction', function () {
-			var s = new MagicString( 'abefij' );
+		it( 'includes inserted characters, respecting insertion direction', () => {
+			const s = new MagicString( 'abefij' );
 
 			s.insertRight( 2, 'cd' );
 			s.insertLeft( 4, 'gh' );
@@ -912,8 +887,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( 3, 6 ), 'fghij' );
 		});
 
-		it( 'supports characters moved outward', function () {
-			var s = new MagicString( 'abcdEFghIJklmn' );
+		it( 'supports characters moved outward', () => {
+			const s = new MagicString( 'abcdEFghIJklmn' );
 
 			s.move( 4, 6, 2 );
 			s.move( 8, 10, 12 );
@@ -927,8 +902,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( 6, -6 ), 'gh' );
 		});
 
-		it( 'supports characters moved inward', function () {
-			var s = new MagicString( 'abCDefghijKLmn' );
+		it( 'supports characters moved inward', () => {
+			const s = new MagicString( 'abCDefghijKLmn' );
 
 			s.move( 2, 4, 6 );
 			s.move( 10, 12, 8 );
@@ -942,8 +917,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( 6, -6 ), 'gh' );
 		});
 
-		it( 'supports characters moved opposing', function () {
-			var s = new MagicString( 'abCDefghIJkl' );
+		it( 'supports characters moved opposing', () => {
+			const s = new MagicString( 'abCDefghIJkl' );
 
 			s.move( 2, 4, 8 );
 			s.move( 8, 10, 4 );
@@ -960,27 +935,21 @@ describe( 'MagicString', function () {
 			assert.equal( s.slice( -3 ), 'JefghCDkl' );
 		});
 
-		it( 'errors if replaced characters are used as slice anchors', function () {
-			var s = new MagicString( 'abcdef' );
+		it( 'errors if replaced characters are used as slice anchors', () => {
+			const s = new MagicString( 'abcdef' );
 			s.overwrite( 2, 4, 'CD' );
 
-			assert.throws( function () {
-				s.slice( 2, 3 );
-			}, /slice end anchor/ );
+			assert.throws( () => s.slice( 2, 3 ), /slice end anchor/ );
 
-			assert.throws( function () {
-				s.slice( 3, 4 );
-			}, /slice start anchor/ );
+			assert.throws( () => s.slice( 3, 4 ), /slice start anchor/ );
 
-			assert.throws( function () {
-				s.slice( 3, 5 );
-			}, /slice start anchor/ );
+			assert.throws( () => s.slice( 3, 5 ), /slice start anchor/ );
 
 			assert.equal( s.slice( 1, 5 ), 'bCDe' );
 		});
 
-		it( 'does not error if slice is after removed characters', function () {
-			var s = new MagicString( 'abcdef' );
+		it( 'does not error if slice is after removed characters', () => {
+			const s = new MagicString( 'abcdef' );
 
 			s.remove( 0, 2 );
 
@@ -988,58 +957,58 @@ describe( 'MagicString', function () {
 		});
 	});
 
-	describe( 'snip', function () {
-		it( 'should return a clone with content outside `start` and `end` removed', function () {
-			var s = new MagicString( 'abcdefghijkl', {
+	describe( 'snip', () => {
+		it( 'should return a clone with content outside `start` and `end` removed', () => {
+			const s = new MagicString( 'abcdefghijkl', {
 				filename: 'foo.js'
 			});
 
 			s.overwrite( 6, 9, 'GHI' );
 
-			var snippet = s.snip( 3, 9 );
+			const snippet = s.snip( 3, 9 );
 			assert.equal( snippet.toString(), 'defGHI' );
 			assert.equal( snippet.filename, 'foo.js' );
 		});
 
-		it( 'should snip from the start', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			var snippet = s.snip( 0, 6 );
+		it( 'should snip from the start', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			const snippet = s.snip( 0, 6 );
 
 			assert.equal( snippet.toString(), 'abcdef' );
 		});
 
-		it( 'should snip from the end', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			var snippet = s.snip( 6, 12 );
+		it( 'should snip from the end', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			const snippet = s.snip( 6, 12 );
 
 			assert.equal( snippet.toString(), 'ghijkl' );
 		});
 
-		it( 'should respect original indices', function () {
-			var s = new MagicString( 'abcdefghijkl' );
-			var snippet = s.snip( 3, 9 );
+		it( 'should respect original indices', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			const snippet = s.snip( 3, 9 );
 
 			snippet.overwrite( 6, 9, 'GHI' );
 			assert.equal( snippet.toString(), 'defGHI' );
 		});
 	});
 
-	describe( 'trim', function () {
-		it( 'should trim original content', function () {
+	describe( 'trim', () => {
+		it( 'should trim original content', () => {
 			assert.equal( new MagicString( '   abcdefghijkl   ' ).trim().toString(), 'abcdefghijkl' );
 			assert.equal( new MagicString( '   abcdefghijkl' ).trim().toString(), 'abcdefghijkl' );
 			assert.equal( new MagicString( 'abcdefghijkl   ' ).trim().toString(), 'abcdefghijkl' );
 		});
 
-		it( 'should trim replaced content', function () {
-			var s = new MagicString( 'abcdefghijkl' );
+		it( 'should trim replaced content', () => {
+			const s = new MagicString( 'abcdefghijkl' );
 
 			s.overwrite( 0, 3, '   ' ).overwrite( 9, 12, '   ' ).trim();
 			assert.equal( s.toString(), 'defghi' );
 		});
 
-		it( 'should trim original content before replaced content', function () {
-			var s = new MagicString( 'abc   def' );
+		it( 'should trim original content before replaced content', () => {
+			const s = new MagicString( 'abc   def' );
 
 			s.remove( 6, 9 );
 			assert.equal( s.toString(), 'abc   ' );
@@ -1048,8 +1017,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'abc' );
 		});
 
-		it( 'should trim original content after replaced content', function () {
-			var s = new MagicString( 'abc   def' );
+		it( 'should trim original content after replaced content', () => {
+			const s = new MagicString( 'abc   def' );
 
 			s.remove( 0, 3 );
 			assert.equal( s.toString(), '   def' );
@@ -1058,8 +1027,8 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'def' );
 		});
 
-		it( 'should trim original content before and after replaced content', function () {
-			var s = new MagicString( 'abc   def   ghi' );
+		it( 'should trim original content before and after replaced content', () => {
+			const s = new MagicString( 'abc   def   ghi' );
 
 			s.remove( 0, 3 );
 			s.remove( 12, 15 );
@@ -1069,28 +1038,28 @@ describe( 'MagicString', function () {
 			assert.equal( s.toString(), 'def' );
 		});
 
-		it( 'should trim appended/prepended content', function () {
-			var s = new MagicString( ' abcdefghijkl ' );
+		it( 'should trim appended/prepended content', () => {
+			const s = new MagicString( ' abcdefghijkl ' );
 
 			s.prepend( '  ' ).append( '  ' ).trim();
 			assert.equal( s.toString(), 'abcdefghijkl' );
 		});
 
-		it( 'should trim empty string', function () {
-			var s = new MagicString( '   ' );
+		it( 'should trim empty string', () => {
+			const s = new MagicString( '   ' );
 
 			assert.equal( s.trim().toString(), '' );
 		});
 
-		it( 'should return this', function () {
-			var s = new MagicString( '  abcdefghijkl  ' );
+		it( 'should return this', () => {
+			const s = new MagicString( '  abcdefghijkl  ' );
 			assert.strictEqual( s.trim(), s );
 		});
 	});
 
-	describe( 'trimLines', function () {
-		it( 'should trim original content', function () {
-			var s = new MagicString( '\n\n   abcdefghijkl   \n\n' );
+	describe( 'trimLines', () => {
+		it( 'should trim original content', () => {
+			const s = new MagicString( '\n\n   abcdefghijkl   \n\n' );
 
 			s.trimLines();
 			assert.equal( s.toString(), '   abcdefghijkl   ' );
@@ -1098,19 +1067,19 @@ describe( 'MagicString', function () {
 	});
 });
 
-describe( 'MagicString.Bundle', function () {
-	describe( 'addSource', function () {
-		it( 'should return this', function () {
-			var b = new MagicString.Bundle();
-			var source = new MagicString( 'abcdefghijkl' );
+describe( 'MagicString.Bundle', () => {
+	describe( 'addSource', () => {
+		it( 'should return this', () => {
+			const b = new MagicString.Bundle();
+			const source = new MagicString( 'abcdefghijkl' );
 
 			assert.strictEqual( b.addSource({ content: source }), b );
 		});
 
-		it( 'should accept MagicString instance as a single argument', function () {
-			var b = new MagicString.Bundle();
-			var array = [];
-			var source = new MagicString( 'abcdefghijkl', {
+		it( 'should accept MagicString instance as a single argument', () => {
+			const b = new MagicString.Bundle();
+			const array = [];
+			const source = new MagicString( 'abcdefghijkl', {
 				filename: 'foo.js',
 				indentExclusionRanges: array
 			});
@@ -1121,10 +1090,10 @@ describe( 'MagicString.Bundle', function () {
 			assert.strictEqual( b.sources[0].indentExclusionRanges, array );
 		});
 
-		it( 'respects MagicString init options with { content: source }', function () {
-			var b = new MagicString.Bundle();
-			var array = [];
-			var source = new MagicString( 'abcdefghijkl', {
+		it( 'respects MagicString init options with { content: source }', () => {
+			const b = new MagicString.Bundle();
+			const array = [];
+			const source = new MagicString( 'abcdefghijkl', {
 				filename: 'foo.js',
 				indentExclusionRanges: array
 			});
@@ -1136,9 +1105,9 @@ describe( 'MagicString.Bundle', function () {
 		});
 	});
 
-	describe( 'append', function () {
-		it( 'should append content', function () {
-			var b = new MagicString.Bundle();
+	describe( 'append', () => {
+		it( 'should append content', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({ content: new MagicString( '*' ) });
 
@@ -1146,8 +1115,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '*123456' );
 		});
 
-		it( 'should append content before subsequent sources', function () {
-			var b = new MagicString.Bundle();
+		it( 'should append content before subsequent sources', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource( new MagicString( '*' ) );
 
@@ -1155,30 +1124,22 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '*123\n-456' );
 		});
 
-		it( 'should return this', function () {
-			var b = new MagicString.Bundle();
+		it( 'should return this', () => {
+			const b = new MagicString.Bundle();
 			assert.strictEqual( b.append( 'x' ), b );
 		});
 	});
 
-	describe( 'clone', function () {
-		it( 'should clone a bundle', function () {
-			var b = new MagicString.Bundle(),
-				s1 = new MagicString( 'abcdef' ),
-				s2 = new MagicString( 'ghijkl' ),
-				clone;
-
-			b
-			.addSource({
-				content: s1
-			})
-			.addSource({
-				content: s2
-			})
-			.prepend( '>>>' )
-			.append( '<<<' );
-
-			clone = b.clone();
+	describe( 'clone', () => {
+		it( 'should clone a bundle', () => {
+			const s1 = new MagicString( 'abcdef' );
+			const s2 = new MagicString( 'ghijkl' );
+			const b = new MagicString.Bundle()
+				.addSource({ content: s1 })
+				.addSource({ content: s2 })
+				.prepend( '>>>' )
+				.append( '<<<' );
+			const clone = b.clone();
 
 			assert.equal( clone.toString(), '>>>abcdef\nghijkl<<<' );
 
@@ -1188,23 +1149,20 @@ describe( 'MagicString.Bundle', function () {
 		});
 	});
 
-	describe( 'generateMap', function () {
-		it( 'should generate a sourcemap', function () {
-			var b, map, smc, loc;
+	describe( 'generateMap', () => {
+		it( 'should generate a sourcemap', () => {
+			const b = new MagicString.Bundle()
+				.addSource({
+					filename: 'foo.js',
+					content: new MagicString( 'var answer = 42;' )
+				})
+				.addSource({
+					filename: 'bar.js',
+					content: new MagicString( 'console.log( answer );' )
+				});
 
-			b = new MagicString.Bundle();
 
-			b.addSource({
-				filename: 'foo.js',
-				content: new MagicString( 'var answer = 42;' )
-			});
-
-			b.addSource({
-				filename: 'bar.js',
-				content: new MagicString( 'console.log( answer );' )
-			});
-
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'bundle.js',
 				includeContent: true,
 				hires: true
@@ -1218,7 +1176,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( map.toString(), '{"version":3,"file":"bundle.js","sources":["foo.js","bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}' );
 			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYnVuZGxlLmpzIiwic291cmNlcyI6WyJmb28uanMiLCJiYXIuanMiXSwic291cmNlc0NvbnRlbnQiOlsidmFyIGFuc3dlciA9IDQyOyIsImNvbnNvbGUubG9nKCBhbnN3ZXIgKTsiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7QUNBZixDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyJ9' );
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
 			assert.equal( loc.line, 1 );
@@ -1241,22 +1200,18 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'bar.js' );
 		});
 
-		it( 'should handle Windows-style paths', function () {
-			var b, map, smc, loc;
+		it( 'should handle Windows-style paths', () => {
+			const b = new MagicString.Bundle()
+				.addSource({
+					filename: 'path\\to\\foo.js',
+					content: new MagicString( 'var answer = 42;' )
+				})
+				.addSource({
+					filename: 'path\\to\\bar.js',
+					content: new MagicString( 'console.log( answer );' )
+				});
 
-			b = new MagicString.Bundle();
-
-			b.addSource({
-				filename: 'path\\to\\foo.js',
-				content: new MagicString( 'var answer = 42;' )
-			});
-
-			b.addSource({
-				filename: 'path\\to\\bar.js',
-				content: new MagicString( 'console.log( answer );' )
-			});
-
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'bundle.js',
 				includeContent: true,
 				hires: true
@@ -1269,7 +1224,8 @@ describe( 'MagicString.Bundle', function () {
 
 			assert.equal( map.toString(), '{"version":3,"file":"bundle.js","sources":["path/to/foo.js","path/to/bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}' );
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
 			assert.equal( loc.line, 1 );
@@ -1292,30 +1248,26 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'path/to/bar.js' );
 		});
 
-		it( 'should handle edge case with intro content', function () {
-			var b, map, smc, loc;
+		it( 'should handle edge case with intro content', () => {
+			const b = new MagicString.Bundle()
+				.addSource({
+					filename: 'foo.js',
+					content: new MagicString( 'var answer = 42;' )
+				})
+				.addSource({
+					filename: 'bar.js',
+					content: new MagicString( '\nconsole.log( answer );' )
+				})
+				.indent().prepend( '(function () {\n' ).append( '\n}());' );
 
-			b = new MagicString.Bundle();
-
-			b.addSource({
-				filename: 'foo.js',
-				content: new MagicString( 'var answer = 42;' )
-			});
-
-			b.addSource({
-				filename: 'bar.js',
-				content: new MagicString( '\nconsole.log( answer );' )
-			});
-
-			b.indent().prepend( '(function () {\n' ).append( '\n}());' );
-
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'bundle.js',
 				includeContent: true,
 				hires: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 2, column: 1 });
 			assert.equal( loc.line, 1 );
@@ -1338,30 +1290,26 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'bar.js' );
 		});
 
-		it( 'should allow missing file option when generating map', function () {
-			var b, map;
-
-			b = new MagicString.Bundle();
-
-			b.addSource({
-				filename: 'foo.js',
-				content: new MagicString( 'var answer = 42;' )
-			});
-
-			map = b.generateMap({
-				includeContent: true,
-				hires: true
-			});
+		it( 'should allow missing file option when generating map', () => {
+			new MagicString.Bundle()
+				.addSource({
+					filename: 'foo.js',
+					content: new MagicString( 'var answer = 42;' )
+				})
+				.generateMap({
+					includeContent: true,
+					hires: true
+				});
 		});
 
-		it( 'should handle repeated sources', function () {
-			var b = new MagicString.Bundle();
+		it( 'should handle repeated sources', () => {
+			const b = new MagicString.Bundle();
 
-			var foo = new MagicString( 'var one = 1;\nvar three = 3;', {
+			const foo = new MagicString( 'var one = 1;\nvar three = 3;', {
 				filename: 'foo.js'
 			});
 
-			var bar = new MagicString( 'var two = 2;\nvar four = 4;', {
+			const bar = new MagicString( 'var two = 2;\nvar four = 4;', {
 				filename: 'bar.js'
 			});
 
@@ -1370,10 +1318,10 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( foo.snip( 13, 27 ) );
 			b.addSource( bar.snip( 13, 26 ) );
 
-			var code = b.toString();
+			const code = b.toString();
 			assert.equal( code, 'var one = 1;\nvar two = 2;\nvar three = 3;\nvar four = 4;' );
 
-			var map = b.generateMap({
+			const map = b.generateMap({
 				includeContent: true,
 				hires: true
 			});
@@ -1381,8 +1329,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( map.sources.length, 2 );
 			assert.equal( map.sourcesContent.length, 2 );
 
-			var smc = new SourceMapConsumer( map );
-			var loc;
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
 			assert.equal( loc.line, 1 );
@@ -1405,11 +1353,11 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'bar.js' );
 		});
 
-		it( 'should recover original names', function () {
-			var b = new MagicString.Bundle();
+		it( 'should recover original names', () => {
+			const b = new MagicString.Bundle();
 
-			var one = new MagicString( 'function one () {}', { filename: 'one.js' });
-			var two = new MagicString( 'function two () {}', { filename: 'two.js' });
+			const one = new MagicString( 'function one () {}', { filename: 'one.js' });
+			const two = new MagicString( 'function two () {}', { filename: 'two.js' });
 
 			one.overwrite( 9, 12, 'three', true );
 			two.overwrite( 9, 12, 'four', true );
@@ -1417,13 +1365,14 @@ describe( 'MagicString.Bundle', function () {
 			b.addSource( one );
 			b.addSource( two );
 
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.name, 'one' );
@@ -1432,24 +1381,25 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.name, 'two' );
 		});
 
-		it( 'should exclude sources without filename from sourcemap', function () {
-			var b = new MagicString.Bundle();
+		it( 'should exclude sources without filename from sourcemap', () => {
+			const b = new MagicString.Bundle();
 
-			var one = new MagicString( 'function one () {}', { filename: 'one.js' });
-			var two = new MagicString( 'function two () {}', { filename: null });
-			var three = new MagicString( 'function three () {}', { filename: 'three.js' });
+			const one = new MagicString( 'function one () {}', { filename: 'one.js' });
+			const two = new MagicString( 'function two () {}', { filename: null });
+			const three = new MagicString( 'function three () {}', { filename: 'three.js' });
 
 			b.addSource( one );
 			b.addSource( two );
 			b.addSource( three );
 
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.source, 'one.js' );
@@ -1461,23 +1411,24 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'three.js' );
 		});
 
-		it( 'handles prepended content', function () {
-			var b = new MagicString.Bundle();
+		it( 'handles prepended content', () => {
+			const b = new MagicString.Bundle();
 
-			var one = new MagicString( 'function one () {}', { filename: 'one.js' });
-			var two = new MagicString( 'function two () {}', { filename: 'two.js' });
+			const one = new MagicString( 'function one () {}', { filename: 'one.js' });
+			const two = new MagicString( 'function two () {}', { filename: 'two.js' });
 			two.prepend( 'function oneAndAHalf() {}\n' );
 
 			b.addSource( one );
 			b.addSource( two );
 
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.source, 'one.js' );
@@ -1486,23 +1437,24 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( loc.source, 'two.js' );
 		});
 
-		it( 'handles appended content', function () {
-			var b = new MagicString.Bundle();
+		it( 'handles appended content', () => {
+			const b = new MagicString.Bundle();
 
-			var one = new MagicString( 'function one () {}', { filename: 'one.js' });
+			const one = new MagicString( 'function one () {}', { filename: 'one.js' });
 			one.append( '\nfunction oneAndAHalf() {}' );
-			var two = new MagicString( 'function two () {}', { filename: 'two.js' });
+			const two = new MagicString( 'function two () {}', { filename: 'two.js' });
 
 			b.addSource( one );
 			b.addSource( two );
 
-			map = b.generateMap({
+			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
 			});
 
-			smc = new SourceMapConsumer( map );
+			const smc = new SourceMapConsumer( map );
+			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
 			assert.equal( loc.source, 'one.js' );
@@ -1512,9 +1464,9 @@ describe( 'MagicString.Bundle', function () {
 		});
 	});
 
-	describe( 'indent', function () {
-		it( 'should indent a bundle', function () {
-			var b = new MagicString.Bundle();
+	describe( 'indent', () => {
+		it( 'should indent a bundle', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({ content: new MagicString( 'abcdef' ) });
 			b.addSource({ content: new MagicString( 'ghijkl' ) });
@@ -1523,8 +1475,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '>>>\n\tabcdef\n\tghijkl\n<<<' );
 		});
 
-		it( 'should ignore non-indented sources when guessing indentation', function () {
-			var b = new MagicString.Bundle();
+		it( 'should ignore non-indented sources when guessing indentation', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({ content: new MagicString( 'abcdef' ) });
 			b.addSource({ content: new MagicString( 'ghijkl' ) });
@@ -1534,8 +1486,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '  abcdef\n  ghijkl\n    mnopqr' );
 		});
 
-		it( 'should respect indent exclusion ranges', function () {
-			var b = new MagicString.Bundle();
+		it( 'should respect indent exclusion ranges', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({
 				content: new MagicString( 'abc\ndef\nghi\njkl' ),
@@ -1549,8 +1501,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '>>  abc\n>>  def\nghi\njkl' );
 		});
 
-		it( 'does not indent sources with no preceding newline, i.e. append()', function () {
-			var b = new MagicString.Bundle();
+		it( 'does not indent sources with no preceding newline, i.e. append()', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource( new MagicString( 'abcdef' ) );
 			b.addSource( new MagicString( 'ghijkl' ) );
@@ -1559,8 +1511,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '\t>>>abcdef\n\tghijkl<<<' );
 		});
 
-		it( 'should noop with an empty string', function () {
-			var b = new MagicString.Bundle();
+		it( 'should noop with an empty string', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource( new MagicString( 'abcdef' ) );
 			b.addSource( new MagicString( 'ghijkl' ) );
@@ -1569,17 +1521,17 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), 'abcdef\nghijkl' );
 		});
 
-		it( 'indents prepended content', function () {
-			var b = new MagicString.Bundle();
+		it( 'indents prepended content', () => {
+			const b = new MagicString.Bundle();
 			b.prepend( 'a\nb' ).indent();
 
 			assert.equal( b.toString(), '\ta\n\tb' );
 		});
 
-		it( 'indents content immediately following intro with trailing newline', function () {
-			var b = new MagicString.Bundle({ separator: '\n\n' });
+		it( 'indents content immediately following intro with trailing newline', () => {
+			const b = new MagicString.Bundle({ separator: '\n\n' });
 
-			var s = new MagicString( '2' );
+			const s = new MagicString( '2' );
 			b.addSource({ content: s });
 
 			b.prepend( '1\n' );
@@ -1587,20 +1539,20 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.indent().toString(), '\t1\n\t2' );
 		});
 
-		it( 'should return this', function () {
-			var b = new MagicString.Bundle();
+		it( 'should return this', () => {
+			const b = new MagicString.Bundle();
 			assert.strictEqual( b.indent(), b );
 		});
 
-		it( 'should return this on noop', function () {
-			var b = new MagicString.Bundle();
+		it( 'should return this on noop', () => {
+			const b = new MagicString.Bundle();
 			assert.strictEqual( b.indent( '' ), b );
 		});
 	});
 
-	describe( 'prepend', function () {
-		it( 'should append content', function () {
-			var b = new MagicString.Bundle();
+	describe( 'prepend', () => {
+		it( 'should append content', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({ content: new MagicString( '*' ) });
 
@@ -1608,15 +1560,15 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '456123*' );
 		});
 
-		it( 'should return this', function () {
-			var b = new MagicString.Bundle();
+		it( 'should return this', () => {
+			const b = new MagicString.Bundle();
 			assert.strictEqual( b.prepend( 'x' ), b );
 		});
 	});
 
-	describe( 'trim', function () {
-		it( 'should trim bundle', function () {
-			var b = new MagicString.Bundle();
+	describe( 'trim', () => {
+		it( 'should trim bundle', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({
 				content: new MagicString( '   abcdef   ' )
@@ -1630,8 +1582,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), 'abcdef   \n   ghijkl' );
 		});
 
-		it( 'should handle funky edge cases', function () {
-			var b = new MagicString.Bundle();
+		it( 'should handle funky edge cases', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource({
 				content: new MagicString( '   abcdef   ' )
@@ -1647,15 +1599,15 @@ describe( 'MagicString.Bundle', function () {
 			assert.equal( b.toString(), '>>>\n   abcdef   \n   x' );
 		});
 
-		it( 'should return this', function () {
-			var b = new MagicString.Bundle();
+		it( 'should return this', () => {
+			const b = new MagicString.Bundle();
 			assert.strictEqual( b.trim(), b );
 		});
 	});
 
-	describe( 'toString', function () {
-		it( 'should separate with a newline by default', function () {
-			var b = new MagicString.Bundle();
+	describe( 'toString', () => {
+		it( 'should separate with a newline by default', () => {
+			const b = new MagicString.Bundle();
 
 			b.addSource( new MagicString( 'abc' ) );
 			b.addSource( new MagicString( 'def' ) );
@@ -1663,8 +1615,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.strictEqual( b.toString(), 'abc\ndef' );
 		});
 
-		it( 'should accept separator option', function () {
-			var b = new MagicString.Bundle({ separator: '==' });
+		it( 'should accept separator option', () => {
+			const b = new MagicString.Bundle({ separator: '==' });
 
 			b.addSource( new MagicString( 'abc' ) );
 			b.addSource( new MagicString( 'def' ) );
@@ -1672,8 +1624,8 @@ describe( 'MagicString.Bundle', function () {
 			assert.strictEqual( b.toString(), 'abc==def' );
 		});
 
-		it( 'should accept empty string separator option', function () {
-			var b = new MagicString.Bundle({ separator: '' });
+		it( 'should accept empty string separator option', () => {
+			const b = new MagicString.Bundle({ separator: '' });
 
 			b.addSource( new MagicString( 'abc' ) );
 			b.addSource( new MagicString( 'def' ) );
