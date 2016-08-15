@@ -1,9 +1,18 @@
 const assert = require( 'assert' );
+const assign = require( 'object-assign' );
+const decodeMappings = require( 'sourcemap-codec' ).decode;
 const SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
 const MagicString = require( '../' );
 
 require( 'source-map-support' ).install();
 require( 'console-group' ).install();
+
+function generateMap( s, options ) {
+	const map = s.generateMap( options );
+	const decodedMap = s.generateMap( assign( {}, options || {}, { encodeMappings: false } ) );
+	assert.deepEqual( decodedMap.mappings, decodeMappings( map.mappings ) );
+	return map;
+}
 
 describe( 'MagicString', () => {
 	describe( 'options', () => {
@@ -87,7 +96,7 @@ describe( 'MagicString', () => {
 		it( 'should generate a sourcemap', () => {
 			const s = new MagicString( 'abcdefghijkl' ).remove( 3, 9 );
 
-			const map = s.generateMap({
+			const map = generateMap(s, {
 				file: 'output.md',
 				source: 'input.md',
 				includeContent: true,
@@ -125,7 +134,7 @@ describe( 'MagicString', () => {
 			s.prepend( '\'use strict\';\n\n' );
 			s.indent( '\t' ).prepend( '(function () {\n' ).append( '\n}).call(global);' );
 
-			const map = s.generateMap({
+			const map = generateMap(s, {
 				source: 'input.md',
 				includeContent: true,
 				hires: true
@@ -146,7 +155,8 @@ describe( 'MagicString', () => {
 			s.addSourcemapLocation( 10 );
 
 			s.remove( 6, 9 );
-			const map = s.generateMap({
+
+			const map = generateMap(s, {
 				file: 'output.md',
 				source: 'input.md',
 				includeContent: true
@@ -181,7 +191,7 @@ describe( 'MagicString', () => {
 
 			s.overwrite( 9, 12, 'Bar' );
 
-			const map = s.generateMap({
+			const map = generateMap(s, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
@@ -201,8 +211,8 @@ describe( 'MagicString', () => {
 			const s2 = new MagicString( 'abcdefghijkl' );
 			s2.insertRight( 6, 'X' );
 
-			const m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
-			const m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
+			const m1 = generateMap(s1, { file: 'output', source: 'input', includeContent: true });
+			const m2 = generateMap(s2, { file: 'output', source: 'input', includeContent: true });
 
 			assert.deepEqual( m1, m2 );
 		});
@@ -212,7 +222,7 @@ describe( 'MagicString', () => {
 
 			s.overwrite( 9, 12, 'Bar', true );
 
-			const map = s.generateMap({
+			const map = generateMap(s, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
@@ -228,7 +238,7 @@ describe( 'MagicString', () => {
 			const s = new MagicString( 'var answer = 42' );
 			s.overwrite( 4, 10, 'number', true );
 
-			const map = s.generateMap({
+			const map = generateMap(s, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
@@ -247,7 +257,7 @@ describe( 'MagicString', () => {
 			s.move( 3, 6, 9 );
 
 			const result = s.toString();
-			const map = s.generateMap({
+			const map = generateMap(s, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true,
@@ -267,7 +277,7 @@ describe( 'MagicString', () => {
 
 		it( 'generates a map with trimmed content (#53)', () => {
 			const s1 = new MagicString( 'abcdefghijkl ' ).trim();
-			const map1 = s1.generateMap({
+			const map1 = generateMap(s1, {
 				file: 'output',
 				source: 'input',
 				includeContent: true,
@@ -280,7 +290,7 @@ describe( 'MagicString', () => {
 			assert.equal( loc1.column, 11 );
 
 			const s2 = new MagicString( ' abcdefghijkl' ).trim();
-			const map2 = s2.generateMap({
+			const map2 = generateMap(s2, {
 				file: 'output',
 				source: 'input',
 				includeContent: true,
@@ -297,7 +307,7 @@ describe( 'MagicString', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 			s.remove( 0, 3 ).remove( 3, 6 );
 
-			const map = s.generateMap();
+			const map = generateMap(s);
 			const smc = new SourceMapConsumer( map );
 			const loc = smc.originalPositionFor({ line: 1, column: 6 });
 
@@ -308,7 +318,7 @@ describe( 'MagicString', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 			s.indent( '    ' );
 
-			const map = s.generateMap();
+			const map = generateMap(s);
 			assert.equal( map.mappings, 'IAAA' );
 		});
 	});

@@ -1,9 +1,18 @@
 const assert = require( 'assert' );
+const assign = require('object-assign');
+const decodeMappings = require( 'sourcemap-codec' ).decode;
 const SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
 const MagicString = require( '../' );
 
 require( 'source-map-support' ).install();
 require( 'console-group' ).install();
+
+function generateMap( b, options ) {
+	const map = b.generateMap( options );
+	const decodedMap = b.generateMap( assign( {}, options || {}, { encodeMappings: false } ) );
+	assert.deepEqual( decodedMap.mappings, decodeMappings( map.mappings ) );
+	return map;
+}
 
 describe( 'MagicString.Bundle', () => {
 	describe( 'addSource', () => {
@@ -87,7 +96,7 @@ describe( 'MagicString.Bundle', () => {
 		});
 	});
 
-	describe( 'generateMap', () => {
+	describe.only( 'generateMap', () => {
 		it( 'should generate a sourcemap', () => {
 			const b = new MagicString.Bundle()
 				.addSource({
@@ -100,7 +109,7 @@ describe( 'MagicString.Bundle', () => {
 				});
 
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'bundle.js',
 				includeContent: true,
 				hires: true
@@ -149,7 +158,7 @@ describe( 'MagicString.Bundle', () => {
 					content: new MagicString( 'console.log( answer );' )
 				});
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'bundle.js',
 				includeContent: true,
 				hires: true
@@ -198,7 +207,7 @@ describe( 'MagicString.Bundle', () => {
 				})
 				.indent().prepend( '(function () {\n' ).append( '\n}());' );
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'bundle.js',
 				includeContent: true,
 				hires: true
@@ -229,15 +238,16 @@ describe( 'MagicString.Bundle', () => {
 		});
 
 		it( 'should allow missing file option when generating map', () => {
-			new MagicString.Bundle()
+			const m = new MagicString.Bundle()
 				.addSource({
 					filename: 'foo.js',
 					content: new MagicString( 'var answer = 42;' )
-				})
-				.generateMap({
-					includeContent: true,
-					hires: true
 				});
+
+			generateMap(m, {
+				includeContent: true,
+				hires: true
+			});
 		});
 
 		it( 'should handle repeated sources', () => {
@@ -259,7 +269,7 @@ describe( 'MagicString.Bundle', () => {
 			const code = b.toString();
 			assert.equal( code, 'var one = 1;\nvar two = 2;\nvar three = 3;\nvar four = 4;' );
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				includeContent: true,
 				hires: true
 			});
@@ -303,7 +313,7 @@ describe( 'MagicString.Bundle', () => {
 			b.addSource( one );
 			b.addSource( two );
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
@@ -330,7 +340,7 @@ describe( 'MagicString.Bundle', () => {
 			b.addSource( two );
 			b.addSource( three );
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
@@ -359,7 +369,7 @@ describe( 'MagicString.Bundle', () => {
 			b.addSource( one );
 			b.addSource( two );
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true
@@ -385,7 +395,7 @@ describe( 'MagicString.Bundle', () => {
 			b.addSource( one );
 			b.addSource( two );
 
-			const map = b.generateMap({
+			const map = generateMap(b, {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true

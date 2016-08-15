@@ -1,6 +1,7 @@
 import Chunk from './Chunk.js';
 import SourceMap from './utils/SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
+import generateMappings from './utils/generateMappings.js';
 import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
@@ -84,9 +85,7 @@ MagicString.prototype = {
 		return cloned;
 	},
 
-	generateMap ( options ) {
-		options = options || {};
-
+	generateMap ( options = {} ) {
 		const names = Object.keys( this.storedNames );
 
 		if ( DEBUG ) this.stats.time( 'generateMap' );
@@ -107,7 +106,11 @@ MagicString.prototype = {
 	},
 
 	getMappings ( options, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.intro, this.outro, this.firstChunk, options.hires, this.sourcemapLocations, sourceIndex, offsets, names );
+		if ( options.encodeMappings === false ) {
+			return generateMappings( this.original, this.intro, this.outro, this.firstChunk, options.hires, this.sourcemapLocations, sourceIndex, names );
+		} else  {
+			return encodeMappings( this.original, this.intro, this.outro, this.firstChunk, options.hires, this.sourcemapLocations, sourceIndex, offsets, names );
+		}
 	},
 
 	indent ( indentStr, options ) {

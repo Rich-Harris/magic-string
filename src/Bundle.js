@@ -103,23 +103,36 @@ Bundle.prototype = {
 	getMappings ( options, names ) {
 		const offsets = {};
 
-		return (
-			getSemis( this.intro ) +
-			this.sources.map( ( source, i ) => {
-				const prefix = ( i > 0 ) ? ( getSemis( source.separator ) || ',' ) : '';
-				let mappings;
-
-				// we don't bother encoding sources without a filename
-				if ( !source.filename ) {
-					mappings = getSemis( source.content.toString() );
-				} else {
+		if (options.encodeMappings === false) {
+			return Array.prototype.concat.apply(
+				this.intro.split( '\n' ).map( () => [] ).slice( 1 ),
+				this.sources.map( ( source, i ) => {
+					if ( !source.filename ) {
+						return source.content.toString().split( '\n' ).map( () => [] ).slice( 1 );
+					}
 					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
-					mappings = source.content.getMappings( options, sourceIndex, offsets, names );
-				}
+					return source.content.getMappings( options, sourceIndex, offsets, names );
+				})
+			);
+		} else {
+			return (
+				getSemis( this.intro ) +
+				this.sources.map( ( source, i ) => {
+					const prefix = ( i > 0 ) ? ( getSemis( source.separator ) || ',' ) : '';
+					let mappings;
 
-				return prefix + mappings;
-			}).join( '' )
-		);
+					// we don't bother encoding sources without a filename
+					if ( !source.filename ) {
+						mappings = getSemis( source.content.toString() );
+					} else {
+						const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
+						mappings = source.content.getMappings( options, sourceIndex, offsets, names );
+					}
+
+					return prefix + mappings;
+				}).join( '' )
+			);
+		}
 	},
 
 	getIndentString () {
