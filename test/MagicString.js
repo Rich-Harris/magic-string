@@ -7,9 +7,9 @@ const MagicString = require( '../' );
 require( 'source-map-support' ).install();
 require( 'console-group' ).install();
 
-function generateMap( s, options = {} ) {
+function generateMap( s, options ) {
 	const map = s.generateMap( options );
-	const decodedMap = s.generateMap( assign( {}, options, { encodeMappings: false } ) );
+	const decodedMap = s.generateMap( assign( {}, options || {}, { encodeMappings: false } ) );
 	assert.deepEqual( decodedMap.mappings, decodeMappings( map.mappings ) );
 	return map;
 }
@@ -92,7 +92,7 @@ describe( 'MagicString', () => {
 		});
 	});
 
-	describe.only( 'generateMap', () => {
+	describe( 'generateMap', () => {
 		it( 'should generate a sourcemap', () => {
 			const s = new MagicString( 'abcdefghijkl' ).remove( 3, 9 );
 

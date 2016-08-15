@@ -120,5 +120,5 @@ export default function generateMappings ( original, intro, outro, chunk, hires,
 
 			return arr;
 		});
-	}).concat( outro.split( '\n' ).slice( 1 ).map( () => [] ) );
+	}).concat( outro.split( '\n' ).map( () => [] ).slice( 1 ) );
 }
