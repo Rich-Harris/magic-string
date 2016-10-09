@@ -12,20 +12,20 @@
     "vlq": "^0.2.1"
   },
   "devDependencies": {
-    "buble": "^0.13.1",
+    "buble": "^0.14.0",
     "codecov.io": "^0.1.6",
-    "console-group": "^0.2.1",
-    "eslint": "^2.11.1",
-    "istanbul": "^0.4.3",
-    "mocha": "^3.0.1",
+    "console-group": "^0.3.2",
+    "eslint": "^3.7.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.0",
     "remap-istanbul": "^0.6.4",
     "resolve": "^1.1.7",
-    "rollup": "^0.34.5",
-    "rollup-plugin-buble": "^0.12.1",
+    "rollup": "^0.36.1",
+    "rollup-plugin-buble": "^0.14.0",
     "rollup-plugin-node-resolve": "^2.0.0",
-    "rollup-plugin-replace": "^1.1.0",
+    "rollup-plugin-replace": "^1.1.1",
     "source-map": "^0.5.6",
-    "source-map-support": "^0.4.0"
+    "source-map-support": "^0.4.3"
   },
   "keywords": [
     "string",
