@@ -110,10 +110,38 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;
 	offsets.sourceCodeName = offsets.sourceCodeName || 0;
 
-	return rawLines.map( segments => {
+	return rawLines.map( (segments, generatedLine) => {
 		let generatedCodeColumn = 0;
 
-		return segments.map( segment => {
+// 		console.log('Generated line:', generatedLine);
+
+		let validSegments = [];
+		let prevSegment;
+
+		for (let i=0; i<segments.length; i++) {
+			let currSegment = segments[i]
+
+			// Skip segment if it adds the same number of characters exactly after the last segment
+			if (prevSegment &&
+				prevSegment.sourceCodeLine === currSegment.sourceCodeLine &&
+				prevSegment.generatedCodeLine === currSegment.generatedCodeLine &&
+				currSegment.sourceCodeColumn - prevSegment.sourceCodeColumn === currSegment.generatedCodeColumn - prevSegment.generatedCodeColumn ) {
+
+				// noop
+
+			} else {
+				validSegments.push(prevSegment);
+				prevSegment = currSegment;
+			}
+		}
+		validSegments.push(prevSegment);
+		validSegments.shift();
+
+
+		return validSegments.map( (segment) => {
+
+// 			console.log('segment: ', segment.sourceCodeLine, ',', segment.sourceCodeColumn, '→', generatedLine, ',', segment.generatedCodeColumn, ' (', segment.sourceIndex, ')');
+
 			const arr = [
 				segment.generatedCodeColumn - generatedCodeColumn,
 				segment.sourceIndex - offsets.sourceIndex,
@@ -130,7 +158,6 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 				arr.push( segment.sourceCodeName - offsets.sourceCodeName );
 				offsets.sourceCodeName = segment.sourceCodeName;
 			}
-
 			return encode( arr );
 		}).join( ',' );
 	}).join( ';' ) + getSemis(outro);
