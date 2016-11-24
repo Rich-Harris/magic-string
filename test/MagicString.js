@@ -38,6 +38,78 @@ describe( 'MagicString', () => {
 		});
 	});
 
+	describe( '(ap|pre)pend(Left|Right)', () => {
+		it( 'preserves intended order', () => {
+			const s = new MagicString( '0123456789' );
+
+			s.insertLeft( 5, 'A' );
+			s.insertRight( 5, 'a' );
+			s.insertRight( 5, 'b' );
+			s.insertLeft( 5, 'B' );
+			s.insertLeft( 5, 'C' );
+			s.insertRight( 5, 'c' );
+
+			assert.equal( s.toString(), '01234ABCcba56789' );
+			assert.equal( s.slice(0, 5) , '01234ABC' );
+			assert.equal( s.slice(5), 'cba56789' );
+
+			s.prependLeft( 5, '<' );
+			s.prependLeft( 5, '{' );
+			assert.equal( s.toString(), '01234{<ABCcba56789' );
+
+			s.appendRight( 5, '>' );
+			s.appendRight( 5, '}' );
+			assert.equal( s.toString(), '01234{<ABCcba>}56789' );
+
+			s.appendLeft(5, '(');   // appendLeft is a synonym for insertLeft
+			s.appendLeft(5, '[');   // appendLeft is a synonym for insertLeft
+			assert.equal( s.toString(), '01234{<ABC([cba>}56789' );
+
+			s.prependRight(5, ')'); // prependRight is a synonym for insertRight
+			s.prependRight(5, ']'); // prependRight is a synonym for insertRight
+			assert.equal( s.toString(), '01234{<ABC([])cba>}56789' );
+
+			assert.equal( s.slice(0, 5), '01234{<ABC([' );
+			assert.equal( s.slice(5), '])cba>}56789' );
+		});
+
+		it( 'preserves intended order at beginning of string', () => {
+			const s = new MagicString( 'x' );
+
+			s.appendLeft( 0, '1' );
+			s.prependLeft( 0, '2' );
+			s.appendLeft( 0, '3' );
+			s.prependLeft( 0, '4' );
+
+			assert.equal( s.toString(), '4213x' );
+		});
+
+		it( 'preserves intended order at end of string', () => {
+			const s = new MagicString( 'x' );
+
+			s.appendRight( 1, '1' );
+			s.prependRight( 1, '2' );
+			s.appendRight( 1, '3' );
+			s.prependRight( 1, '4' );
+
+			assert.equal( s.toString(), 'x4213' );
+		});
+	});
+
+	describe( 'appendLeft', () => {
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.appendLeft( 0, 'a' ), s );
+		});
+	});
+
+	describe( 'appendRight', () => {
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.appendRight( 0, 'a' ), s );
+		});
+	});
+
 	describe( 'clone', () => {
 		it( 'should clone a magic string', () => {
 			const s = new MagicString( 'abcdefghijkl' );
@@ -481,32 +553,6 @@ describe( 'MagicString', () => {
 		// });
 	});
 
-	describe( 'insertLeft', () => {
-		it( 'inserts repeatedly in correct order', () => {
-			const s = new MagicString( 'ab' );
-			assert.equal( s.insertLeft(1, '1').toString(), 'a1b' );
-			assert.equal( s.insertLeft(1, '2').toString(), 'a12b' );
-		});
-
-		it( 'should return this', () => {
-			const s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.insertLeft( 0, 'a' ), s );
-		});
-	});
-
-	describe( 'insertRight', () => {
-		it( 'inserts repeatedly in correct order', () => {
-			const s = new MagicString( 'ab' );
-			assert.equal( s.insertRight(1, '1').toString(), 'a1b' );
-			assert.equal( s.insertRight(1, '2').toString(), 'a21b' );
-		});
-
-		it( 'should return this', () => {
-			const s = new MagicString( 'abcdefghijkl' );
-			assert.strictEqual( s.insertLeft( 0, 'a' ), s );
-		});
-	});
-
 	describe( 'move', () => {
 		it( 'moves content from the start', () => {
 			const s = new MagicString( 'abcdefghijkl' );
@@ -747,6 +793,20 @@ describe( 'MagicString', () => {
 		it( 'should return this', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.prepend( 'xyz' ), s );
+		});
+	});
+
+	describe( 'prependLeft', () => {
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.prependLeft( 0, 'a' ), s );
+		});
+	});
+
+	describe( 'prependRight', () => {
+		it( 'should return this', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+			assert.strictEqual( s.prependRight( 0, 'a' ), s );
 		});
 	});
 
