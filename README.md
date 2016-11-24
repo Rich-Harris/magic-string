@@ -90,6 +90,14 @@ Adds the specified character index (with respect to the original string) to sour
 
 Appends the specified content to the end of the string. Returns `this`.
 
+### s.appendLeft( index, content )
+
+Appends the specified `content` at the `index` in the original string. If a range *ending* with `index` is subsequently moved, the insert will be moved with it. Returns `this`. See also `s.prependLeft(...)`.
+
+### s.appendRight( index, content )
+
+Appends the specified `content` at the `index` in the original string. If a range *starting* with `index` is subsequently moved, the insert will be moved with it. Returns `this`. See also `s.prependRight(...)`.
+
 ### s.clone()
 
 Does what you'd expect.
@@ -120,11 +128,11 @@ The `options` argument can have an `exclude` property, which is an array of `[st
 
 ### s.insertLeft( index, content )
 
-Inserts the specified `content` at the `index` in the original string. If a range *ending* with `index` is subsequently moved, the insert will be moved with it. Returns `this`.
+**DEPRECATED** since 0.17 – use `s.appendLeft(...)` instead
 
 ### s.insertRight( index, content )
 
-Inserts the specified `content` at the `index` in the original string. If a range *starting* with `index` is subsequently moved, the insert will be moved with it. Returns `this`.
+**DEPRECATED** since 0.17 – use `s.prependRight(...)` instead
 
 ### s.locate( index )
 
@@ -145,6 +153,14 @@ Replaces the characters from `start` to `end` with `content`. The same restricti
 ### s.prepend( content )
 
 Prepends the string with the specified content. Returns `this`.
+
+### s.prependLeft ( index, content )
+
+Same as `s.appendLeft(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
+
+### s.prependRight ( index, content )
+
+Same as `s.appendRight(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
 
 ### s.remove( start, end )
 
