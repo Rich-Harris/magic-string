@@ -7,6 +7,11 @@ import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
 import Stats from './utils/Stats.js';
 
+const warned = {
+	insertLeft: false,
+	insertRight: false
+};
+
 export default function MagicString ( string, options = {} ) {
 	const chunk = new Chunk( 0, string.length, string );
 
@@ -43,6 +48,44 @@ MagicString.prototype = {
 		if ( typeof content !== 'string' ) throw new TypeError( 'outro content must be a string' );
 
 		this.outro += content;
+		return this;
+	},
+
+	appendLeft ( index, content ) {
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		if ( DEBUG ) this.stats.time( 'insertLeft' );
+
+		this._split( index );
+
+		const chunk = this.byEnd[ index ];
+
+		if ( chunk ) {
+			chunk.appendLeft( content );
+		} else {
+			this.intro += content;
+		}
+
+		if ( DEBUG ) this.stats.timeEnd( 'insertLeft' );
+		return this;
+	},
+
+	appendRight ( index, content ) {
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		if ( DEBUG ) this.stats.time( 'insertLeft' );
+
+		this._split( index );
+
+		const chunk = this.byStart[ index ];
+
+		if ( chunk ) {
+			chunk.appendRight( content );
+		} else {
+			this.outro += content;
+		}
+
+		if ( DEBUG ) this.stats.timeEnd( 'insertLeft' );
 		return this;
 	},
 
@@ -173,10 +216,10 @@ MagicString.prototype = {
 							shouldIndentNextCharacter = false;
 
 							if ( charIndex === chunk.start ) {
-								chunk.prepend( indentStr );
+								chunk.prependRight( indentStr );
 							} else {
 								const rhs = chunk.split( charIndex );
-								rhs.prepend( indentStr );
+								rhs.prependRight( indentStr );
 
 								this.byStart[ charIndex ] = rhs;
 								this.byEnd[ charIndex ] = chunk;
@@ -204,41 +247,21 @@ MagicString.prototype = {
 	},
 
 	insertLeft ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
-
-		if ( DEBUG ) this.stats.time( 'insertLeft' );
-
-		this._split( index );
-
-		const chunk = this.byEnd[ index ];
-
-		if ( chunk ) {
-			chunk.append( content );
-		} else {
-			this.intro += content;
+		if ( !warned.insertLeft ) {
+			console.warn( 'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead' ); // eslint-disable-line no-console
+			warned.insertLeft = true;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertLeft' );
-		return this;
+		return this.appendLeft( index, content );
 	},
 
 	insertRight ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
-
-		if ( DEBUG ) this.stats.time( 'insertRight' );
-
-		this._split( index );
-
-		const chunk = this.byStart[ index ];
-
-		if ( chunk ) {
-			chunk.prepend( content );
-		} else {
-			this.outro += content;
+		if ( !warned.insertRight ) {
+			console.warn( 'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead' ); // eslint-disable-line no-console
+			warned.insertRight = true;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertRight' );
-		return this;
+		return this.prependRight( index, content );
 	},
 
 	move ( start, end, index ) {
@@ -335,6 +358,44 @@ MagicString.prototype = {
 		if ( typeof content !== 'string' ) throw new TypeError( 'outro content must be a string' );
 
 		this.intro = content + this.intro;
+		return this;
+	},
+
+	prependLeft ( index, content ) {
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		if ( DEBUG ) this.stats.time( 'insertRight' );
+
+		this._split( index );
+
+		const chunk = this.byEnd[ index ];
+
+		if ( chunk ) {
+			chunk.prependLeft( content );
+		} else {
+			this.intro = content + this.intro;
+		}
+
+		if ( DEBUG ) this.stats.timeEnd( 'insertRight' );
+		return this;
+	},
+
+	prependRight ( index, content ) {
+		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+
+		if ( DEBUG ) this.stats.time( 'insertRight' );
+
+		this._split( index );
+
+		const chunk = this.byStart[ index ];
+
+		if ( chunk ) {
+			chunk.prependRight( content );
+		} else {
+			this.outro = content + this.outro;
+		}
+
+		if ( DEBUG ) this.stats.timeEnd( 'insertRight' );
 		return this;
 	},
 

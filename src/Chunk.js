@@ -18,8 +18,12 @@ export default function Chunk ( start, end, content ) {
 }
 
 Chunk.prototype = {
-	append ( content ) {
+	appendLeft ( content ) {
 		this.outro += content;
+	},
+
+	appendRight ( content ) {
+		this.intro = this.intro + content;
 	},
 
 	clone () {
@@ -65,7 +69,11 @@ Chunk.prototype = {
 		return this;
 	},
 
-	prepend ( content ) {
+	prependLeft ( content ) {
+		this.outro = content + this.outro;
+	},
+
+	prependRight ( content ) {
 		this.intro = content + this.intro;
 	},
 
