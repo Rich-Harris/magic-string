@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.17.0
+
+* Add `appendLeft`, `appendRight`, `prependLeft`, `prependRight` methods ([#109](https://github.com/Rich-Harris/magic-string/issues/109))
+* `insertLeft` and `insertRight` are deprecated in favour of `appendLeft` and `prependRight` respectively
+
 ## 0.16.0
 
 * Include inserts in range for `overwrite` and `remove` operations ([#89](https://github.com/Rich-Harris/magic-string/pull/89))
