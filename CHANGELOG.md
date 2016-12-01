@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.17.1
+
+* Optimisation – remove empty chunks following `overwrite` or `remove` ([#113](https://github.com/Rich-Harris/magic-string/pull/113))
+
 ## 0.17.0
 
 * Add `appendLeft`, `appendRight`, `prependLeft`, `prependRight` methods ([#109](https://github.com/Rich-Harris/magic-string/issues/109))
