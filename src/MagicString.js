@@ -330,15 +330,15 @@ MagicString.prototype = {
 		if ( first ) {
 			first.edit( content, storeName );
 
-			if ( first !== last ) {
-				let chunk = first.next;
-				while ( chunk !== last ) {
-					chunk.edit( '', false );
-					chunk = chunk.next;
-				}
-
-				chunk.edit( '', false );
+			if ( last ) {
+				first.next = last.next;
+			} else {
+				first.next = null;
+				this.lastChunk = first;
 			}
+
+			first.original = this.original.slice( start, end );
+			first.end = end;
 		}
 
 		else {
