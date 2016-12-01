@@ -1,6 +1,6 @@
 # magic-string changelog
 
-## 0.17.1
+## 0.18.0
 
 * Optimisation – remove empty chunks following `overwrite` or `remove` ([#113](https://github.com/Rich-Harris/magic-string/pull/113))
 
