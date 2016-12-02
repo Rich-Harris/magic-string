@@ -137,7 +137,7 @@ MagicString.prototype = {
 		const locate = getLocator( this.original );
 
 		if ( this.intro ) {
-			mappings.addEdit( -1, this.intro, '', { line: 0, column: 0 }, -1 );
+			mappings.advance( this.intro );
 		}
 
 		this.firstChunk.eachNext( chunk => {
@@ -148,7 +148,7 @@ MagicString.prototype = {
 			if ( chunk.edited ) {
 				mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
 			} else {
-				mappings.addUneditedChunk( sourceIndex, chunk, chunk.original, loc, this.sourcemapLocations );
+				mappings.addUneditedChunk( sourceIndex, chunk, this.original, loc, this.sourcemapLocations );
 			}
 
 			if ( chunk.outro.length ) mappings.advance( chunk.outro );

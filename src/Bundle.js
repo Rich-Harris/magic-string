@@ -112,10 +112,16 @@ Bundle.prototype = {
 
 				if ( chunk.intro.length ) mappings.advance( chunk.intro );
 
-				if ( chunk.edited ) {
-					mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
-				} else {
-					mappings.addUneditedChunk( sourceIndex, chunk, chunk.original, loc, magicString.sourcemapLocations );
+				if ( source.filename ) {
+					if ( chunk.edited ) {
+						mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+					} else {
+						mappings.addUneditedChunk( sourceIndex, chunk, magicString.original, loc, magicString.sourcemapLocations );
+					}
+				}
+
+				else {
+					mappings.advance( chunk.content );
 				}
 
 				if ( chunk.outro.length ) mappings.advance( chunk.outro );

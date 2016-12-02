@@ -19,13 +19,13 @@ export default function Mappings ( hires ) {
 
 	this.addEdit = ( sourceIndex, content, original, loc, nameIndex ) => {
 		if ( content.length ) {
-			rawSegments.push({
+			rawSegments.push([
 				generatedCodeColumn,
-				sourceCodeLine: loc.line,
-				sourceCodeColumn: loc.column,
-				sourceCodeName: nameIndex,
-				sourceIndex
-			});
+				sourceIndex,
+				loc.line,
+				loc.column,
+				nameIndex,
+			]);
 		} else if ( pending ) {
 			rawSegments.push( pending );
 		}
@@ -39,16 +39,14 @@ export default function Mappings ( hires ) {
 		let first = true;
 
 		while ( originalCharIndex < chunk.end ) {
-			if ( sourceIndex !== -1 ) {
-				if ( hires || first || sourcemapLocations[ originalCharIndex ] ) {
-					rawSegments.push({
-						generatedCodeColumn,
-						sourceCodeLine: loc.line,
-						sourceCodeColumn: loc.column,
-						sourceCodeName: -1,
-						sourceIndex
-					});
-				}
+			if ( hires || first || sourcemapLocations[ originalCharIndex ] ) {
+				rawSegments.push([
+					generatedCodeColumn,
+					sourceIndex,
+					loc.line,
+					loc.column,
+					-1
+				]);
 			}
 
 			if ( original[ originalCharIndex ] === '\n' ) {
@@ -66,13 +64,13 @@ export default function Mappings ( hires ) {
 			first = false;
 		}
 
-		pending = {
+		pending = [
 			generatedCodeColumn,
-			sourceCodeLine: loc.line,
-			sourceCodeColumn: loc.column,
-			sourceCodeName: -1,
-			sourceIndex
-		};
+			sourceIndex,
+			loc.line,
+			loc.column,
+			-1,
+		];
 	};
 
 	this.advance = str => {
@@ -96,20 +94,20 @@ export default function Mappings ( hires ) {
 
 			return segments.map( segment => {
 				const arr = [
-					segment.generatedCodeColumn - generatedCodeColumn,
-					segment.sourceIndex - offsets.sourceIndex,
-					segment.sourceCodeLine - offsets.sourceCodeLine,
-					segment.sourceCodeColumn - offsets.sourceCodeColumn
+					segment[0] - generatedCodeColumn,
+					segment[1] - offsets.sourceIndex,
+					segment[2] - offsets.sourceCodeLine,
+					segment[3] - offsets.sourceCodeColumn
 				];
 
-				generatedCodeColumn = segment.generatedCodeColumn;
-				offsets.sourceIndex = segment.sourceIndex;
-				offsets.sourceCodeLine = segment.sourceCodeLine;
-				offsets.sourceCodeColumn = segment.sourceCodeColumn;
+				generatedCodeColumn = segment[0];
+				offsets.sourceIndex = segment[1];
+				offsets.sourceCodeLine = segment[2];
+				offsets.sourceCodeColumn = segment[3];
 
-				if ( ~segment.sourceCodeName ) {
-					arr.push( segment.sourceCodeName - offsets.sourceCodeName );
-					offsets.sourceCodeName = segment.sourceCodeName;
+				if ( ~segment[4] ) {
+					arr.push( segment[4] - offsets.sourceCodeName );
+					offsets.sourceCodeName = segment[4];
 				}
 
 				return encode( arr );

@@ -438,6 +438,64 @@ describe( 'MagicString.Bundle', () => {
 				column: 8
 			});
 		});
+
+		// TODO tidy this up. is a recreation of a bug in Svelte
+		it( 'generates a correct sourcemap for a Svelte component', () => {
+			const b = new MagicString.Bundle({
+				separator: ''
+			});
+
+			const s = new MagicString( `
+<div></div>
+
+<script>
+	export default {
+		onrender () {
+			console.log( 42 );
+		}
+	}
+</script>`.trim() );
+
+			[ 21, 23, 38, 42, 50, 51, 54, 59, 66, 67, 70, 72, 74, 76, 77, 81, 84, 85 ].forEach( pos => {
+				s.addSourcemapLocation( pos );
+			});
+
+			s.remove( 0, 21 );
+			s.overwrite( 23, 38, 'return ' );
+			s.prependRight( 21, 'var template = (function () {' );
+			s.appendLeft( 85, '}());' );
+			s.overwrite( 85, 94, '' );
+
+			b.addSource({
+				content: s,
+				filename: 'input.js'
+			});
+
+			assert.equal( b.toString(), `
+var template = (function () {
+	return {
+		onrender () {
+			console.log( 42 );
+		}
+	}
+}());`.trim() );
+
+			const map = b.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			const smc = new SourceMapConsumer( map );
+			const loc = smc.originalPositionFor({ line: 4, column: 16 });
+
+			assert.deepEqual( loc, {
+				source: 'input.js',
+				name: null,
+				line: 6,
+				column: 16
+			});
+		});
 	});
 
 	describe( 'indent', () => {
