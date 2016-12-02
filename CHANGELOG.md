@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.19.0
+
+* More accurate bundle sourcemaps ([#114](https://github.com/Rich-Harris/magic-string/pull/114))
+
 ## 0.18.0
 
 * Optimisation – remove empty chunks following `overwrite` or `remove` ([#113](https://github.com/Rich-Harris/magic-string/pull/113))
