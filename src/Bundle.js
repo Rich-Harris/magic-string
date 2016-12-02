@@ -4,6 +4,8 @@ import getSemis from './utils/getSemis.js';
 import getRelativePath from './utils/getRelativePath.js';
 import hasOwnProp from './utils/hasOwnProp.js';
 import isObject from './utils/isObject.js';
+import getLocator from './utils/getLocator.js';
+import Mappings from './utils/Mappings.js';
 
 export default function Bundle ( options = {} ) {
 	this.intro = options.intro || '';
@@ -87,6 +89,50 @@ Bundle.prototype = {
 			});
 		});
 
+		const mappings = new Mappings( options.hires );
+
+		if ( this.intro ) {
+			mappings.addInsert( this.intro );
+		}
+
+		this.sources.forEach( ( source, i ) => {
+			if ( i > 0 ) {
+				mappings.addInsert( this.separator );
+			}
+
+			const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename[ source.filename ] : -1;
+			const magicString = source.content;
+			const locate = getLocator( magicString.original );
+
+			if ( magicString.intro ) {
+				mappings.addInsert( magicString.intro );
+			}
+
+			magicString.firstChunk.eachNext( chunk => {
+				const loc = locate( chunk.start );
+
+				if ( chunk.intro.length ) mappings.addInsert( chunk.intro );
+
+				if ( chunk.edited ) {
+					mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+				} else {
+					mappings.addUneditedChunk( sourceIndex, chunk, chunk.original, loc, magicString.sourcemapLocations );
+				}
+
+				if ( chunk.outro.length ) mappings.addInsert( chunk.outro );
+			});
+
+			if ( magicString.outro ) {
+				mappings.addInsert( magicString.outro );
+			}
+		});
+
+		const oldMappings = this.getMappings( options, names );
+		// const newMappings = mappings.encode();
+
+		// console.log( `oldMappings`, oldMappings )
+		// console.log( `newMappings`, newMappings )
+
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: this.uniqueSources.map( source => {
@@ -96,7 +142,8 @@ Bundle.prototype = {
 				return options.includeContent ? source.content : null;
 			}),
 			names,
-			mappings: this.getMappings( options, names )
+			// mappings: this.getMappings( options, names )
+			mappings: mappings.encode()
 		});
 	},
 

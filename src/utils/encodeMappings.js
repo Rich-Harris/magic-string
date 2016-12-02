@@ -105,6 +105,7 @@ export default function encodeMappings ( original, intro, outro, chunk, hires, s
 		chunk = nextChunk;
 	}
 
+	offsets.generatedCodeColumn = offsets.generatedCodeColumn || 0;
 	offsets.sourceIndex = offsets.sourceIndex || 0;
 	offsets.sourceCodeLine = offsets.sourceCodeLine || 0;
 	offsets.sourceCodeColumn = offsets.sourceCodeColumn || 0;

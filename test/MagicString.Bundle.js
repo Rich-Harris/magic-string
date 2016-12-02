@@ -111,9 +111,6 @@ describe( 'MagicString.Bundle', () => {
 			assert.deepEqual( map.sources, [ 'foo.js', 'bar.js' ]);
 			assert.deepEqual( map.sourcesContent, [ 'var answer = 42;', 'console.log( answer );' ]);
 
-			assert.equal( map.toString(), '{"version":3,"file":"bundle.js","sources":["foo.js","bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}' );
-			assert.equal( map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYnVuZGxlLmpzIiwic291cmNlcyI6WyJmb28uanMiLCJiYXIuanMiXSwic291cmNlc0NvbnRlbnQiOlsidmFyIGFuc3dlciA9IDQyOyIsImNvbnNvbGUubG9nKCBhbnN3ZXIgKTsiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7QUNBZixDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyJ9' );
-
 			const smc = new SourceMapConsumer( map );
 			let loc;
 
@@ -399,6 +396,47 @@ describe( 'MagicString.Bundle', () => {
 
 			loc = smc.originalPositionFor({ line: 3, column: 9 });
 			assert.equal( loc.source, 'two.js' );
+		});
+
+		it( 'should handle empty separator', () => {
+			const b = new MagicString.Bundle({
+				separator: ''
+			});
+
+			b.addSource({
+				content: new MagicString( 'if ( foo ) { ' )
+			});
+
+			const s = new MagicString( 'console.log( 42 );' );
+			s.addSourcemapLocation( 8 );
+			s.addSourcemapLocation( 15 );
+
+			b.addSource({
+				filename: 'input.js',
+				content: s
+			});
+
+			b.addSource({
+				content: new MagicString( ' }' )
+			});
+
+			assert.equal( b.toString(), 'if ( foo ) { console.log( 42 ); }' );
+
+			const map = b.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true
+			});
+
+			const smc = new SourceMapConsumer( map );
+			const loc = smc.originalPositionFor({ line: 1, column: 21 });
+
+			assert.deepEqual( loc, {
+				source: 'input.js',
+				name: null,
+				line: 1,
+				column: 8
+			});
 		});
 	});
 
