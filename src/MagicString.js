@@ -1,10 +1,10 @@
 import Chunk from './Chunk.js';
 import SourceMap from './utils/SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
-import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
+import Mappings from './utils/Mappings.js';
 import Stats from './utils/Stats.js';
 
 const warned = {
@@ -130,7 +130,29 @@ MagicString.prototype = {
 	generateMap ( options ) {
 		options = options || {};
 
+		const sourceIndex = 0;
 		const names = Object.keys( this.storedNames );
+		const mappings = new Mappings( options.hires );
+
+		const locate = getLocator( this.original );
+
+		if ( this.intro ) {
+			mappings.advance( this.intro );
+		}
+
+		this.firstChunk.eachNext( chunk => {
+			const loc = locate( chunk.start );
+
+			if ( chunk.intro.length ) mappings.advance( chunk.intro );
+
+			if ( chunk.edited ) {
+				mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+			} else {
+				mappings.addUneditedChunk( sourceIndex, chunk, this.original, loc, this.sourcemapLocations );
+			}
+
+			if ( chunk.outro.length ) mappings.advance( chunk.outro );
+		});
 
 		if ( DEBUG ) this.stats.time( 'generateMap' );
 		const map = new SourceMap({
@@ -138,7 +160,7 @@ MagicString.prototype = {
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names,
-			mappings: this.getMappings( options, 0, {}, names )
+			mappings: mappings.encode()
 		});
 		if ( DEBUG ) this.stats.timeEnd( 'generateMap' );
 
@@ -147,10 +169,6 @@ MagicString.prototype = {
 
 	getIndentString () {
 		return this.indentStr === null ? '\t' : this.indentStr;
-	},
-
-	getMappings ( options, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.intro, this.outro, this.firstChunk, options.hires, this.sourcemapLocations, sourceIndex, offsets, names );
 	},
 
 	indent ( indentStr, options ) {

@@ -1,9 +1,10 @@
 import MagicString from './MagicString.js';
 import SourceMap from './utils/SourceMap.js';
-import getSemis from './utils/getSemis.js';
 import getRelativePath from './utils/getRelativePath.js';
 import hasOwnProp from './utils/hasOwnProp.js';
 import isObject from './utils/isObject.js';
+import getLocator from './utils/getLocator.js';
+import Mappings from './utils/Mappings.js';
 
 export default function Bundle ( options = {} ) {
 	this.intro = options.intro || '';
@@ -87,6 +88,50 @@ Bundle.prototype = {
 			});
 		});
 
+		const mappings = new Mappings( options.hires );
+
+		if ( this.intro ) {
+			mappings.advance( this.intro );
+		}
+
+		this.sources.forEach( ( source, i ) => {
+			if ( i > 0 ) {
+				mappings.advance( this.separator );
+			}
+
+			const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename[ source.filename ] : -1;
+			const magicString = source.content;
+			const locate = getLocator( magicString.original );
+
+			if ( magicString.intro ) {
+				mappings.advance( magicString.intro );
+			}
+
+			magicString.firstChunk.eachNext( chunk => {
+				const loc = locate( chunk.start );
+
+				if ( chunk.intro.length ) mappings.advance( chunk.intro );
+
+				if ( source.filename ) {
+					if ( chunk.edited ) {
+						mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+					} else {
+						mappings.addUneditedChunk( sourceIndex, chunk, magicString.original, loc, magicString.sourcemapLocations );
+					}
+				}
+
+				else {
+					mappings.advance( chunk.content );
+				}
+
+				if ( chunk.outro.length ) mappings.advance( chunk.outro );
+			});
+
+			if ( magicString.outro ) {
+				mappings.advance( magicString.outro );
+			}
+		});
+
 		return new SourceMap({
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: this.uniqueSources.map( source => {
@@ -96,30 +141,8 @@ Bundle.prototype = {
 				return options.includeContent ? source.content : null;
 			}),
 			names,
-			mappings: this.getMappings( options, names )
+			mappings: mappings.encode()
 		});
-	},
-
-	getMappings ( options, names ) {
-		const offsets = {};
-
-		return (
-			getSemis( this.intro ) +
-			this.sources.map( ( source, i ) => {
-				const prefix = ( i > 0 ) ? ( getSemis( source.separator ) || ',' ) : '';
-				let mappings;
-
-				// we don't bother encoding sources without a filename
-				if ( !source.filename ) {
-					mappings = getSemis( source.content.toString() );
-				} else {
-					const sourceIndex = this.uniqueSourceIndexByFilename[ source.filename ];
-					mappings = source.content.getMappings( options, sourceIndex, offsets, names );
-				}
-
-				return prefix + mappings;
-			}).join( '' )
-		);
 	},
 
 	getIndentString () {
