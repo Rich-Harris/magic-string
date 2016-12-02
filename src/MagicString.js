@@ -1,7 +1,6 @@
 import Chunk from './Chunk.js';
 import SourceMap from './utils/SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
-import encodeMappings from './utils/encodeMappings.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
@@ -144,7 +143,7 @@ MagicString.prototype = {
 		this.firstChunk.eachNext( chunk => {
 			const loc = locate( chunk.start );
 
-			if ( chunk.intro.length ) mappings.addInsert( chunk.intro );
+			if ( chunk.intro.length ) mappings.advance( chunk.intro );
 
 			if ( chunk.edited ) {
 				mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
@@ -152,7 +151,7 @@ MagicString.prototype = {
 				mappings.addUneditedChunk( sourceIndex, chunk, chunk.original, loc, this.sourcemapLocations );
 			}
 
-			if ( chunk.outro.length ) mappings.addInsert( chunk.outro );
+			if ( chunk.outro.length ) mappings.advance( chunk.outro );
 		});
 
 		if ( DEBUG ) this.stats.time( 'generateMap' );
@@ -170,10 +169,6 @@ MagicString.prototype = {
 
 	getIndentString () {
 		return this.indentStr === null ? '\t' : this.indentStr;
-	},
-
-	getMappings ( options, sourceIndex, offsets, names ) {
-		return encodeMappings( this.original, this.intro, this.outro, this.firstChunk, options.hires, this.sourcemapLocations, sourceIndex, offsets, names );
 	},
 
 	indent ( indentStr, options ) {

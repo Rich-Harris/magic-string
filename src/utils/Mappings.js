@@ -1,7 +1,5 @@
 import { encode } from 'vlq';
 
-const nonWhitespace = /\S/;
-
 export default function Mappings ( hires ) {
 	const offsets = {
 		generatedCodeColumn: 0,
@@ -13,61 +11,27 @@ export default function Mappings ( hires ) {
 
 	let generatedCodeLine = 0;
 	let generatedCodeColumn = 0;
-	let hasContent = false;
 
 	this.raw = [];
 	let rawSegments = this.raw[ generatedCodeLine ] = [];
 
+	let pending = null;
+
 	this.addEdit = ( sourceIndex, content, original, loc, nameIndex ) => {
 		if ( content.length ) {
-			if ( hasContent || ( content.length && nonWhitespace.test( content ) ) ) {
-				rawSegments.push({
-					generatedCodeColumn,
-					sourceCodeLine: loc.line,
-					sourceCodeColumn: loc.column,
-					sourceCodeName: nameIndex,
-					sourceIndex
-				});
-			}
+			rawSegments.push({
+				generatedCodeColumn,
+				sourceCodeLine: loc.line,
+				sourceCodeColumn: loc.column,
+				sourceCodeName: nameIndex,
+				sourceIndex
+			});
+		} else if ( pending ) {
+			rawSegments.push( pending );
 		}
 
-		let lines = content.split( '\n' );
-		let lastLine = lines.pop();
-
-		if ( lines.length ) {
-			generatedCodeLine += lines.length;
-			this.raw[ generatedCodeLine ] = rawSegments = [];
-			generatedCodeColumn = lastLine.length;
-		} else {
-			generatedCodeColumn += lastLine.length;
-		}
-
-		lines = original.split( '\n' );
-		lastLine = lines.pop();
-
-		if ( lines.length ) {
-			loc.line += lines.length;
-			loc.column = lastLine.length;
-		} else {
-			loc.column += lastLine.length;
-		}
-
-		if ( content ) hasContent = true;
-	};
-
-	this.addInsert = str => {
-		if ( !str ) return;
-
-		const lines = str.split( '\n' );
-		const lastLine = lines.pop();
-
-		if ( lines.length ) {
-			generatedCodeLine += lines.length;
-			this.raw[ generatedCodeLine ] = rawSegments = [];
-			generatedCodeColumn = lastLine.length;
-		} else {
-			generatedCodeColumn += lastLine.length;
-		}
+		this.advance( content );
+		pending = null;
 	};
 
 	this.addUneditedChunk = ( sourceIndex, chunk, original, loc, sourcemapLocations ) => {
@@ -102,7 +66,28 @@ export default function Mappings ( hires ) {
 			first = false;
 		}
 
-		if ( chunk.content ) hasContent = true;
+		pending = {
+			generatedCodeColumn,
+			sourceCodeLine: loc.line,
+			sourceCodeColumn: loc.column,
+			sourceCodeName: -1,
+			sourceIndex
+		};
+	};
+
+	this.advance = str => {
+		if ( !str ) return;
+
+		const lines = str.split( '\n' );
+		const lastLine = lines.pop();
+
+		if ( lines.length ) {
+			generatedCodeLine += lines.length;
+			this.raw[ generatedCodeLine ] = rawSegments = [];
+			generatedCodeColumn = lastLine.length;
+		} else {
+			generatedCodeColumn += lastLine.length;
+		}
 	};
 
 	this.encode = () => {
