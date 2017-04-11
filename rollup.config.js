@@ -12,7 +12,10 @@ export default {
 	format,
 	exports: process.env.ES ? 'named' : 'default',
 	plugins: [
-		typescript({ exclude: 'node_modules/**' }),
+		typescript({
+			exclude: 'node_modules/**',
+			typescript: require('typescript')
+		}),
 		nodeResolve({ jsnext: true }),
 		replace({ DEBUG: false })
 	],
