@@ -1,4 +1,4 @@
-import btoa from './btoa.js';
+import btoa from './btoa';
 
 export default function SourceMap ( properties ) {
 	this.version = 3;

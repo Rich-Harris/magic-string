@@ -1,10 +1,10 @@
-import MagicString from './MagicString.js';
-import SourceMap from './utils/SourceMap.js';
-import getRelativePath from './utils/getRelativePath.js';
-import hasOwnProp from './utils/hasOwnProp.js';
-import isObject from './utils/isObject.js';
-import getLocator from './utils/getLocator.js';
-import Mappings from './utils/Mappings.js';
+import MagicString from './MagicString';
+import SourceMap from './utils/SourceMap';
+import getRelativePath from './utils/getRelativePath';
+import hasOwnProp from './utils/hasOwnProp';
+import isObject from './utils/isObject';
+import getLocator from './utils/getLocator';
+import Mappings from './utils/Mappings';
 
 export default function Bundle ( options = {} ) {
 	this.intro = options.intro || '';
