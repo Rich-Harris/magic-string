@@ -1,30 +1,44 @@
-export default function Chunk ( start, end, content ) {
-	this.start = start;
-	this.end = end;
-	this.original = content;
+export default class Chunk {
+	start: number
+	end: number
 
-	this.intro = '';
-	this.outro = '';
+	original: string
+	intro: string
+	outro: string
+	content: string
 
-	this.content = content;
-	this.storeName = false;
-	this.edited = false;
+	storeName: boolean
+	edited: boolean
 
-	// we make these non-enumerable, for sanity while debugging
-	Object.defineProperties( this, {
-		previous: { writable: true, value: null },
-		next: { writable: true, value: null }
-	});
-}
+	next: Chunk
+	previous: Chunk
 
-Chunk.prototype = {
-	appendLeft ( content ) {
+	constructor ( start: number, end: number, content: string ) {
+		this.start = start;
+		this.end = end;
+		this.original = content;
+
+		this.intro = '';
+		this.outro = '';
+
+		this.content = content;
+		this.storeName = false;
+		this.edited = false;
+
+		// we make these non-enumerable, for sanity while debugging
+		Object.defineProperties( this, {
+			previous: { writable: true, value: null },
+			next: { writable: true, value: null }
+		});
+	}
+
+	appendLeft ( content: string ) {
 		this.outro += content;
-	},
+	}
 
-	appendRight ( content ) {
+	appendRight ( content: string ) {
 		this.intro = this.intro + content;
-	},
+	}
 
 	clone () {
 		const chunk = new Chunk( this.start, this.end, this.original );
@@ -36,29 +50,29 @@ Chunk.prototype = {
 		chunk.edited = this.edited;
 
 		return chunk;
-	},
+	}
 
-	contains ( index ) {
+	contains ( index: number ) {
 		return this.start < index && index < this.end;
-	},
+	}
 
 	eachNext ( fn ) {
-		let chunk = this;
+		let chunk: Chunk = this;
 		while ( chunk ) {
 			fn( chunk );
 			chunk = chunk.next;
 		}
-	},
+	}
 
 	eachPrevious ( fn ) {
-		let chunk = this;
+		let chunk: Chunk = this;
 		while ( chunk ) {
 			fn( chunk );
 			chunk = chunk.previous;
 		}
-	},
+	}
 
-	edit ( content, storeName ) {
+	edit ( content: string, storeName: boolean ) {
 		this.content = content;
 		this.intro = '';
 		this.outro = '';
@@ -67,17 +81,17 @@ Chunk.prototype = {
 		this.edited = true;
 
 		return this;
-	},
+	}
 
-	prependLeft ( content ) {
+	prependLeft ( content: string ) {
 		this.outro = content + this.outro;
-	},
+	}
 
-	prependRight ( content ) {
+	prependRight ( content: string ) {
 		this.intro = content + this.intro;
-	},
+	}
 
-	split ( index ) {
+	split ( index: number ) {
 		const sliceIndex = index - this.start;
 
 		const originalBefore = this.original.slice( 0, sliceIndex );
@@ -105,13 +119,13 @@ Chunk.prototype = {
 		this.next = newChunk;
 
 		return newChunk;
-	},
+	}
 
 	toString () {
 		return this.intro + this.content + this.outro;
-	},
+	}
 
-	trimEnd ( rx ) {
+	trimEnd ( rx: string ) {
 		this.outro = this.outro.replace( rx, '' );
 		if ( this.outro.length ) return true;
 
@@ -129,9 +143,9 @@ Chunk.prototype = {
 			this.intro = this.intro.replace( rx, '' );
 			if ( this.intro.length ) return true;
 		}
-	},
+	}
 
-	trimStart ( rx ) {
+	trimStart ( rx: string ) {
 		this.intro = this.intro.replace( rx, '' );
 		if ( this.intro.length ) return true;
 

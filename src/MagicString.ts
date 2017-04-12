@@ -1,11 +1,11 @@
-import Chunk from './Chunk.ts';
-import SourceMap from './utils/SourceMap.ts';
-import guessIndent from './utils/guessIndent.ts';
-import getRelativePath from './utils/getRelativePath.ts';
-import isObject from './utils/isObject.ts';
-import getLocator from './utils/getLocator.ts';
-import Mappings from './utils/Mappings.ts';
-import Stats from './utils/Stats.ts';
+import Chunk from './Chunk';
+import SourceMap from './utils/SourceMap';
+import guessIndent from './utils/guessIndent';
+import getRelativePath from './utils/getRelativePath';
+import isObject from './utils/isObject';
+import getLocator from './utils/getLocator';
+import Mappings from './utils/Mappings';
+import Stats from './utils/Stats';
 
 const warned = {
 	insertLeft: false,

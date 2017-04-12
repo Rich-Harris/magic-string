@@ -12,6 +12,7 @@
     "vlq": "^0.2.1"
   },
   "devDependencies": {
+    "@types/node": "^7.0.12",
     "buble": "^0.14.0",
     "codecov.io": "^0.1.6",
     "console-group": "^0.3.2",

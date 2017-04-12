@@ -1,4 +1,4 @@
-export default function getRelativePath ( from, to ) {
+export default function getRelativePath ( from: string, to: string ) {
 	const fromParts = from.split( /[\/\\]/ );
 	const toParts = to.split( /[\/\\]/ );
 

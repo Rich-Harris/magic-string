@@ -1,15 +1,17 @@
 export default class Stats {
+	startTimes: {}
+
 	constructor () {
 		Object.defineProperties( this, {
 			startTimes: { value: {} }
 		});
 	}
 
-	time ( label ) {
+	time ( label: string ) {
 		this.startTimes[ label ] = process.hrtime();
 	}
 
-	timeEnd ( label ) {
+	timeEnd ( label: string ) {
 		const elapsed = process.hrtime( this.startTimes[ label ] );
 
 		if ( !this[ label ] ) this[ label ] = 0;

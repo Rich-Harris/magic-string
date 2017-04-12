@@ -1,6 +1,21 @@
 import { encode } from 'vlq';
 
-export default function Mappings ( hires ) {
+interface Mappings {
+	raw
+	addEdit
+	addUneditedChunk
+	advance
+	encode
+}
+
+interface Location {
+	line: number
+	column: number
+}
+
+interface Mapping {}
+
+export default function Mappings ( this: Mappings, hires: boolean ) {
 	const offsets = {
 		generatedCodeColumn: 0,
 		sourceIndex: 0,
@@ -13,11 +28,11 @@ export default function Mappings ( hires ) {
 	let generatedCodeColumn = 0;
 
 	this.raw = [];
-	let rawSegments = this.raw[ generatedCodeLine ] = [];
+	let rawSegments: Mapping[] = this.raw[ generatedCodeLine ] = [];
 
-	let pending = null;
+	let pending: Mapping | null = null;
 
-	this.addEdit = ( sourceIndex, content, original, loc, nameIndex ) => {
+	this.addEdit = ( sourceIndex: number, content: string, original: string, loc: Location, nameIndex: number ) => {
 		if ( content.length ) {
 			rawSegments.push([
 				generatedCodeColumn,
@@ -34,7 +49,7 @@ export default function Mappings ( hires ) {
 		pending = null;
 	};
 
-	this.addUneditedChunk = ( sourceIndex, chunk, original, loc, sourcemapLocations ) => {
+	this.addUneditedChunk = ( sourceIndex: number, chunk, original: string, loc, sourcemapLocations ) => {
 		let originalCharIndex = chunk.start;
 		let first = true;
 
@@ -73,7 +88,7 @@ export default function Mappings ( hires ) {
 		];
 	};
 
-	this.advance = str => {
+	this.advance = ( str: string ) => {
 		if ( !str ) return;
 
 		const lines = str.split( '\n' );
