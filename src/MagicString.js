@@ -346,6 +346,10 @@ MagicString.prototype = {
 		const last = this.byEnd[ end ];
 
 		if ( first ) {
+			if ( end > first.end && first.next !== this.byStart[ first.end ] ) {
+				throw new Error( 'Cannot overwrite across a split point' );
+			}
+
 			first.edit( content, storeName );
 
 			if ( last ) {
@@ -426,7 +430,23 @@ MagicString.prototype = {
 		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
 		if ( start > end ) throw new Error( 'end must be greater than start' );
 
-		return this.overwrite( start, end, '', false );
+		if ( DEBUG ) this.stats.time( 'remove' );
+
+		this._split( start );
+		this._split( end );
+
+		let chunk = this.byStart[ start ];
+
+		while ( chunk ) {
+			chunk.intro = '';
+			chunk.outro = '';
+			chunk.edit( '' );
+
+			chunk = end > chunk.end ? this.byStart[ chunk.end ] : null;
+		}
+
+		if ( DEBUG ) this.stats.timeEnd( 'remove' );
+		return this;
 	},
 
 	slice ( start = 0, end = this.original.length ) {

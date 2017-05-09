@@ -767,7 +767,7 @@ describe( 'MagicString', () => {
 			assert.throws( () => s.overwrite( 0, 1, [] ), TypeError );
 		});
 
-		it ( 'replaces interior inserts', () => {
+		it( 'replaces interior inserts', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 
 			s.insertLeft( 1, '&' );
@@ -776,6 +776,13 @@ describe( 'MagicString', () => {
 			s.insertRight( 3, '?' );
 			s.overwrite( 1, 3, '...' );
 			assert.equal( s.toString(), 'a&...?defghijkl' );
+		});
+
+		it( 'disallows overwriting across moved content', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+
+			s.move( 6, 9, 3 );
+			assert.throws( () => s.overwrite( 5, 7, 'XX' ), /Cannot overwrite across a split point/ );
 		});
 	});
 
@@ -902,6 +909,15 @@ describe( 'MagicString', () => {
 		it( 'should return this', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 			assert.strictEqual( s.remove( 3, 4 ), s );
+		});
+
+		it( 'removes across moved content', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+
+			s.move( 6, 9, 3 );
+			s.remove( 5, 7 );
+
+			assert.equal( s.toString(), 'abchidejkl' );
 		});
 	});
 
