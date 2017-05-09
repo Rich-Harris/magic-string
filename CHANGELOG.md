@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.19.1
+
+* Prevent overwrites across a split point (i.e. following a `move`)
+* Implement `remove` separately to `overwrite`
+
 ## 0.19.0
 
 * More accurate bundle sourcemaps ([#114](https://github.com/Rich-Harris/magic-string/pull/114))
