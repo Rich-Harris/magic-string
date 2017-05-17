@@ -9,7 +9,8 @@ import Stats from './utils/Stats.js';
 
 const warned = {
 	insertLeft: false,
-	insertRight: false
+	insertRight: false,
+	storeName: false
 };
 
 export default function MagicString ( string, options = {} ) {
@@ -54,7 +55,7 @@ MagicString.prototype = {
 	appendLeft ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		if ( DEBUG ) this.stats.time( 'insertLeft' );
+		if ( DEBUG ) this.stats.time( 'appendLeft' );
 
 		this._split( index );
 
@@ -66,14 +67,14 @@ MagicString.prototype = {
 			this.intro += content;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertLeft' );
+		if ( DEBUG ) this.stats.timeEnd( 'appendLeft' );
 		return this;
 	},
 
 	appendRight ( index, content ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
 
-		if ( DEBUG ) this.stats.time( 'insertLeft' );
+		if ( DEBUG ) this.stats.time( 'appendRight' );
 
 		this._split( index );
 
@@ -85,7 +86,7 @@ MagicString.prototype = {
 			this.outro += content;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertLeft' );
+		if ( DEBUG ) this.stats.timeEnd( 'appendRight' );
 		return this;
 	},
 
@@ -261,7 +262,7 @@ MagicString.prototype = {
 	},
 
 	insert () {
-		throw new Error( 'magicString.insert(...) is deprecated. Use insertRight(...) or insertLeft(...)' );
+		throw new Error( 'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)' );
 	},
 
 	insertLeft ( index, content ) {
@@ -323,19 +324,30 @@ MagicString.prototype = {
 		return this;
 	},
 
-	overwrite ( start, end, content, storeName ) {
+	overwrite ( start, end, content, options ) {
 		if ( typeof content !== 'string' ) throw new TypeError( 'replacement content must be a string' );
 
 		while ( start < 0 ) start += this.original.length;
 		while ( end < 0 ) end += this.original.length;
 
 		if ( end > this.original.length ) throw new Error( 'end is out of bounds' );
-		if ( start === end ) throw new Error( 'Cannot overwrite a zero-length range – use insertLeft or insertRight instead' );
+		if ( start === end ) throw new Error( 'Cannot overwrite a zero-length range – use appendLeft or prependRight instead' );
 
 		if ( DEBUG ) this.stats.time( 'overwrite' );
 
 		this._split( start );
 		this._split( end );
+
+		if ( options === true ) {
+			if ( !warned.storeName ) {
+				console.warn( 'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string' ); // eslint-disable-line no-console
+				warned.storeName = true;
+			}
+
+			options = { storeName: true };
+		}
+		const storeName = options !== undefined ? options.storeName : false;
+		const contentOnly = options !== undefined ? options.contentOnly : false;
 
 		if ( storeName ) {
 			const original = this.original.slice( start, end );
@@ -350,7 +362,7 @@ MagicString.prototype = {
 				throw new Error( 'Cannot overwrite across a split point' );
 			}
 
-			first.edit( content, storeName );
+			first.edit( content, storeName, contentOnly );
 
 			if ( last ) {
 				first.next = last.next;

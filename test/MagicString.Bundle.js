@@ -294,8 +294,8 @@ describe( 'MagicString.Bundle', () => {
 			const one = new MagicString( 'function one () {}', { filename: 'one.js' });
 			const two = new MagicString( 'function two () {}', { filename: 'two.js' });
 
-			one.overwrite( 9, 12, 'three', true );
-			two.overwrite( 9, 12, 'four', true );
+			one.overwrite( 9, 12, 'three', { storeName: true });
+			two.overwrite( 9, 12, 'four', { storeName: true });
 
 			b.addSource( one );
 			b.addSource( two );

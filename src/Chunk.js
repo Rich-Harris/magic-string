@@ -58,10 +58,12 @@ Chunk.prototype = {
 		}
 	},
 
-	edit ( content, storeName ) {
+	edit ( content, storeName, contentOnly ) {
 		this.content = content;
-		this.intro = '';
-		this.outro = '';
+		if ( !contentOnly ) {
+			this.intro = '';
+			this.outro = '';
+		}
 		this.storeName = storeName;
 
 		this.edited = true;

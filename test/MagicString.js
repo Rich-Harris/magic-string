@@ -42,12 +42,12 @@ describe( 'MagicString', () => {
 		it( 'preserves intended order', () => {
 			const s = new MagicString( '0123456789' );
 
-			s.insertLeft( 5, 'A' );
-			s.insertRight( 5, 'a' );
-			s.insertRight( 5, 'b' );
-			s.insertLeft( 5, 'B' );
-			s.insertLeft( 5, 'C' );
-			s.insertRight( 5, 'c' );
+			s.appendLeft( 5, 'A' );
+			s.prependRight( 5, 'a' );
+			s.prependRight( 5, 'b' );
+			s.appendLeft( 5, 'B' );
+			s.appendLeft( 5, 'C' );
+			s.prependRight( 5, 'c' );
 
 			assert.equal( s.toString(), '01234ABCcba56789' );
 			assert.equal( s.slice(0, 5) , '01234ABC' );
@@ -61,12 +61,12 @@ describe( 'MagicString', () => {
 			s.appendRight( 5, '}' );
 			assert.equal( s.toString(), '01234{<ABCcba>}56789' );
 
-			s.appendLeft(5, '(');   // appendLeft is a synonym for insertLeft
-			s.appendLeft(5, '[');   // appendLeft is a synonym for insertLeft
+			s.appendLeft(5, '(');
+			s.appendLeft(5, '[');
 			assert.equal( s.toString(), '01234{<ABC([cba>}56789' );
 
-			s.prependRight(5, ')'); // prependRight is a synonym for insertRight
-			s.prependRight(5, ']'); // prependRight is a synonym for insertRight
+			s.prependRight(5, ')');
+			s.prependRight(5, ']');
 			assert.equal( s.toString(), '01234{<ABC([])cba>}56789' );
 
 			assert.equal( s.slice(0, 5), '01234{<ABC([' );
@@ -266,12 +266,12 @@ describe( 'MagicString', () => {
 			assert.equal( loc.column, 9 );
 		});
 
-		it( 'should yield consistent results between insertLeft and insertRight', () => {
+		it( 'should yield consistent results between appendLeft and prependRight', () => {
 			const s1 = new MagicString( 'abcdefghijkl' );
-			s1.insertLeft( 6, 'X' );
+			s1.appendLeft( 6, 'X' );
 
 			const s2 = new MagicString( 'abcdefghijkl' );
-			s2.insertRight( 6, 'X' );
+			s2.prependRight( 6, 'X' );
 
 			const m1 = s1.generateMap({ file: 'output', source: 'input', includeContent: true });
 			const m2 = s2.generateMap({ file: 'output', source: 'input', includeContent: true });
@@ -282,7 +282,7 @@ describe( 'MagicString', () => {
 		it( 'should recover original names', () => {
 			const s = new MagicString( 'function Foo () {}' );
 
-			s.overwrite( 9, 12, 'Bar', true );
+			s.overwrite( 9, 12, 'Bar', { storeName: true });
 
 			const map = s.generateMap({
 				file: 'output.js',
@@ -298,7 +298,7 @@ describe( 'MagicString', () => {
 
 		it( 'should generate one segment per replacement', () => {
 			const s = new MagicString( 'var answer = 42' );
-			s.overwrite( 4, 10, 'number', true );
+			s.overwrite( 4, 10, 'number', { storeName: true });
 
 			const map = s.generateMap({
 				file: 'output.js',
@@ -508,7 +508,7 @@ describe( 'MagicString', () => {
 			assert.throws( () => s.insert( 6, 'X' ), /deprecated/ );
 		});
 
-		// TODO move this into insertRight and insertLeft tests
+		// TODO move this into prependRight and appendLeft tests
 
 		// it( 'should insert characters in the correct location', () => {
 		// 	const s = new MagicString( 'abcdefghijkl' );
@@ -584,9 +584,9 @@ describe( 'MagicString', () => {
 
 		it( 'ignores redundant move', () => {
 			const s = new MagicString( 'abcdefghijkl' );
-			s.insertRight( 9, 'X' );
+			s.prependRight( 9, 'X' );
 			s.move( 9, 12, 6 );
-			s.insertLeft( 12, 'Y' );
+			s.appendLeft( 12, 'Y' );
 			s.move( 6, 9, 12 ); // this is redundant – [6,9] is already after [9,12]
 
 			assert.equal( s.toString(), 'abcdefXjklYghi' );
@@ -655,7 +655,7 @@ describe( 'MagicString', () => {
 		// it( 'move follows inserts', () => {
 		// 	const s = new MagicString( 'abcdefghijkl' );
 		//
-		// 	s.insertLeft( 3, 'X' ).move( 6, 9, 3 );
+		// 	s.appendLeft( 3, 'X' ).move( 6, 9, 3 );
 		// 	assert.equal( s.toString(), 'abcXghidefjkl' );
 		// });
 		//
@@ -676,7 +676,7 @@ describe( 'MagicString', () => {
 		it( 'moves content inserted at end of range', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 
-			s.insertLeft( 6, 'X' ).move( 3, 6, 9 );
+			s.appendLeft( 6, 'X' ).move( 3, 6, 9 );
 			assert.equal( s.toString(), 'abcghidefXjkl' );
 		});
 
@@ -727,7 +727,7 @@ describe( 'MagicString', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 
 			s.remove( 0, 6 );
-			s.insertLeft( 6, 'DEF' );
+			s.appendLeft( 6, 'DEF' );
 			s.overwrite( 6, 9, 'GHI' );
 			assert.equal( s.toString(), 'DEFGHIjkl' );
 		});
@@ -735,7 +735,7 @@ describe( 'MagicString', () => {
 		it( 'replaces zero-length inserts inside overwrite', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 
-			s.insertLeft( 6, 'XXX' );
+			s.appendLeft( 6, 'XXX' );
 			s.overwrite( 3, 9, 'DEFGHI' );
 			assert.equal( s.toString(), 'abcDEFGHIjkl' );
 		});
@@ -759,7 +759,7 @@ describe( 'MagicString', () => {
 
 		it( 'should disallow overwriting zero-length ranges', () => {
 			const s = new MagicString( 'x' );
-			assert.throws( () => s.overwrite( 0, 0, 'anything' ), /Cannot overwrite a zero-length range – use insertLeft or insertRight instead/ );
+			assert.throws( () => s.overwrite( 0, 0, 'anything' ), /Cannot overwrite a zero-length range – use appendLeft or prependRight instead/ );
 		});
 
 		it( 'should throw when given non-string content', () => {
@@ -770,12 +770,23 @@ describe( 'MagicString', () => {
 		it( 'replaces interior inserts', () => {
 			const s = new MagicString( 'abcdefghijkl' );
 
-			s.insertLeft( 1, '&' );
-			s.insertRight( 1, '^' );
-			s.insertLeft( 3, '!' );
-			s.insertRight( 3, '?' );
+			s.appendLeft( 1, '&' );
+			s.prependRight( 1, '^' );
+			s.appendLeft( 3, '!' );
+			s.prependRight( 3, '?' );
 			s.overwrite( 1, 3, '...' );
 			assert.equal( s.toString(), 'a&...?defghijkl' );
+		});
+
+		it( 'preserves interior inserts with `contentOnly: true`', () => {
+			const s = new MagicString( 'abcdefghijkl' );
+
+			s.appendLeft( 1, '&' );
+			s.prependRight( 1, '^' );
+			s.appendLeft( 3, '!' );
+			s.prependRight( 3, '?' );
+			s.overwrite( 1, 3, '...', { contentOnly: true });
+			assert.equal( s.toString(), 'a&^...!?defghijkl' );
 		});
 
 		it( 'disallows overwriting across moved content', () => {
@@ -881,8 +892,8 @@ describe( 'MagicString', () => {
 		it( 'should not remove content inserted after the end of removed range', () => {
 			const s = new MagicString( 'ab.c;' );
 
-			s.insertRight( 0, '(' );
-			s.insertRight( 4, ')' );
+			s.prependRight( 0, '(' );
+			s.prependRight( 4, ')' );
 			s.remove( 2, 4 );
 			assert.equal( s.toString(), '(ab);' );
 		});
@@ -890,10 +901,10 @@ describe( 'MagicString', () => {
 		it( 'should remove interior inserts', () => {
 			const s = new MagicString( 'abc;' );
 
-			s.insertLeft( 1, '[' );
-			s.insertRight( 1, '(' );
-			s.insertLeft( 2, ')' );
-			s.insertRight( 2, ']' );
+			s.appendLeft( 1, '[' );
+			s.prependRight( 1, '(' );
+			s.appendLeft( 2, ')' );
+			s.prependRight( 2, ']' );
 			s.remove( 1, 2 );
 			assert.equal( s.toString(), 'a[]c;' );
 		});
@@ -949,8 +960,8 @@ describe( 'MagicString', () => {
 		it( 'includes inserted characters, respecting insertion direction', () => {
 			const s = new MagicString( 'abefij' );
 
-			s.insertRight( 2, 'cd' );
-			s.insertLeft( 4, 'gh' );
+			s.prependRight( 2, 'cd' );
+			s.appendLeft( 4, 'gh' );
 
 			assert.equal( s.slice(), 'abcdefghij' );
 			assert.equal( s.slice( 1, 5 ), 'bcdefghi' );
