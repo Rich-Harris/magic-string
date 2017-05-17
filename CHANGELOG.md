@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.20.0
+
+* The fourth argument to `overwrite` is a `{storeName, contentOnly}` options object. `storeName: true` is equivalent to `true` before. `contentOnly` will preserve existing appends/prepends to the chunk in question
+
 ## 0.19.1
 
 * Prevent overwrites across a split point (i.e. following a `move`)

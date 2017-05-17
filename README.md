@@ -146,9 +146,11 @@ The `options` argument can have an `exclude` property, which is an array of `[st
 
 Moves the characters from `start` and `end` to `index`. Returns `this`.
 
-### s.overwrite( start, end, content[, storeName] )
+### s.overwrite( start, end, content[, options] )
 
-Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`. If `storeName` is `true`, the original name will be stored for later inclusion in a sourcemap's `names` array.
+Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
+
+The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and a `contentOnly` property which determines whether only the content is overwritten, or anything that was appended/prepended to the range as well.
 
 ### s.prepend( content )
 
