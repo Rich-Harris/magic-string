@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.21.0
+
+* Add TypeScript bindings ([#119](https://github.com/Rich-Harris/magic-string/pull/119))
+
 ## 0.20.0
 
 * The fourth argument to `overwrite` is a `{storeName, contentOnly}` options object. `storeName: true` is equivalent to `true` before. `contentOnly` will preserve existing appends/prepends to the chunk in question
