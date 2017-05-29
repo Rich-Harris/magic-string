@@ -65,7 +65,7 @@ declare module "magic-string" {
     indent(indentStr: string, options: IndentOptions): MagicString;
 
     move(start: number, end: number, index: number): MagicString;
-    overwrite(start: number, end: number, content: string, options: boolean | OverwriteOptions): MagicString;
+    overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): MagicString;
     prepend(content: string): MagicString;
     prependLeft(index: number, content: string): MagicString;
     prependRight(index: number, content: string): MagicString;
