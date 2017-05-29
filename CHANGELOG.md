@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.21.2
+
+* Add `default` property referencing self in index-legacy.js, to work around TypeScript bug ([#121](https://github.com/Rich-Harris/magic-string/pull/121))
+
 ## 0.21.1
 
 * Add typings file to package
