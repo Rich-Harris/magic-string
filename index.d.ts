@@ -53,7 +53,7 @@ declare module "magic-string" {
 
   export default class MagicString {
     constructor(str: string, options?: MagicStringOptions);
-    addSourcemapLocation(char: string): void;
+    addSourcemapLocation(char: number): void;
     append(content: string): MagicString;
     appendLeft(index: number, content: string): MagicString;
     appendRight(index: number, content: string): MagicString;
