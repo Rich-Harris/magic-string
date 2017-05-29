@@ -20,7 +20,7 @@ declare module "magic-string" {
     toUrl(): string;
   }
 
-  export class Bundle {
+  class Bundle {
     constructor(options?: BundleOptions);
     addSource(source: MagicString | { filename?: string, content: MagicString }): Bundle;
     append(str: string, options: BundleOptions): Bundle;
@@ -51,7 +51,7 @@ declare module "magic-string" {
     contentOnly: boolean;
   }
 
-  export default class MagicString {
+  class MagicString {
     constructor(str: string, options?: MagicStringOptions);
     addSourcemapLocation(char: number): void;
     append(content: string): MagicString;
@@ -72,5 +72,9 @@ declare module "magic-string" {
     remove(start: number, end: number): MagicString;
     slice(start: number, end: number): string;
     snip(start: number, end: number): MagicString;
+    
+    static Bundle: Bundle;
   }
+
+  export = MagicString;
 }
