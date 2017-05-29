@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.21.1
+
+* Add typings file to package
+
 ## 0.21.0
 
 * Add TypeScript bindings ([#119](https://github.com/Rich-Harris/magic-string/pull/119))
