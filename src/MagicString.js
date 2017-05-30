@@ -116,9 +116,7 @@ MagicString.prototype = {
 		cloned.lastChunk = clonedChunk;
 
 		if ( this.indentExclusionRanges ) {
-			cloned.indentExclusionRanges = typeof this.indentExclusionRanges[0] === 'number' ?
-				[ this.indentExclusionRanges[0], this.indentExclusionRanges[1] ] :
-				this.indentExclusionRanges.map( range => [ range.start, range.end ] );
+			cloned.indentExclusionRanges = this.indentExclusionRanges.slice();
 		}
 
 		Object.keys( this.sourcemapLocations ).forEach( loc => {
