@@ -141,6 +141,19 @@ describe( 'MagicString', () => {
 			assert.deepEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
 		});
 
+		it( 'should clone complex indentExclusionRanges', () => {
+			const array = [ [ 3, 6 ], [ 7, 9 ] ];
+			const source = new MagicString( 'abcdefghijkl', {
+				filename: 'foo.js',
+				indentExclusionRanges: array
+			});
+
+			const clone = source.clone();
+
+			assert.notStrictEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
+			assert.deepEqual( source.indentExclusionRanges, clone.indentExclusionRanges );
+		});
+
 		it( 'should clone sourcemapLocations', () => {
 			const source = new MagicString( 'abcdefghijkl', {
 				filename: 'foo.js'

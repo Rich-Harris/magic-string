@@ -27,7 +27,7 @@ declare module "magic-string" {
     clone(): Bundle;
     generateMap(options?: Partial<SourceMapOptions>): SourceMap;
     getIndentString(): string;
-    indent(indentStr: string): Bundle;
+    indent(indentStr?: string): Bundle;
     prepend(str: string): Bundle;
     toString(): string;
     trimLines(): string;
@@ -36,13 +36,15 @@ declare module "magic-string" {
     trimEnd(charType: string): Bundle;
   }
 
+  export type ExclusionRange = [ number, number ];
+
   export interface MagicStringOptions {
     filename: string,
-    indentExclusionRanges: any; // TODO
+    indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
   }
 
   export interface IndentOptions {
-    exclude: any; // TODO
+    exclude: ExclusionRange | Array<ExclusionRange>;
     indentStart: boolean;
   }
 
@@ -58,11 +60,11 @@ declare module "magic-string" {
     appendLeft(index: number, content: string): MagicString;
     appendRight(index: number, content: string): MagicString;
     clone(): MagicString;
-    generateMap(options?: Partial<SourceMapOptions>);
+    generateMap(options?: Partial<SourceMapOptions>): SourceMap;
     getIndentString(): string;
 
-    indent(options?): MagicString;
-    indent(indentStr: string, options: IndentOptions): MagicString;
+    indent(options?: IndentOptions): MagicString;
+    indent(indentStr?: string, options?: IndentOptions): MagicString;
 
     move(start: number, end: number, index: number): MagicString;
     overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): MagicString;
