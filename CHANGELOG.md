@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.21.3
+
+* Clone `indentExclusionRanges` correctly ([#122](https://github.com/Rich-Harris/magic-string/pull/122))
+* Fix more typings ([#122](https://github.com/Rich-Harris/magic-string/pull/122))
+
 ## 0.21.2
 
 * Add `default` property referencing self in index-legacy.js, to work around TypeScript bug ([#121](https://github.com/Rich-Harris/magic-string/pull/121))
