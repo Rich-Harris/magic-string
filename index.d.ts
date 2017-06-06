@@ -7,15 +7,18 @@ declare module "magic-string" {
   export interface SourceMapOptions {
     hires: boolean;
     file: string;
-    sources: string[];
-    sourcesContent: string;
+    source: string;
     includeContent: boolean;
-    names: string[];
-    mappings: string[];
   }
 
   class SourceMap {
-    constructor(properties: SourceMapOptions);
+    constructor(properties: SourceMap);
+    file: string;
+    sources: string[];
+    sourcesContent: string;
+    names: string[];
+    mappings: string[];
+
     toString(): string;
     toUrl(): string;
   }
