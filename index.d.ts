@@ -11,8 +11,7 @@ declare module "magic-string" {
     includeContent: boolean;
   }
 
-  class SourceMap {
-    constructor(properties: SourceMap);
+  export interface SourceMap {
     file: string;
     sources: string[];
     sourcesContent: string;
