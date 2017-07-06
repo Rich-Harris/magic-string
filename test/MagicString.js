@@ -1,6 +1,6 @@
 const assert = require( 'assert' );
 const SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
-const MagicString = require( '../' );
+const MagicString = require( './utils/IntegrityCheckingMagicString' );
 
 require( 'source-map-support' ).install();
 require( 'console-group' ).install();
@@ -807,6 +807,15 @@ describe( 'MagicString', () => {
 
 			s.move( 6, 9, 3 );
 			assert.throws( () => s.overwrite( 5, 7, 'XX' ), /Cannot overwrite across a split point/ );
+		});
+
+		it ( 'allows later insertions at the end', () => {
+			const s = new MagicString( 'abcdefg' );
+
+			s.appendLeft(4, '(');
+			s.overwrite( 2, 7, '' );
+			s.appendLeft(7, 'h');
+			assert.equal( s.toString(), 'abh' );
 		});
 	});
 
