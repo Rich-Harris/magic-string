@@ -235,13 +235,9 @@ MagicString.prototype = {
 							if ( charIndex === chunk.start ) {
 								chunk.prependRight( indentStr );
 							} else {
-								const rhs = chunk.split( charIndex );
-								rhs.prependRight( indentStr );
-
-								this.byStart[ charIndex ] = rhs;
-								this.byEnd[ charIndex ] = chunk;
-
-								chunk = rhs;
+								this._splitChunk( chunk, charIndex );
+								chunk = chunk.next;
+								chunk.prependRight( indentStr );
 							}
 						}
 					}
@@ -313,7 +309,7 @@ MagicString.prototype = {
 		}
 
 		first.previous = newLeft;
-		last.next = newRight;
+		last.next = newRight || null;
 
 		if ( !newLeft ) this.firstChunk = first;
 		if ( !newRight ) this.lastChunk = last;
@@ -362,15 +358,15 @@ MagicString.prototype = {
 
 			first.edit( content, storeName, contentOnly );
 
-			if ( last ) {
-				first.next = last.next;
-			} else {
-				first.next = null;
-				this.lastChunk = first;
-			}
+			if ( first !== last ) {
+				let chunk = first.next;
+				while ( chunk !== last ) {
+					chunk.edit( '', false );
+					chunk = chunk.next;
+				}
 
-			first.original = this.original.slice( start, end );
-			first.end = end;
+				chunk.edit( '', false );
+			}
 		}
 
 		else {
@@ -586,10 +582,13 @@ MagicString.prototype = {
 
 			// if chunk was trimmed, we have a new lastChunk
 			if ( chunk.end !== end ) {
-				this.lastChunk = chunk.next;
+				if ( this.lastChunk === chunk ) {
+					this.lastChunk = chunk.next;
+				}
 
 				this.byEnd[ chunk.end ] = chunk;
 				this.byStart[ chunk.next.start ] = chunk.next;
+				this.byEnd[ chunk.next.end ] = chunk.next;
 			}
 
 			if ( aborted ) return this;
@@ -617,6 +616,7 @@ MagicString.prototype = {
 
 				this.byEnd[ chunk.end ] = chunk;
 				this.byStart[ chunk.next.start ] = chunk.next;
+				this.byEnd[ chunk.next.end ] = chunk.next;
 			}
 
 			if ( aborted ) return this;
