@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.22.0
+
+* Prevent `overwrite` state corruption ([#115](https://github.com/Rich-Harris/magic-string/issues/115))
+* Various bugfixes ([#126](https://github.com/Rich-Harris/magic-string/pull/126))
+
 ## 0.21.3
 
 * Clone `indentExclusionRanges` correctly ([#122](https://github.com/Rich-Harris/magic-string/pull/122))
