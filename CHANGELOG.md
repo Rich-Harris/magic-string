@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.22.1
+
+* Update TypeScript definitions ([#124](https://github.com/Rich-Harris/magic-string/pull/124))
+
 ## 0.22.0
 
 * Prevent `overwrite` state corruption ([#115](https://github.com/Rich-Harris/magic-string/issues/115))
