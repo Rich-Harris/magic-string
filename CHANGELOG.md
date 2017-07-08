@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.22.2
+
+* Avoid `declare module` ([#127](https://github.com/Rich-Harris/magic-string/pull/127))
+
 ## 0.22.1
 
 * Update TypeScript definitions ([#124](https://github.com/Rich-Harris/magic-string/pull/124))
