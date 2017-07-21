@@ -75,4 +75,6 @@ export default class MagicString {
   remove(start: number, end: number): MagicString;
   slice(start: number, end: number): string;
   snip(start: number, end: number): MagicString;
+
+  original: string;
 }

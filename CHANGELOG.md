@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.22.3
+
+* Add `original` to TS definitions
+
 ## 0.22.2
 
 * Avoid `declare module` ([#127](https://github.com/Rich-Harris/magic-string/pull/127))
