@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.22.4
+
+* `contentOnly` and `storeName` are both optional
+
 ## 0.22.3
 
 * Add `original` to TS definitions

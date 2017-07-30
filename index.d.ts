@@ -50,8 +50,8 @@ export interface IndentOptions {
 }
 
 export interface OverwriteOptions {
-  storeName: boolean;
-  contentOnly: boolean;
+  storeName?: boolean;
+  contentOnly?: boolean;
 }
 
 export default class MagicString {
