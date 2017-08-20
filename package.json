@@ -10,23 +10,23 @@
   "typings": "index.d.ts",
   "license": "MIT",
   "dependencies": {
-    "vlq": "^0.2.1"
+    "vlq": "^0.2.2"
   },
   "devDependencies": {
-    "buble": "^0.14.0",
+    "buble": "^0.15.2",
     "codecov.io": "^0.1.6",
-    "console-group": "^0.3.2",
-    "eslint": "^3.7.1",
+    "console-group": "^0.3.3",
+    "eslint": "^4.5.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.1.0",
-    "remap-istanbul": "^0.6.4",
-    "resolve": "^1.1.7",
-    "rollup": "^0.36.1",
-    "rollup-plugin-buble": "^0.14.0",
-    "rollup-plugin-node-resolve": "^2.0.0",
+    "mocha": "^3.5.0",
+    "remap-istanbul": "^0.9.5",
+    "resolve": "^1.4.0",
+    "rollup": "^0.48.0",
+    "rollup-plugin-buble": "^0.15.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "source-map": "^0.5.6",
-    "source-map-support": "^0.4.3"
+    "source-map-support": "^0.4.16"
   },
   "keywords": [
     "string",
@@ -37,21 +37,15 @@
   ],
   "scripts": {
     "test": "mocha",
-    "pretest": "npm run build:cjs",
-    "pretest-coverage": "npm run build:cjs",
+    "pretest": "npm run build",
+    "pretest-coverage": "npm run build",
     "test-coverage": "rm -rf coverage/* && istanbul cover --report json node_modules/.bin/_mocha -- -u exports -R spec test/*.js",
     "posttest-coverage": "remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.lcov -t lcovonly -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped -t html -b dist",
     "ci": "npm run test-coverage && codecov < coverage/coverage-remapped.lcov",
-    "build:cjs": "rollup -c",
-    "build:es": "rollup -c --environment ES",
-    "build:umd": "rollup -c --environment DEPS",
-    "build": " npm run build:cjs && npm run build:es && npm run build:umd",
-    "prepublish": "rm -rf dist && npm test && npm run build:es && npm run build:umd",
+    "build": "rollup -c",
+    "prepublish": "rm -rf dist && npm test",
     "lint": "eslint src test",
-    "watch:cjs": "rollup -w -c",
-    "watch:es": "rollup -w -c --environment ES",
-    "watch:umd": "rollup -w -c --environment DEPS",
-    "watch": "npm run watch:es"
+    "watch": "rollup -cw"
   },
   "files": [
     "src/*",
