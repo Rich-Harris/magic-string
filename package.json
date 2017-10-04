@@ -48,7 +48,6 @@
     "watch": "rollup -cw"
   },
   "files": [
-    "src/*",
     "dist/*",
     "index.d.ts",
     "README.md"
