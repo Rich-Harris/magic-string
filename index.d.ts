@@ -23,7 +23,6 @@ export interface SourceMap {
 }
 
 export class Bundle {
-  indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
   constructor(options?: BundleOptions);
   addSource(source: MagicString | { filename?: string, content: MagicString }): Bundle;
   append(str: string, options?: BundleOptions): Bundle;
@@ -31,6 +30,7 @@ export class Bundle {
   generateMap(options?: Partial<SourceMapOptions>): SourceMap;
   getIndentString(): string;
   indent(indentStr?: string): Bundle;
+  indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
   prepend(str: string): Bundle;
   toString(): string;
   trimLines(): Bundle;
@@ -57,8 +57,6 @@ export interface OverwriteOptions {
 }
 
 export default class MagicString {
-  indentExclusionRanges: Array<ExclusionRange>;
-
   constructor(str: string, options?: MagicStringOptions);
   addSourcemapLocation(char: number): void;
   append(content: string): MagicString;
@@ -70,6 +68,7 @@ export default class MagicString {
 
   indent(options?: IndentOptions): MagicString;
   indent(indentStr?: string, options?: IndentOptions): MagicString;
+  indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
 
   move(start: number, end: number, index: number): MagicString;
   overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): MagicString;
