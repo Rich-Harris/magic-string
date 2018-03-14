@@ -10,7 +10,7 @@
   "typings": "index.d.ts",
   "license": "MIT",
   "dependencies": {
-    "vlq": "^0.2.2"
+    "sourcemap-codec": "^1.4.1"
   },
   "devDependencies": {
     "buble": "^0.15.2",
