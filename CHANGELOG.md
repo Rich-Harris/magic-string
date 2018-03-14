@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.22.5
+
+* Add TypeScript interfaces used by rollup ([#131](https://github.com/Rich-Harris/magic-string/pull/131))
+* Remove src directory from npm package
+
 ## 0.22.4
 
 * `contentOnly` and `storeName` are both optional
