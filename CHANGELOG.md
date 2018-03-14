@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.23.1
+
+* Performance ([#132](https://github.com/Rich-Harris/magic-string/pull/132))
+
 ## 0.23.0
 
 * Use `sourcemap-codec` for improved performance ([#133](https://github.com/Rich-Harris/magic-string/pull/133))
