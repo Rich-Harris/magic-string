@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.23.0
+
+* Use `sourcemap-codec` for improved performance ([#133](https://github.com/Rich-Harris/magic-string/pull/133))
+
 ## 0.22.5
 
 * Add TypeScript interfaces used by rollup ([#131](https://github.com/Rich-Harris/magic-string/pull/131))
