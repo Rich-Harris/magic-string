@@ -1,14 +1,6 @@
-import { encode } from 'vlq';
+import { encode } from 'sourcemap-codec';
 
 export default function Mappings ( hires ) {
-	const offsets = {
-		generatedCodeColumn: 0,
-		sourceIndex: 0,
-		sourceCodeLine: 0,
-		sourceCodeColumn: 0,
-		sourceCodeName: 0
-	};
-
 	let generatedCodeLine = 0;
 	let generatedCodeColumn = 0;
 
@@ -19,13 +11,16 @@ export default function Mappings ( hires ) {
 
 	this.addEdit = ( sourceIndex, content, original, loc, nameIndex ) => {
 		if ( content.length ) {
-			rawSegments.push([
+			const segment = [
 				generatedCodeColumn,
 				sourceIndex,
 				loc.line,
-				loc.column,
-				nameIndex,
-			]);
+				loc.column
+			];
+			if ( nameIndex >= 0 ) {
+				segment.push( nameIndex );
+			}
+			rawSegments.push( segment );
 		} else if ( pending ) {
 			rawSegments.push( pending );
 		}
@@ -44,8 +39,7 @@ export default function Mappings ( hires ) {
 					generatedCodeColumn,
 					sourceIndex,
 					loc.line,
-					loc.column,
-					-1
+					loc.column
 				]);
 			}
 
@@ -68,8 +62,7 @@ export default function Mappings ( hires ) {
 			generatedCodeColumn,
 			sourceIndex,
 			loc.line,
-			loc.column,
-			-1,
+			loc.column
 		];
 	};
 
@@ -77,41 +70,19 @@ export default function Mappings ( hires ) {
 		if ( !str ) return;
 
 		const lines = str.split( '\n' );
-		const lastLine = lines.pop();
 
-		if ( lines.length ) {
-			generatedCodeLine += lines.length;
-			this.raw[ generatedCodeLine ] = rawSegments = [];
-			generatedCodeColumn = lastLine.length;
-		} else {
-			generatedCodeColumn += lastLine.length;
+		if ( lines.length > 1 ) {
+			for ( let i = 0; i < lines.length - 1; i++ ) {
+				generatedCodeLine++;
+				this.raw[generatedCodeLine] = rawSegments = [];
+			}
+			generatedCodeColumn = 0;
 		}
+
+		generatedCodeColumn += lines[lines.length - 1].length;
 	};
 
 	this.encode = () => {
-		return this.raw.map( segments => {
-			let generatedCodeColumn = 0;
-
-			return segments.map( segment => {
-				const arr = [
-					segment[0] - generatedCodeColumn,
-					segment[1] - offsets.sourceIndex,
-					segment[2] - offsets.sourceCodeLine,
-					segment[3] - offsets.sourceCodeColumn
-				];
-
-				generatedCodeColumn = segment[0];
-				offsets.sourceIndex = segment[1];
-				offsets.sourceCodeLine = segment[2];
-				offsets.sourceCodeColumn = segment[3];
-
-				if ( ~segment[4] ) {
-					arr.push( segment[4] - offsets.sourceCodeName );
-					offsets.sourceCodeName = segment[4];
-				}
-
-				return encode( arr );
-			}).join( ',' );
-		}).join( ';' );
+		return encode(this.raw);
 	};
 }
