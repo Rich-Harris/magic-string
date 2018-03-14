@@ -1,35 +1,25 @@
 export default function getLocator ( source ) {
 	const originalLines = source.split( '\n' );
+	const lineOffsets = [];
 
-	let start = 0;
-	const lineRanges = originalLines.map( ( line, i ) => {
-		const end = start + line.length + 1;
-		const range = { start, end, line: i };
-
-		start = end;
-		return range;
-	});
-
-	let i = 0;
-
-	function rangeContains ( range, index ) {
-		return range.start <= index && index < range.end;
-	}
-
-	function getLocation ( range, index ) {
-		return { line: range.line, column: index - range.start };
+	for ( let i = 0, pos = 0; i < originalLines.length; i++ ) {
+		lineOffsets.push( pos );
+		pos += originalLines[i].length + 1;
 	}
 
 	return function locate ( index ) {
-		let range = lineRanges[i];
-
-		const d = index >= range.end ? 1 : -1;
-
-		while ( range ) {
-			if ( rangeContains( range, index ) ) return getLocation( range, index );
-
-			i += d;
-			range = lineRanges[i];
+		let i = 0;
+		let j = lineOffsets.length;
+		while ( i < j ) {
+			const m = ( i + j ) >> 1;
+			if ( index < lineOffsets[m] ) {
+				j = m;
+			} else {
+				i = m + 1;
+			}
 		}
+		const line = i - 1;
+		const column = index - lineOffsets[line];
+		return { line, column };
 	};
 }
