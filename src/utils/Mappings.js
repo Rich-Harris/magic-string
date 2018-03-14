@@ -70,17 +70,16 @@ export default function Mappings ( hires ) {
 		if ( !str ) return;
 
 		const lines = str.split( '\n' );
-		const lastLine = lines.pop();
 
-		if ( lines.length ) {
-			for ( let i = 0; i < lines.length; i++ ) {
+		if ( lines.length > 1 ) {
+			for ( let i = 0; i < lines.length - 1; i++ ) {
 				generatedCodeLine++;
 				this.raw[generatedCodeLine] = rawSegments = [];
 			}
-			generatedCodeColumn = lastLine.length;
-		} else {
-			generatedCodeColumn += lastLine.length;
+			generatedCodeColumn = 0;
 		}
+
+		generatedCodeColumn += lines[lines.length - 1].length;
 	};
 
 	this.encode = () => {
