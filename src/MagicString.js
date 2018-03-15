@@ -1,3 +1,4 @@
+import { encode } from 'sourcemap-codec';
 import Chunk from './Chunk.js';
 import SourceMap from './utils/SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
@@ -126,7 +127,7 @@ MagicString.prototype = {
 		return cloned;
 	},
 
-	generateMap ( options ) {
+	generateDecodedMap ( options ) {
 		options = options || {};
 
 		const sourceIndex = 0;
@@ -145,7 +146,7 @@ MagicString.prototype = {
 			if ( chunk.intro.length ) mappings.advance( chunk.intro );
 
 			if ( chunk.edited ) {
-				mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+				mappings.addEdit( sourceIndex, chunk.content, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
 			} else {
 				mappings.addUneditedChunk( sourceIndex, chunk, this.original, loc, this.sourcemapLocations );
 			}
@@ -153,17 +154,17 @@ MagicString.prototype = {
 			if ( chunk.outro.length ) mappings.advance( chunk.outro );
 		});
 
-		if ( DEBUG ) this.stats.time( 'generateMap' );
-		const map = new SourceMap({
+		return {
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
 			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
 			names,
-			mappings: mappings.encode()
-		});
-		if ( DEBUG ) this.stats.timeEnd( 'generateMap' );
+			mappings: mappings.raw
+		};
+	},
 
-		return map;
+	generateMap ( options ) {
+		return new SourceMap(this.generateDecodedMap( options ));
 	},
 
 	getIndentString () {

@@ -10,7 +10,17 @@ export interface SourceMapOptions {
   includeContent: boolean;
 }
 
-export interface SourceMap {
+export interface DecodedSourceMap {
+  file: string;
+  sources: string[];
+  sourcesContent: string[];
+  names: string[];
+  mappings: number[][][];
+}
+
+export class SourceMap {
+  constructor(properties: DecodedSourceMap);
+
   version: string;
   file: string;
   sources: string[];
@@ -28,6 +38,7 @@ export class Bundle {
   append(str: string, options?: BundleOptions): Bundle;
   clone(): Bundle;
   generateMap(options?: Partial<SourceMapOptions>): SourceMap;
+  generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
   getIndentString(): string;
   indent(indentStr?: string): Bundle;
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
@@ -64,6 +75,7 @@ export default class MagicString {
   appendRight(index: number, content: string): MagicString;
   clone(): MagicString;
   generateMap(options?: Partial<SourceMapOptions>): SourceMap;
+  generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
   getIndentString(): string;
 
   indent(options?: IndentOptions): MagicString;

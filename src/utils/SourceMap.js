@@ -1,4 +1,5 @@
 import btoa from './btoa.js';
+import { encode } from 'sourcemap-codec';
 
 export default function SourceMap ( properties ) {
 	this.version = 3;
@@ -7,7 +8,7 @@ export default function SourceMap ( properties ) {
 	this.sources        = properties.sources;
 	this.sourcesContent = properties.sourcesContent;
 	this.names          = properties.names;
-	this.mappings       = properties.mappings;
+	this.mappings       = encode(properties.mappings);
 }
 
 SourceMap.prototype = {
