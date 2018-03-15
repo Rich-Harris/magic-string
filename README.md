@@ -102,6 +102,10 @@ Appends the specified `content` at the `index` in the original string. If a rang
 
 Does what you'd expect.
 
+### s.generateDecodedMap( options )
+
+Generates a sourcemap object with raw mappings in array form, rather than encoded as a string. See `generateMap` documentation below for options details. Useful if you need to manipulate the sourcemap further, but most of the time you will use `generateMap` instead.
+
 ### s.generateMap( options )
 
 Generates a [version 3 sourcemap](https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit). All options are, well, optional:

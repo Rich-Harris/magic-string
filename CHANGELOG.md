@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.23.2
+
+* Add `generateDecodedMap` methods ([#134](https://github.com/Rich-Harris/magic-string/pull/134))
+
 ## 0.23.1
 
 * Performance ([#132](https://github.com/Rich-Harris/magic-string/pull/132))

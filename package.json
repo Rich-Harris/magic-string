@@ -2,7 +2,7 @@
   "name": "magic-string",
   "description": "Modify strings, generate sourcemaps",
   "author": "Rich Harris",
-  "version": "0.23.1",
+  "version": "0.23.2",
   "repository": "https://github.com/rich-harris/magic-string",
   "main": "dist/magic-string.cjs.js",
   "module": "dist/magic-string.es.js",
