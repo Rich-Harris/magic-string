@@ -2,16 +2,18 @@ import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import replace from 'rollup-plugin-replace';
 
+const plugins = [
+	buble({ exclude: 'node_modules/**' }),
+	resolve(),
+	replace({ DEBUG: false })
+];
+
 export default [
 	/* esm */
 	{
 		input: 'src/index.js',
-		external: ['vlq'],
-		plugins: [
-			buble({ exclude: 'node_modules/**' }),
-			resolve(),
-			replace({ DEBUG: false })
-		],
+		external: ['sourcemap-codec'],
+		plugins,
 		output: {
 			file: 'dist/magic-string.es.js',
 			format: 'es',
@@ -23,12 +25,8 @@ export default [
 	/* cjs */
 	{
 		input: 'src/index-legacy.js',
-		external: ['vlq'],
-		plugins: [
-			buble({ exclude: 'node_modules/**' }),
-			resolve(),
-			replace({ DEBUG: false })
-		],
+		external: ['sourcemap-codec'],
+		plugins,
 		output: {
 			file: 'dist/magic-string.cjs.js',
 			format: 'cjs',
@@ -40,11 +38,7 @@ export default [
 	/* umd */
 	{
 		input: 'src/index-legacy.js',
-		plugins: [
-			buble({ exclude: 'node_modules/**' }),
-			resolve(),
-			replace({ DEBUG: false })
-		],
+		plugins,
 		output: {
 			file: 'dist/magic-string.umd.js',
 			format: 'umd',
