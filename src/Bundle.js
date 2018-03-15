@@ -6,17 +6,15 @@ import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
 import Mappings from './utils/Mappings.js';
 
-export default function Bundle(options = {}) {
-	this.intro = options.intro || '';
-	this.separator = options.separator !== undefined ? options.separator : '\n';
+export default class Bundle {
+	constructor(options = {}) {
+		this.intro = options.intro || '';
+		this.separator = options.separator !== undefined ? options.separator : '\n';
+		this.sources = [];
+		this.uniqueSources = [];
+		this.uniqueSourceIndexByFilename = {};
+	}
 
-	this.sources = [];
-
-	this.uniqueSources = [];
-	this.uniqueSourceIndexByFilename = {};
-}
-
-Bundle.prototype = {
 	addSource(source) {
 		if (source instanceof MagicString) {
 			return this.addSource({
@@ -53,7 +51,7 @@ Bundle.prototype = {
 
 		this.sources.push(source);
 		return this;
-	},
+	}
 
 	append(str, options) {
 		this.addSource({
@@ -62,7 +60,7 @@ Bundle.prototype = {
 		});
 
 		return this;
-	},
+	}
 
 	clone() {
 		const bundle = new Bundle({
@@ -79,7 +77,7 @@ Bundle.prototype = {
 		});
 
 		return bundle;
-	},
+	}
 
 	generateDecodedMap(options = {}) {
 		const names = [];
@@ -153,11 +151,11 @@ Bundle.prototype = {
 			names,
 			mappings: mappings.raw
 		};
-	},
+	}
 
 	generateMap(options) {
 		return new SourceMap(this.generateDecodedMap(options));
-	},
+	}
 
 	getIndentString() {
 		const indentStringCounts = {};
@@ -176,7 +174,7 @@ Bundle.prototype = {
 				return indentStringCounts[a] - indentStringCounts[b];
 			})[0] || '\t'
 		);
-	},
+	}
 
 	indent(indentStr) {
 		if (!arguments.length) {
@@ -209,12 +207,12 @@ Bundle.prototype = {
 		}
 
 		return this;
-	},
+	}
 
 	prepend(str) {
 		this.intro = str + this.intro;
 		return this;
-	},
+	}
 
 	toString() {
 		const body = this.sources
@@ -227,15 +225,15 @@ Bundle.prototype = {
 			.join('');
 
 		return this.intro + body;
-	},
+	}
 
 	trimLines() {
 		return this.trim('[\\r\\n]');
-	},
+	}
 
 	trim(charType) {
 		return this.trimStart(charType).trimEnd(charType);
-	},
+	}
 
 	trimStart(charType) {
 		const rx = new RegExp('^' + (charType || '\\s') + '+');
@@ -258,7 +256,7 @@ Bundle.prototype = {
 		}
 
 		return this;
-	},
+	}
 
 	trimEnd(charType) {
 		const rx = new RegExp((charType || '\\s') + '+$');
@@ -280,4 +278,4 @@ Bundle.prototype = {
 
 		return this;
 	}
-};
+}

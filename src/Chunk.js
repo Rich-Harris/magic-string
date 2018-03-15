@@ -1,30 +1,30 @@
-export default function Chunk(start, end, content) {
-	this.start = start;
-	this.end = end;
-	this.original = content;
+export default class Chunk {
+	constructor(start, end, content) {
+		this.start = start;
+		this.end = end;
+		this.original = content;
 
-	this.intro = '';
-	this.outro = '';
+		this.intro = '';
+		this.outro = '';
 
-	this.content = content;
-	this.storeName = false;
-	this.edited = false;
+		this.content = content;
+		this.storeName = false;
+		this.edited = false;
 
-	// we make these non-enumerable, for sanity while debugging
-	Object.defineProperties(this, {
-		previous: { writable: true, value: null },
-		next:     { writable: true, value: null }
-	});
-}
+		// we make these non-enumerable, for sanity while debugging
+		Object.defineProperties(this, {
+			previous: { writable: true, value: null },
+			next:     { writable: true, value: null }
+		});
+	}
 
-Chunk.prototype = {
 	appendLeft(content) {
 		this.outro += content;
-	},
+	}
 
 	appendRight(content) {
 		this.intro = this.intro + content;
-	},
+	}
 
 	clone() {
 		const chunk = new Chunk(this.start, this.end, this.original);
@@ -36,11 +36,11 @@ Chunk.prototype = {
 		chunk.edited = this.edited;
 
 		return chunk;
-	},
+	}
 
 	contains(index) {
 		return this.start < index && index < this.end;
-	},
+	}
 
 	eachNext(fn) {
 		let chunk = this;
@@ -48,7 +48,7 @@ Chunk.prototype = {
 			fn(chunk);
 			chunk = chunk.next;
 		}
-	},
+	}
 
 	eachPrevious(fn) {
 		let chunk = this;
@@ -56,7 +56,7 @@ Chunk.prototype = {
 			fn(chunk);
 			chunk = chunk.previous;
 		}
-	},
+	}
 
 	edit(content, storeName, contentOnly) {
 		this.content = content;
@@ -69,15 +69,15 @@ Chunk.prototype = {
 		this.edited = true;
 
 		return this;
-	},
+	}
 
 	prependLeft(content) {
 		this.outro = content + this.outro;
-	},
+	}
 
 	prependRight(content) {
 		this.intro = content + this.intro;
-	},
+	}
 
 	split(index) {
 		const sliceIndex = index - this.start;
@@ -107,11 +107,11 @@ Chunk.prototype = {
 		this.next = newChunk;
 
 		return newChunk;
-	},
+	}
 
 	toString() {
 		return this.intro + this.content + this.outro;
-	},
+	}
 
 	trimEnd(rx) {
 		this.outro = this.outro.replace(rx, '');
@@ -131,7 +131,7 @@ Chunk.prototype = {
 			this.intro = this.intro.replace(rx, '');
 			if (this.intro.length) return true;
 		}
-	},
+	}
 
 	trimStart(rx) {
 		this.intro = this.intro.replace(rx, '');
@@ -153,4 +153,4 @@ Chunk.prototype = {
 			if (this.outro.length) return true;
 		}
 	}
-};
+}

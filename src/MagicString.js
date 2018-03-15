@@ -13,44 +13,44 @@ const warned = {
 	storeName: false
 };
 
-export default function MagicString(string, options = {}) {
-	const chunk = new Chunk(0, string.length, string);
+export default class MagicString {
+	constructor(string, options = {}) {
+		const chunk = new Chunk(0, string.length, string);
 
-	Object.defineProperties(this, {
-		original:              { writable: true, value: string },
-		outro:                 { writable: true, value: '' },
-		intro:                 { writable: true, value: '' },
-		firstChunk:            { writable: true, value: chunk },
-		lastChunk:             { writable: true, value: chunk },
-		lastSearchedChunk:     { writable: true, value: chunk },
-		byStart:               { writable: true, value: {} },
-		byEnd:                 { writable: true, value: {} },
-		filename:              { writable: true, value: options.filename },
-		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
-		sourcemapLocations:    { writable: true, value: {} },
-		storedNames:           { writable: true, value: {} },
-		indentStr:             { writable: true, value: guessIndent(string) }
-	});
+		Object.defineProperties(this, {
+			original:              { writable: true, value: string },
+			outro:                 { writable: true, value: '' },
+			intro:                 { writable: true, value: '' },
+			firstChunk:            { writable: true, value: chunk },
+			lastChunk:             { writable: true, value: chunk },
+			lastSearchedChunk:     { writable: true, value: chunk },
+			byStart:               { writable: true, value: {} },
+			byEnd:                 { writable: true, value: {} },
+			filename:              { writable: true, value: options.filename },
+			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
+			sourcemapLocations:    { writable: true, value: {} },
+			storedNames:           { writable: true, value: {} },
+			indentStr:             { writable: true, value: guessIndent(string) }
+		});
 
-	if (DEBUG) {
-		Object.defineProperty(this, 'stats', { value: new Stats() });
+		if (DEBUG) {
+			Object.defineProperty(this, 'stats', { value: new Stats() });
+		}
+
+		this.byStart[0] = chunk;
+		this.byEnd[string.length] = chunk;
 	}
 
-	this.byStart[0] = chunk;
-	this.byEnd[string.length] = chunk;
-}
-
-MagicString.prototype = {
 	addSourcemapLocation(char) {
 		this.sourcemapLocations[char] = true;
-	},
+	}
 
 	append(content) {
 		if (typeof content !== 'string') throw new TypeError('outro content must be a string');
 
 		this.outro += content;
 		return this;
-	},
+	}
 
 	appendLeft(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -69,7 +69,7 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('appendLeft');
 		return this;
-	},
+	}
 
 	appendRight(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -88,7 +88,7 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('appendRight');
 		return this;
-	},
+	}
 
 	clone() {
 		const cloned = new MagicString(this.original, { filename: this.filename });
@@ -124,7 +124,7 @@ MagicString.prototype = {
 		});
 
 		return cloned;
-	},
+	}
 
 	generateDecodedMap(options) {
 		options = options || {};
@@ -165,15 +165,15 @@ MagicString.prototype = {
 			names,
 			mappings: mappings.raw
 		};
-	},
+	}
 
 	generateMap(options) {
 		return new SourceMap(this.generateDecodedMap(options));
-	},
+	}
 
 	getIndentString() {
 		return this.indentStr === null ? '\t' : this.indentStr;
-	},
+	}
 
 	indent(indentStr, options) {
 		const pattern = /^[^\r\n]/gm;
@@ -258,11 +258,11 @@ MagicString.prototype = {
 		this.outro = this.outro.replace(pattern, replacer);
 
 		return this;
-	},
+	}
 
 	insert() {
 		throw new Error('magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)');
-	},
+	}
 
 	insertLeft(index, content) {
 		if (!warned.insertLeft) {
@@ -271,7 +271,7 @@ MagicString.prototype = {
 		}
 
 		return this.appendLeft(index, content);
-	},
+	}
 
 	insertRight(index, content) {
 		if (!warned.insertRight) {
@@ -280,7 +280,7 @@ MagicString.prototype = {
 		}
 
 		return this.prependRight(index, content);
-	},
+	}
 
 	move(start, end, index) {
 		if (index >= start && index <= end) throw new Error('Cannot move a selection inside itself');
@@ -321,7 +321,7 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('move');
 		return this;
-	},
+	}
 
 	overwrite(start, end, content, options) {
 		if (typeof content !== 'string') throw new TypeError('replacement content must be a string');
@@ -384,14 +384,14 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('overwrite');
 		return this;
-	},
+	}
 
 	prepend(content) {
 		if (typeof content !== 'string') throw new TypeError('outro content must be a string');
 
 		this.intro = content + this.intro;
 		return this;
-	},
+	}
 
 	prependLeft(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -410,7 +410,7 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('insertRight');
 		return this;
-	},
+	}
 
 	prependRight(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -429,7 +429,7 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('insertRight');
 		return this;
-	},
+	}
 
 	remove(start, end) {
 		while (start < 0) start += this.original.length;
@@ -457,7 +457,7 @@ MagicString.prototype = {
 
 		if (DEBUG) this.stats.timeEnd('remove');
 		return this;
-	},
+	}
 
 	slice(start = 0, end = this.original.length) {
 		while (start < 0) start += this.original.length;
@@ -506,7 +506,7 @@ MagicString.prototype = {
 		}
 
 		return result;
-	},
+	}
 
 	// TODO deprecate this? not really very useful
 	snip(start, end) {
@@ -515,7 +515,7 @@ MagicString.prototype = {
 		clone.remove(end, clone.original.length);
 
 		return clone;
-	},
+	}
 
 	_split(index) {
 		if (this.byStart[index] || this.byEnd[index]) return;
@@ -530,7 +530,7 @@ MagicString.prototype = {
 
 			chunk = searchForward ? this.byStart[chunk.end] : this.byEnd[chunk.start];
 		}
-	},
+	}
 
 	_splitChunk(chunk, index) {
 		if (chunk.edited && chunk.content.length) {
@@ -554,7 +554,7 @@ MagicString.prototype = {
 		this.lastSearchedChunk = chunk;
 		if (DEBUG) this.stats.timeEnd('_split');
 		return true;
-	},
+	}
 
 	toString() {
 		let str = this.intro;
@@ -566,15 +566,15 @@ MagicString.prototype = {
 		}
 
 		return str + this.outro;
-	},
+	}
 
 	trimLines() {
 		return this.trim('[\\r\\n]');
-	},
+	}
 
 	trim(charType) {
 		return this.trimStart(charType).trimEnd(charType);
-	},
+	}
 
 	trimEnd(charType) {
 		const rx = new RegExp((charType || '\\s') + '+$');
@@ -604,7 +604,7 @@ MagicString.prototype = {
 		} while (chunk);
 
 		return this;
-	},
+	}
 
 	trimStart(charType) {
 		const rx = new RegExp('^' + (charType || '\\s') + '+');
@@ -633,4 +633,4 @@ MagicString.prototype = {
 
 		return this;
 	}
-};
+}
