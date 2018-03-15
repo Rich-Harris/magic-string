@@ -27,9 +27,7 @@ Bundle.prototype = {
 		}
 
 		if (!isObject(source) || !source.content) {
-			throw new Error(
-				'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`'
-			);
+			throw new Error('bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`');
 		}
 
 		['filename', 'indentExclusionRanges', 'separator'].forEach(option => {
@@ -145,7 +143,7 @@ Bundle.prototype = {
 		});
 
 		return {
-			file: options.file ? options.file.split(/[\/\\]/).pop() : null,
+			file: options.file ? options.file.split(/[/\\]/).pop() : null,
 			sources: this.uniqueSources.map(source => {
 				return options.file ? getRelativePath(options.file, source.filename) : source.filename;
 			}),

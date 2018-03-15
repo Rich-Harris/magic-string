@@ -3,7 +3,6 @@ import { encode } from 'sourcemap-codec';
 
 export default function SourceMap(properties) {
 	this.version = 3;
-
 	this.file = properties.file;
 	this.sources = properties.sources;
 	this.sourcesContent = properties.sourcesContent;

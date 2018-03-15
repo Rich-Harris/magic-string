@@ -1,4 +1,3 @@
-import { encode } from 'sourcemap-codec';
 import Chunk from './Chunk.js';
 import SourceMap from './utils/SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
@@ -18,19 +17,19 @@ export default function MagicString(string, options = {}) {
 	const chunk = new Chunk(0, string.length, string);
 
 	Object.defineProperties(this, {
-		original: { writable: true, value: string },
-		outro: { writable: true, value: '' },
-		intro: { writable: true, value: '' },
-		firstChunk: { writable: true, value: chunk },
-		lastChunk: { writable: true, value: chunk },
-		lastSearchedChunk: { writable: true, value: chunk },
-		byStart: { writable: true, value: {} },
-		byEnd: { writable: true, value: {} },
-		filename: { writable: true, value: options.filename },
+		original:              { writable: true, value: string },
+		outro:                 { writable: true, value: '' },
+		intro:                 { writable: true, value: '' },
+		firstChunk:            { writable: true, value: chunk },
+		lastChunk:             { writable: true, value: chunk },
+		lastSearchedChunk:     { writable: true, value: chunk },
+		byStart:               { writable: true, value: {} },
+		byEnd:                 { writable: true, value: {} },
+		filename:              { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
-		sourcemapLocations: { writable: true, value: {} },
-		storedNames: { writable: true, value: {} },
-		indentStr: { writable: true, value: guessIndent(string) }
+		sourcemapLocations:    { writable: true, value: {} },
+		storedNames:           { writable: true, value: {} },
+		indentStr:             { writable: true, value: guessIndent(string) }
 	});
 
 	if (DEBUG) {
@@ -160,7 +159,7 @@ MagicString.prototype = {
 		});
 
 		return {
-			file: options.file ? options.file.split(/[\/\\]/).pop() : null,
+			file: options.file ? options.file.split(/[/\\]/).pop() : null,
 			sources: [options.source ? getRelativePath(options.file || '', options.source) : null],
 			sourcesContent: options.includeContent ? [this.original] : [null],
 			names,
@@ -213,7 +212,6 @@ MagicString.prototype = {
 		this.intro = this.intro.replace(pattern, replacer);
 
 		let charIndex = 0;
-
 		let chunk = this.firstChunk;
 
 		while (chunk) {
@@ -263,16 +261,12 @@ MagicString.prototype = {
 	},
 
 	insert() {
-		throw new Error(
-			'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)'
-		);
+		throw new Error('magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)');
 	},
 
 	insertLeft(index, content) {
 		if (!warned.insertLeft) {
-			console.warn(
-				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead'
-			); // eslint-disable-line no-console
+			console.warn('magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead'); // eslint-disable-line no-console
 			warned.insertLeft = true;
 		}
 
@@ -281,9 +275,7 @@ MagicString.prototype = {
 
 	insertRight(index, content) {
 		if (!warned.insertRight) {
-			console.warn(
-				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead'
-			); // eslint-disable-line no-console
+			console.warn('magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead'); // eslint-disable-line no-console
 			warned.insertRight = true;
 		}
 
@@ -339,9 +331,7 @@ MagicString.prototype = {
 
 		if (end > this.original.length) throw new Error('end is out of bounds');
 		if (start === end)
-			throw new Error(
-				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead'
-			);
+			throw new Error('Cannot overwrite a zero-length range – use appendLeft or prependRight instead');
 
 		if (DEBUG) this.stats.time('overwrite');
 
@@ -350,9 +340,7 @@ MagicString.prototype = {
 
 		if (options === true) {
 			if (!warned.storeName) {
-				console.warn(
-					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string'
-				); // eslint-disable-line no-console
+				console.warn('The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string'); // eslint-disable-line no-console
 				warned.storeName = true;
 			}
 

@@ -13,7 +13,7 @@ export default function Chunk(start, end, content) {
 	// we make these non-enumerable, for sanity while debugging
 	Object.defineProperties(this, {
 		previous: { writable: true, value: null },
-		next: { writable: true, value: null }
+		next:     { writable: true, value: null }
 	});
 }
 
@@ -123,8 +123,8 @@ Chunk.prototype = {
 			if (trimmed !== this.content) {
 				this.split(this.start + trimmed.length).edit('', false);
 			}
-
 			return true;
+
 		} else {
 			this.edit('', false);
 
@@ -144,8 +144,8 @@ Chunk.prototype = {
 				this.split(this.end - trimmed.length);
 				this.edit('', false);
 			}
-
 			return true;
+
 		} else {
 			this.edit('', false);
 
