@@ -14,97 +14,97 @@ const warned = {
 	storeName: false
 };
 
-export default function MagicString ( string, options = {} ) {
-	const chunk = new Chunk( 0, string.length, string );
+export default function MagicString(string, options = {}) {
+	const chunk = new Chunk(0, string.length, string);
 
-	Object.defineProperties( this, {
-		original:              { writable: true, value: string },
-		outro:                 { writable: true, value: '' },
-		intro:                 { writable: true, value: '' },
-		firstChunk:            { writable: true, value: chunk },
-		lastChunk:             { writable: true, value: chunk },
-		lastSearchedChunk:     { writable: true, value: chunk },
-		byStart:               { writable: true, value: {} },
-		byEnd:                 { writable: true, value: {} },
-		filename:              { writable: true, value: options.filename },
+	Object.defineProperties(this, {
+		original: { writable: true, value: string },
+		outro: { writable: true, value: '' },
+		intro: { writable: true, value: '' },
+		firstChunk: { writable: true, value: chunk },
+		lastChunk: { writable: true, value: chunk },
+		lastSearchedChunk: { writable: true, value: chunk },
+		byStart: { writable: true, value: {} },
+		byEnd: { writable: true, value: {} },
+		filename: { writable: true, value: options.filename },
 		indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
-		sourcemapLocations:    { writable: true, value: {} },
-		storedNames:           { writable: true, value: {} },
-		indentStr:             { writable: true, value: guessIndent( string ) }
+		sourcemapLocations: { writable: true, value: {} },
+		storedNames: { writable: true, value: {} },
+		indentStr: { writable: true, value: guessIndent(string) }
 	});
 
-	if ( DEBUG ) {
-		Object.defineProperty( this, 'stats', { value: new Stats() });
+	if (DEBUG) {
+		Object.defineProperty(this, 'stats', { value: new Stats() });
 	}
 
-	this.byStart[ 0 ] = chunk;
-	this.byEnd[ string.length ] = chunk;
+	this.byStart[0] = chunk;
+	this.byEnd[string.length] = chunk;
 }
 
 MagicString.prototype = {
-	addSourcemapLocation ( char ) {
-		this.sourcemapLocations[ char ] = true;
+	addSourcemapLocation(char) {
+		this.sourcemapLocations[char] = true;
 	},
 
-	append ( content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'outro content must be a string' );
+	append(content) {
+		if (typeof content !== 'string') throw new TypeError('outro content must be a string');
 
 		this.outro += content;
 		return this;
 	},
 
-	appendLeft ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+	appendLeft(index, content) {
+		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
-		if ( DEBUG ) this.stats.time( 'appendLeft' );
+		if (DEBUG) this.stats.time('appendLeft');
 
-		this._split( index );
+		this._split(index);
 
-		const chunk = this.byEnd[ index ];
+		const chunk = this.byEnd[index];
 
-		if ( chunk ) {
-			chunk.appendLeft( content );
+		if (chunk) {
+			chunk.appendLeft(content);
 		} else {
 			this.intro += content;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'appendLeft' );
+		if (DEBUG) this.stats.timeEnd('appendLeft');
 		return this;
 	},
 
-	appendRight ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+	appendRight(index, content) {
+		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
-		if ( DEBUG ) this.stats.time( 'appendRight' );
+		if (DEBUG) this.stats.time('appendRight');
 
-		this._split( index );
+		this._split(index);
 
-		const chunk = this.byStart[ index ];
+		const chunk = this.byStart[index];
 
-		if ( chunk ) {
-			chunk.appendRight( content );
+		if (chunk) {
+			chunk.appendRight(content);
 		} else {
 			this.outro += content;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'appendRight' );
+		if (DEBUG) this.stats.timeEnd('appendRight');
 		return this;
 	},
 
-	clone () {
-		const cloned = new MagicString( this.original, { filename: this.filename });
+	clone() {
+		const cloned = new MagicString(this.original, { filename: this.filename });
 
 		let originalChunk = this.firstChunk;
-		let clonedChunk = cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone();
+		let clonedChunk = (cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone());
 
-		while ( originalChunk ) {
-			cloned.byStart[ clonedChunk.start ] = clonedChunk;
-			cloned.byEnd[ clonedChunk.end ] = clonedChunk;
+		while (originalChunk) {
+			cloned.byStart[clonedChunk.start] = clonedChunk;
+			cloned.byEnd[clonedChunk.end] = clonedChunk;
 
 			const nextOriginalChunk = originalChunk.next;
 			const nextClonedChunk = nextOriginalChunk && nextOriginalChunk.clone();
 
-			if ( nextClonedChunk ) {
+			if (nextClonedChunk) {
 				clonedChunk.next = nextClonedChunk;
 				nextClonedChunk.previous = clonedChunk;
 
@@ -116,82 +116,88 @@ MagicString.prototype = {
 
 		cloned.lastChunk = clonedChunk;
 
-		if ( this.indentExclusionRanges ) {
+		if (this.indentExclusionRanges) {
 			cloned.indentExclusionRanges = this.indentExclusionRanges.slice();
 		}
 
-		Object.keys( this.sourcemapLocations ).forEach( loc => {
-			cloned.sourcemapLocations[ loc ] = true;
+		Object.keys(this.sourcemapLocations).forEach(loc => {
+			cloned.sourcemapLocations[loc] = true;
 		});
 
 		return cloned;
 	},
 
-	generateDecodedMap ( options ) {
+	generateDecodedMap(options) {
 		options = options || {};
 
 		const sourceIndex = 0;
-		const names = Object.keys( this.storedNames );
-		const mappings = new Mappings( options.hires );
+		const names = Object.keys(this.storedNames);
+		const mappings = new Mappings(options.hires);
 
-		const locate = getLocator( this.original );
+		const locate = getLocator(this.original);
 
-		if ( this.intro ) {
-			mappings.advance( this.intro );
+		if (this.intro) {
+			mappings.advance(this.intro);
 		}
 
-		this.firstChunk.eachNext( chunk => {
-			const loc = locate( chunk.start );
+		this.firstChunk.eachNext(chunk => {
+			const loc = locate(chunk.start);
 
-			if ( chunk.intro.length ) mappings.advance( chunk.intro );
+			if (chunk.intro.length) mappings.advance(chunk.intro);
 
-			if ( chunk.edited ) {
-				mappings.addEdit( sourceIndex, chunk.content, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+			if (chunk.edited) {
+				mappings.addEdit(
+					sourceIndex,
+					chunk.content,
+					loc,
+					chunk.storeName ? names.indexOf(chunk.original) : -1
+				);
 			} else {
-				mappings.addUneditedChunk( sourceIndex, chunk, this.original, loc, this.sourcemapLocations );
+				mappings.addUneditedChunk(sourceIndex, chunk, this.original, loc, this.sourcemapLocations);
 			}
 
-			if ( chunk.outro.length ) mappings.advance( chunk.outro );
+			if (chunk.outro.length) mappings.advance(chunk.outro);
 		});
 
 		return {
-			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
-			sources: [ options.source ? getRelativePath( options.file || '', options.source ) : null ],
-			sourcesContent: options.includeContent ? [ this.original ] : [ null ],
+			file: options.file ? options.file.split(/[\/\\]/).pop() : null,
+			sources: [options.source ? getRelativePath(options.file || '', options.source) : null],
+			sourcesContent: options.includeContent ? [this.original] : [null],
 			names,
 			mappings: mappings.raw
 		};
 	},
 
-	generateMap ( options ) {
-		return new SourceMap(this.generateDecodedMap( options ));
+	generateMap(options) {
+		return new SourceMap(this.generateDecodedMap(options));
 	},
 
-	getIndentString () {
+	getIndentString() {
 		return this.indentStr === null ? '\t' : this.indentStr;
 	},
 
-	indent ( indentStr, options ) {
+	indent(indentStr, options) {
 		const pattern = /^[^\r\n]/gm;
 
-		if ( isObject( indentStr ) ) {
+		if (isObject(indentStr)) {
 			options = indentStr;
 			indentStr = undefined;
 		}
 
-		indentStr = indentStr !== undefined ? indentStr : ( this.indentStr || '\t' );
+		indentStr = indentStr !== undefined ? indentStr : this.indentStr || '\t';
 
-		if ( indentStr === '' ) return this; // noop
+		if (indentStr === '') return this; // noop
 
 		options = options || {};
 
 		// Process exclusion ranges
 		const isExcluded = {};
 
-		if ( options.exclude ) {
-			const exclusions = typeof options.exclude[0] === 'number' ? [ options.exclude ] : options.exclude;
-			exclusions.forEach( exclusion => {
-				for ( let i = exclusion[0]; i < exclusion[1]; i += 1 ) {
+		if (options.exclude) {
+			const exclusions =
+				typeof options.exclude[0] === 'number' ? [options.exclude] : options.exclude;
+			exclusions.forEach(exclusion => {
+				for (let i = exclusion[0]; i < exclusion[1]; i += 1) {
 					isExcluded[i] = true;
 				}
 			});
@@ -199,46 +205,46 @@ MagicString.prototype = {
 
 		let shouldIndentNextCharacter = options.indentStart !== false;
 		const replacer = match => {
-			if ( shouldIndentNextCharacter ) return `${indentStr}${match}`;
+			if (shouldIndentNextCharacter) return `${indentStr}${match}`;
 			shouldIndentNextCharacter = true;
 			return match;
 		};
 
-		this.intro = this.intro.replace( pattern, replacer );
+		this.intro = this.intro.replace(pattern, replacer);
 
 		let charIndex = 0;
 
 		let chunk = this.firstChunk;
 
-		while ( chunk ) {
+		while (chunk) {
 			const end = chunk.end;
 
-			if ( chunk.edited ) {
-				if ( !isExcluded[ charIndex ] ) {
-					chunk.content = chunk.content.replace( pattern, replacer );
+			if (chunk.edited) {
+				if (!isExcluded[charIndex]) {
+					chunk.content = chunk.content.replace(pattern, replacer);
 
-					if ( chunk.content.length ) {
-						shouldIndentNextCharacter = chunk.content[ chunk.content.length - 1 ] === '\n';
+					if (chunk.content.length) {
+						shouldIndentNextCharacter = chunk.content[chunk.content.length - 1] === '\n';
 					}
 				}
 			} else {
 				charIndex = chunk.start;
 
-				while ( charIndex < end ) {
-					if ( !isExcluded[ charIndex ] ) {
-						const char = this.original[ charIndex ];
+				while (charIndex < end) {
+					if (!isExcluded[charIndex]) {
+						const char = this.original[charIndex];
 
-						if ( char === '\n' ) {
+						if (char === '\n') {
 							shouldIndentNextCharacter = true;
-						} else if ( char !== '\r' && shouldIndentNextCharacter ) {
+						} else if (char !== '\r' && shouldIndentNextCharacter) {
 							shouldIndentNextCharacter = false;
 
-							if ( charIndex === chunk.start ) {
-								chunk.prependRight( indentStr );
+							if (charIndex === chunk.start) {
+								chunk.prependRight(indentStr);
 							} else {
-								this._splitChunk( chunk, charIndex );
+								this._splitChunk(chunk, charIndex);
 								chunk = chunk.next;
-								chunk.prependRight( indentStr );
+								chunk.prependRight(indentStr);
 							}
 						}
 					}
@@ -251,60 +257,66 @@ MagicString.prototype = {
 			chunk = chunk.next;
 		}
 
-		this.outro = this.outro.replace( pattern, replacer );
+		this.outro = this.outro.replace(pattern, replacer);
 
 		return this;
 	},
 
-	insert () {
-		throw new Error( 'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)' );
+	insert() {
+		throw new Error(
+			'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)'
+		);
 	},
 
-	insertLeft ( index, content ) {
-		if ( !warned.insertLeft ) {
-			console.warn( 'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead' ); // eslint-disable-line no-console
+	insertLeft(index, content) {
+		if (!warned.insertLeft) {
+			console.warn(
+				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead'
+			); // eslint-disable-line no-console
 			warned.insertLeft = true;
 		}
 
-		return this.appendLeft( index, content );
+		return this.appendLeft(index, content);
 	},
 
-	insertRight ( index, content ) {
-		if ( !warned.insertRight ) {
-			console.warn( 'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead' ); // eslint-disable-line no-console
+	insertRight(index, content) {
+		if (!warned.insertRight) {
+			console.warn(
+				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead'
+			); // eslint-disable-line no-console
 			warned.insertRight = true;
 		}
 
-		return this.prependRight( index, content );
+		return this.prependRight(index, content);
 	},
 
-	move ( start, end, index ) {
-		if ( index >= start && index <= end ) throw new Error( 'Cannot move a selection inside itself' );
+	move(start, end, index) {
+		if (index >= start && index <= end) throw new Error('Cannot move a selection inside itself');
 
-		if ( DEBUG ) this.stats.time( 'move' );
+		if (DEBUG) this.stats.time('move');
 
-		this._split( start );
-		this._split( end );
-		this._split( index );
+		this._split(start);
+		this._split(end);
+		this._split(index);
 
-		const first = this.byStart[ start ];
-		const last = this.byEnd[ end ];
+		const first = this.byStart[start];
+		const last = this.byEnd[end];
 
 		const oldLeft = first.previous;
 		const oldRight = last.next;
 
-		const newRight = this.byStart[ index ];
-		if ( !newRight && last === this.lastChunk ) return this;
+		const newRight = this.byStart[index];
+		if (!newRight && last === this.lastChunk) return this;
 		const newLeft = newRight ? newRight.previous : this.lastChunk;
 
-		if ( oldLeft ) oldLeft.next = oldRight;
-		if ( oldRight ) oldRight.previous = oldLeft;
+		if (oldLeft) oldLeft.next = oldRight;
+		if (oldRight) oldRight.previous = oldLeft;
 
-		if ( newLeft ) newLeft.next = first;
-		if ( newRight ) newRight.previous = last;
+		if (newLeft) newLeft.next = first;
+		if (newRight) newRight.previous = last;
 
-		if ( !first.previous ) this.firstChunk = last.next;
-		if ( !last.next ) {
+		if (!first.previous) this.firstChunk = last.next;
+		if (!last.next) {
 			this.lastChunk = first.previous;
 			this.lastChunk.next = null;
 		}
@@ -312,30 +324,35 @@ MagicString.prototype = {
 		first.previous = newLeft;
 		last.next = newRight || null;
 
-		if ( !newLeft ) this.firstChunk = first;
-		if ( !newRight ) this.lastChunk = last;
+		if (!newLeft) this.firstChunk = first;
+		if (!newRight) this.lastChunk = last;
 
-		if ( DEBUG ) this.stats.timeEnd( 'move' );
+		if (DEBUG) this.stats.timeEnd('move');
 		return this;
 	},
 
-	overwrite ( start, end, content, options ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'replacement content must be a string' );
+	overwrite(start, end, content, options) {
+		if (typeof content !== 'string') throw new TypeError('replacement content must be a string');
 
-		while ( start < 0 ) start += this.original.length;
-		while ( end < 0 ) end += this.original.length;
+		while (start < 0) start += this.original.length;
+		while (end < 0) end += this.original.length;
 
-		if ( end > this.original.length ) throw new Error( 'end is out of bounds' );
-		if ( start === end ) throw new Error( 'Cannot overwrite a zero-length range – use appendLeft or prependRight instead' );
+		if (end > this.original.length) throw new Error('end is out of bounds');
+		if (start === end)
+			throw new Error(
+				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead'
+			);
 
-		if ( DEBUG ) this.stats.time( 'overwrite' );
+		if (DEBUG) this.stats.time('overwrite');
 
-		this._split( start );
-		this._split( end );
+		this._split(start);
+		this._split(end);
 
-		if ( options === true ) {
-			if ( !warned.storeName ) {
-				console.warn( 'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string' ); // eslint-disable-line no-console
+		if (options === true) {
+			if (!warned.storeName) {
+				console.warn(
+					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string'
+				); // eslint-disable-line no-console
 				warned.storeName = true;
 			}
 
@@ -344,157 +361,156 @@ MagicString.prototype = {
 		const storeName = options !== undefined ? options.storeName : false;
 		const contentOnly = options !== undefined ? options.contentOnly : false;
 
-		if ( storeName ) {
-			const original = this.original.slice( start, end );
-			this.storedNames[ original ] = true;
+		if (storeName) {
+			const original = this.original.slice(start, end);
+			this.storedNames[original] = true;
 		}
 
-		const first = this.byStart[ start ];
-		const last = this.byEnd[ end ];
+		const first = this.byStart[start];
+		const last = this.byEnd[end];
 
-		if ( first ) {
-			if ( end > first.end && first.next !== this.byStart[ first.end ] ) {
-				throw new Error( 'Cannot overwrite across a split point' );
+		if (first) {
+			if (end > first.end && first.next !== this.byStart[first.end]) {
+				throw new Error('Cannot overwrite across a split point');
 			}
 
-			first.edit( content, storeName, contentOnly );
+			first.edit(content, storeName, contentOnly);
 
-			if ( first !== last ) {
+			if (first !== last) {
 				let chunk = first.next;
-				while ( chunk !== last ) {
-					chunk.edit( '', false );
+				while (chunk !== last) {
+					chunk.edit('', false);
 					chunk = chunk.next;
 				}
 
-				chunk.edit( '', false );
+				chunk.edit('', false);
 			}
-		}
-
-		else {
+		} else {
 			// must be inserting at the end
-			const newChunk = new Chunk( start, end, '' ).edit( content, storeName );
+			const newChunk = new Chunk(start, end, '').edit(content, storeName);
 
 			// TODO last chunk in the array may not be the last chunk, if it's moved...
 			last.next = newChunk;
 			newChunk.previous = last;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'overwrite' );
+		if (DEBUG) this.stats.timeEnd('overwrite');
 		return this;
 	},
 
-	prepend ( content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'outro content must be a string' );
+	prepend(content) {
+		if (typeof content !== 'string') throw new TypeError('outro content must be a string');
 
 		this.intro = content + this.intro;
 		return this;
 	},
 
-	prependLeft ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+	prependLeft(index, content) {
+		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
-		if ( DEBUG ) this.stats.time( 'insertRight' );
+		if (DEBUG) this.stats.time('insertRight');
 
-		this._split( index );
+		this._split(index);
 
-		const chunk = this.byEnd[ index ];
+		const chunk = this.byEnd[index];
 
-		if ( chunk ) {
-			chunk.prependLeft( content );
+		if (chunk) {
+			chunk.prependLeft(content);
 		} else {
 			this.intro = content + this.intro;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertRight' );
+		if (DEBUG) this.stats.timeEnd('insertRight');
 		return this;
 	},
 
-	prependRight ( index, content ) {
-		if ( typeof content !== 'string' ) throw new TypeError( 'inserted content must be a string' );
+	prependRight(index, content) {
+		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
-		if ( DEBUG ) this.stats.time( 'insertRight' );
+		if (DEBUG) this.stats.time('insertRight');
 
-		this._split( index );
+		this._split(index);
 
-		const chunk = this.byStart[ index ];
+		const chunk = this.byStart[index];
 
-		if ( chunk ) {
-			chunk.prependRight( content );
+		if (chunk) {
+			chunk.prependRight(content);
 		} else {
 			this.outro = content + this.outro;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'insertRight' );
+		if (DEBUG) this.stats.timeEnd('insertRight');
 		return this;
 	},
 
-	remove ( start, end ) {
-		while ( start < 0 ) start += this.original.length;
-		while ( end < 0 ) end += this.original.length;
+	remove(start, end) {
+		while (start < 0) start += this.original.length;
+		while (end < 0) end += this.original.length;
 
-		if ( start === end ) return this;
+		if (start === end) return this;
 
-		if ( start < 0 || end > this.original.length ) throw new Error( 'Character is out of bounds' );
-		if ( start > end ) throw new Error( 'end must be greater than start' );
+		if (start < 0 || end > this.original.length) throw new Error('Character is out of bounds');
+		if (start > end) throw new Error('end must be greater than start');
 
-		if ( DEBUG ) this.stats.time( 'remove' );
+		if (DEBUG) this.stats.time('remove');
 
-		this._split( start );
-		this._split( end );
+		this._split(start);
+		this._split(end);
 
-		let chunk = this.byStart[ start ];
+		let chunk = this.byStart[start];
 
-		while ( chunk ) {
+		while (chunk) {
 			chunk.intro = '';
 			chunk.outro = '';
-			chunk.edit( '' );
+			chunk.edit('');
 
-			chunk = end > chunk.end ? this.byStart[ chunk.end ] : null;
+			chunk = end > chunk.end ? this.byStart[chunk.end] : null;
 		}
 
-		if ( DEBUG ) this.stats.timeEnd( 'remove' );
+		if (DEBUG) this.stats.timeEnd('remove');
 		return this;
 	},
 
-	slice ( start = 0, end = this.original.length ) {
-		while ( start < 0 ) start += this.original.length;
-		while ( end < 0 ) end += this.original.length;
+	slice(start = 0, end = this.original.length) {
+		while (start < 0) start += this.original.length;
+		while (end < 0) end += this.original.length;
 
 		let result = '';
 
 		// find start chunk
 		let chunk = this.firstChunk;
-		while ( chunk && ( chunk.start > start || chunk.end <= start ) ) {
-
+		while (chunk && (chunk.start > start || chunk.end <= start)) {
 			// found end chunk before start
-			if ( chunk.start < end && chunk.end >= end ) {
+			if (chunk.start < end && chunk.end >= end) {
 				return result;
 			}
 
 			chunk = chunk.next;
 		}
 
-		if ( chunk && chunk.edited && chunk.start !== start ) throw new Error(`Cannot use replaced character ${start} as slice start anchor.`);
+		if (chunk && chunk.edited && chunk.start !== start)
+			throw new Error(`Cannot use replaced character ${start} as slice start anchor.`);
 
 		const startChunk = chunk;
-		while ( chunk ) {
-			if ( chunk.intro && ( startChunk !== chunk || chunk.start === start ) ) {
+		while (chunk) {
+			if (chunk.intro && (startChunk !== chunk || chunk.start === start)) {
 				result += chunk.intro;
 			}
 
 			const containsEnd = chunk.start < end && chunk.end >= end;
-			if ( containsEnd && chunk.edited && chunk.end !== end ) throw new Error(`Cannot use replaced character ${end} as slice end anchor.`);
+			if (containsEnd && chunk.edited && chunk.end !== end)
+				throw new Error(`Cannot use replaced character ${end} as slice end anchor.`);
 
 			const sliceStart = startChunk === chunk ? start - chunk.start : 0;
 			const sliceEnd = containsEnd ? chunk.content.length + end - chunk.end : chunk.content.length;
 
-			result += chunk.content.slice( sliceStart, sliceEnd );
+			result += chunk.content.slice(sliceStart, sliceEnd);
 
-			if ( chunk.outro && ( !containsEnd || chunk.end === end ) ) {
+			if (chunk.outro && (!containsEnd || chunk.end === end)) {
 				result += chunk.outro;
 			}
 
-			if ( containsEnd ) {
+			if (containsEnd) {
 				break;
 			}
 
@@ -505,55 +521,58 @@ MagicString.prototype = {
 	},
 
 	// TODO deprecate this? not really very useful
-	snip ( start, end ) {
+	snip(start, end) {
 		const clone = this.clone();
-		clone.remove( 0, start );
-		clone.remove( end, clone.original.length );
+		clone.remove(0, start);
+		clone.remove(end, clone.original.length);
 
 		return clone;
 	},
 
-	_split ( index ) {
-		if ( this.byStart[ index ] || this.byEnd[ index ] ) return;
+	_split(index) {
+		if (this.byStart[index] || this.byEnd[index]) return;
 
-		if ( DEBUG ) this.stats.time( '_split' );
+		if (DEBUG) this.stats.time('_split');
 
 		let chunk = this.lastSearchedChunk;
 		const searchForward = index > chunk.end;
 
-		while ( true ) {
-			if ( chunk.contains( index ) ) return this._splitChunk( chunk, index );
+		while (true) {
+			if (chunk.contains(index)) return this._splitChunk(chunk, index);
 
-			chunk = searchForward ?
-				this.byStart[ chunk.end ] :
-				this.byEnd[ chunk.start ];
+			chunk = searchForward ? this.byStart[chunk.end] : this.byEnd[chunk.start];
 		}
 	},
 
-	_splitChunk ( chunk, index ) {
-		if ( chunk.edited && chunk.content.length ) { // zero-length edited chunks are a special case (overlapping replacements)
-			const loc = getLocator( this.original )( index );
-			throw new Error( `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")` );
+	_splitChunk(chunk, index) {
+		if (chunk.edited && chunk.content.length) {
+			// zero-length edited chunks are a special case (overlapping replacements)
+			const loc = getLocator(this.original)(index);
+			throw new Error(
+				`Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${
+					chunk.original
+				}")`
+			);
 		}
 
-		const newChunk = chunk.split( index );
+		const newChunk = chunk.split(index);
 
-		this.byEnd[ index ] = chunk;
-		this.byStart[ index ] = newChunk;
-		this.byEnd[ newChunk.end ] = newChunk;
+		this.byEnd[index] = chunk;
+		this.byStart[index] = newChunk;
+		this.byEnd[newChunk.end] = newChunk;
 
-		if ( chunk === this.lastChunk ) this.lastChunk = newChunk;
+		if (chunk === this.lastChunk) this.lastChunk = newChunk;
 
 		this.lastSearchedChunk = chunk;
-		if ( DEBUG ) this.stats.timeEnd( '_split' );
+		if (DEBUG) this.stats.timeEnd('_split');
 		return true;
 	},
 
-	toString () {
+	toString() {
 		let str = this.intro;
 
 		let chunk = this.firstChunk;
-		while ( chunk ) {
+		while (chunk) {
 			str += chunk.toString();
 			chunk = chunk.next;
 		}
@@ -561,68 +580,68 @@ MagicString.prototype = {
 		return str + this.outro;
 	},
 
-	trimLines () {
+	trimLines() {
 		return this.trim('[\\r\\n]');
 	},
 
-	trim ( charType ) {
-		return this.trimStart( charType ).trimEnd( charType );
+	trim(charType) {
+		return this.trimStart(charType).trimEnd(charType);
 	},
 
-	trimEnd ( charType ) {
-		const rx = new RegExp( ( charType || '\\s' ) + '+$' );
+	trimEnd(charType) {
+		const rx = new RegExp((charType || '\\s') + '+$');
 
-		this.outro = this.outro.replace( rx, '' );
-		if ( this.outro.length ) return this;
+		this.outro = this.outro.replace(rx, '');
+		if (this.outro.length) return this;
 
 		let chunk = this.lastChunk;
 
 		do {
 			const end = chunk.end;
-			const aborted = chunk.trimEnd( rx );
+			const aborted = chunk.trimEnd(rx);
 
 			// if chunk was trimmed, we have a new lastChunk
-			if ( chunk.end !== end ) {
-				if ( this.lastChunk === chunk ) {
+			if (chunk.end !== end) {
+				if (this.lastChunk === chunk) {
 					this.lastChunk = chunk.next;
 				}
 
-				this.byEnd[ chunk.end ] = chunk;
-				this.byStart[ chunk.next.start ] = chunk.next;
-				this.byEnd[ chunk.next.end ] = chunk.next;
+				this.byEnd[chunk.end] = chunk;
+				this.byStart[chunk.next.start] = chunk.next;
+				this.byEnd[chunk.next.end] = chunk.next;
 			}
 
-			if ( aborted ) return this;
+			if (aborted) return this;
 			chunk = chunk.previous;
-		} while ( chunk );
+		} while (chunk);
 
 		return this;
 	},
 
-	trimStart ( charType ) {
-		const rx = new RegExp( '^' + ( charType || '\\s' ) + '+' );
+	trimStart(charType) {
+		const rx = new RegExp('^' + (charType || '\\s') + '+');
 
-		this.intro = this.intro.replace( rx, '' );
-		if ( this.intro.length ) return this;
+		this.intro = this.intro.replace(rx, '');
+		if (this.intro.length) return this;
 
 		let chunk = this.firstChunk;
 
 		do {
 			const end = chunk.end;
-			const aborted = chunk.trimStart( rx );
+			const aborted = chunk.trimStart(rx);
 
-			if ( chunk.end !== end ) {
+			if (chunk.end !== end) {
 				// special case...
-				if ( chunk === this.lastChunk ) this.lastChunk = chunk.next;
+				if (chunk === this.lastChunk) this.lastChunk = chunk.next;
 
-				this.byEnd[ chunk.end ] = chunk;
-				this.byStart[ chunk.next.start ] = chunk.next;
-				this.byEnd[ chunk.next.end ] = chunk.next;
+				this.byEnd[chunk.end] = chunk;
+				this.byStart[chunk.next.start] = chunk.next;
+				this.byEnd[chunk.next.end] = chunk.next;
 			}
 
-			if ( aborted ) return this;
+			if (aborted) return this;
 			chunk = chunk.next;
-		} while ( chunk );
+		} while (chunk);
 
 		return this;
 	}

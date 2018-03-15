@@ -19,6 +19,7 @@
     "eslint": "^4.5.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
+    "prettier": "^1.11.1",
     "remap-istanbul": "^0.9.5",
     "resolve": "^1.4.0",
     "rollup": "^0.48.0",
@@ -38,6 +39,7 @@
   "scripts": {
     "test": "mocha",
     "pretest": "npm run build",
+    "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
     "pretest-coverage": "npm run build",
     "test-coverage": "rm -rf coverage/* && istanbul cover --report json node_modules/.bin/_mocha -- -u exports -R spec test/*.js",
     "posttest-coverage": "remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.lcov -t lcovonly -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped -t html -b dist",

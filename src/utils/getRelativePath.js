@@ -1,18 +1,18 @@
-export default function getRelativePath ( from, to ) {
-	const fromParts = from.split( /[\/\\]/ );
-	const toParts = to.split( /[\/\\]/ );
+export default function getRelativePath(from, to) {
+	const fromParts = from.split(/[\/\\]/);
+	const toParts = to.split(/[\/\\]/);
 
 	fromParts.pop(); // get dirname
 
-	while ( fromParts[0] === toParts[0] ) {
+	while (fromParts[0] === toParts[0]) {
 		fromParts.shift();
 		toParts.shift();
 	}
 
-	if ( fromParts.length ) {
+	if (fromParts.length) {
 		let i = fromParts.length;
-		while ( i-- ) fromParts[i] = '..';
+		while (i--) fromParts[i] = '..';
 	}
 
-	return fromParts.concat( toParts ).join( '/' );
+	return fromParts.concat(toParts).join('/');
 }
