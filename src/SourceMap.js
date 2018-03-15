@@ -1,5 +1,13 @@
-import btoa from './btoa.js';
 import { encode } from 'sourcemap-codec';
+
+let btoa = () => {
+	throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
+};
+if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+	btoa = window.btoa;
+} else if (typeof Buffer === 'function') {
+	btoa = str => new Buffer(str).toString('base64');
+}
 
 export default function SourceMap(properties) {
 	this.version = 3;

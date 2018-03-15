@@ -1,5 +1,5 @@
 import Chunk from './Chunk.js';
-import SourceMap from './utils/SourceMap.js';
+import SourceMap from './SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
 import getRelativePath from './utils/getRelativePath.js';
 import isObject from './utils/isObject.js';

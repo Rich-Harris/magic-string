@@ -1,5 +1,5 @@
 import MagicString from './MagicString.js';
-import SourceMap from './utils/SourceMap.js';
+import SourceMap from './SourceMap.js';
 import getRelativePath from './utils/getRelativePath.js';
 import hasOwnProp from './utils/hasOwnProp.js';
 import isObject from './utils/isObject.js';
