@@ -80,7 +80,7 @@ Bundle.prototype = {
 		return bundle;
 	},
 
-	generateMap ( options = {} ) {
+	generateDecodedMap ( options = {} ) {
 		const names = [];
 		this.sources.forEach( source => {
 			Object.keys( source.content.storedNames ).forEach( name => {
@@ -114,7 +114,7 @@ Bundle.prototype = {
 
 				if ( source.filename ) {
 					if ( chunk.edited ) {
-						mappings.addEdit( sourceIndex, chunk.content, chunk.original, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
+						mappings.addEdit( sourceIndex, chunk.content, loc, chunk.storeName ? names.indexOf( chunk.original ) : -1 );
 					} else {
 						mappings.addUneditedChunk( sourceIndex, chunk, magicString.original, loc, magicString.sourcemapLocations );
 					}
@@ -132,7 +132,7 @@ Bundle.prototype = {
 			}
 		});
 
-		return new SourceMap({
+		return {
 			file: ( options.file ? options.file.split( /[\/\\]/ ).pop() : null ),
 			sources: this.uniqueSources.map( source => {
 				return options.file ? getRelativePath( options.file, source.filename ) : source.filename;
@@ -141,8 +141,12 @@ Bundle.prototype = {
 				return options.includeContent ? source.content : null;
 			}),
 			names,
-			mappings: mappings.encode()
-		});
+			mappings: mappings.raw
+		};
+	},
+
+	generateMap ( options ) {
+		return new SourceMap(this.generateDecodedMap( options ));
 	},
 
 	getIndentString () {

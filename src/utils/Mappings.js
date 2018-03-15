@@ -1,5 +1,3 @@
-import { encode } from 'sourcemap-codec';
-
 export default function Mappings ( hires ) {
 	let generatedCodeLine = 0;
 	let generatedCodeColumn = 0;
@@ -9,7 +7,7 @@ export default function Mappings ( hires ) {
 
 	let pending = null;
 
-	this.addEdit = ( sourceIndex, content, original, loc, nameIndex ) => {
+	this.addEdit = ( sourceIndex, content, loc, nameIndex ) => {
 		if ( content.length ) {
 			const segment = [
 				generatedCodeColumn,
@@ -80,9 +78,5 @@ export default function Mappings ( hires ) {
 		}
 
 		generatedCodeColumn += lines[lines.length - 1].length;
-	};
-
-	this.encode = () => {
-		return encode(this.raw);
 	};
 }
