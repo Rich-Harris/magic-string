@@ -1,10 +1,11 @@
 import MagicString from './MagicString.js';
 import SourceMap from './SourceMap.js';
 import getRelativePath from './utils/getRelativePath.js';
-import hasOwnProp from './utils/hasOwnProp.js';
 import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
 import Mappings from './utils/Mappings.js';
+
+const hasOwnProp = Object.prototype.hasOwnProperty;
 
 export default class Bundle {
 	constructor(options = {}) {
