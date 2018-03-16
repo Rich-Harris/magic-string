@@ -525,7 +525,7 @@ export default class MagicString {
 		let chunk = this.lastSearchedChunk;
 		const searchForward = index > chunk.end;
 
-		while (true) {
+		while (chunk) {
 			if (chunk.contains(index)) return this._splitChunk(chunk, index);
 
 			chunk = searchForward ? this.byStart[chunk.end] : this.byEnd[chunk.start];
