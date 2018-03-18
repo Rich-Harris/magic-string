@@ -459,6 +459,19 @@ export default class MagicString {
 		return this;
 	}
 
+	lastChar() {
+		let chunk = this.lastChunk;
+		do {
+			if (chunk.outro.length)
+				return chunk.outro[chunk.outro.length - 1];
+			if (chunk.content.length)
+				return chunk.content[chunk.content.length - 1];
+			if (chunk.intro.length)
+				return chunk.intro[chunk.intro.length - 1];
+		} while (chunk = chunk.previous);
+		return '';
+	}
+
 	slice(start = 0, end = this.original.length) {
 		while (start < 0) start += this.original.length;
 		while (end < 0) end += this.original.length;
@@ -568,6 +581,17 @@ export default class MagicString {
 		return str + this.outro;
 	}
 
+	isEmpty() {
+		let chunk = this.firstChunk;
+		do {
+			if (chunk.intro.length && chunk.intro.trim() ||
+					chunk.content.length && chunk.content.trim() ||
+					chunk.outro.length && chunk.outro.trim())
+				return false;
+		} while (chunk = chunk.next);
+		return true;
+	}
+
 	trimLines() {
 		return this.trim('[\\r\\n]');
 	}
@@ -576,11 +600,11 @@ export default class MagicString {
 		return this.trimStart(charType).trimEnd(charType);
 	}
 
-	trimEnd(charType) {
+	trimEndAborted(charType) {
 		const rx = new RegExp((charType || '\\s') + '+$');
 
 		this.outro = this.outro.replace(rx, '');
-		if (this.outro.length) return this;
+		if (this.outro.length) return true;
 
 		let chunk = this.lastChunk;
 
@@ -599,18 +623,22 @@ export default class MagicString {
 				this.byEnd[chunk.next.end] = chunk.next;
 			}
 
-			if (aborted) return this;
+			if (aborted) return true;
 			chunk = chunk.previous;
 		} while (chunk);
 
-		return this;
+		return false;
 	}
 
-	trimStart(charType) {
+	trimEnd(charType) {
+		this.trimEndAborted(charType);
+		return this;
+	}
+	trimStartAborted(charType) {
 		const rx = new RegExp('^' + (charType || '\\s') + '+');
 
 		this.intro = this.intro.replace(rx, '');
-		if (this.intro.length) return this;
+		if (this.intro.length) return true;
 
 		let chunk = this.firstChunk;
 
@@ -627,10 +655,15 @@ export default class MagicString {
 				this.byEnd[chunk.next.end] = chunk.next;
 			}
 
-			if (aborted) return this;
+			if (aborted) return true;
 			chunk = chunk.next;
 		} while (chunk);
 
+		return false;
+	}
+
+	trimStart(charType) {
+		this.trimStartAborted(charType);
 		return this;
 	}
 }

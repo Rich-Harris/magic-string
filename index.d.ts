@@ -48,6 +48,7 @@ export class Bundle {
   trim(charType?: string): Bundle;
   trimStart(charType?: string): Bundle;
   trimEnd(charType?: string): Bundle;
+  isEmpty(): boolean;
 }
 
 export type ExclusionRange = [ number, number ];
@@ -90,6 +91,9 @@ export default class MagicString {
   remove(start: number, end: number): MagicString;
   slice(start: number, end: number): string;
   snip(start: number, end: number): MagicString;
+  trim(): MagicString;
+
+  isEmpty(): boolean;
 
   original: string;
 }
