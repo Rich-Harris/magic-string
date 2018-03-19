@@ -3,7 +3,6 @@ const SourceMapConsumer = require( 'source-map' ).SourceMapConsumer;
 const MagicString = require( './utils/IntegrityCheckingMagicString' );
 
 require( 'source-map-support' ).install();
-require( 'console-group' ).install();
 
 describe( 'MagicString', () => {
 	describe( 'options', () => {
