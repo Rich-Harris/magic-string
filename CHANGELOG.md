@@ -1,5 +1,11 @@
 # magic-string changelog
 
+## 0.24.0
+
+* Add `isEmpty` methods ([#137](https://github.com/Rich-Harris/magic-string/pull/137))
+* Fix a potential race condition ([#136](https://github.com/Rich-Harris/magic-string/pull/136))
+* Fix CJS/ES bundles inlining `sourcemap-codec` in 0.23.2.
+
 ## 0.23.2
 
 * Add `generateDecodedMap` methods ([#134](https://github.com/Rich-Harris/magic-string/pull/134))

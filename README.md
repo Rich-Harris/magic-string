@@ -200,6 +200,10 @@ Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the e
 
 Removes empty lines from the start and end. Returns `this`.
 
+### s.isEmpty()
+
+Returns true if the resulting source is empty (disregarding white space).
+
 ## Bundling
 
 To concatenate several sources, use `MagicString.Bundle`:
