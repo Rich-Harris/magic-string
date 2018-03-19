@@ -195,8 +195,7 @@ export default class Bundle {
 				indentStart //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
 			});
 
-			// TODO this is a very slow way to determine this
-			trailingNewline = source.content.toString().slice(0, -1) === '\n';
+			trailingNewline = source.content.lastChar() === '\n';
 		});
 
 		if (this.intro) {
@@ -228,6 +227,14 @@ export default class Bundle {
 		return this.intro + body;
 	}
 
+	isEmpty () {
+		if (this.intro.length && this.intro.trim())
+			return false;
+		if (this.sources.some(source => !source.content.isEmpty()))
+			return false;
+		return true;
+	}
+
 	trimLines() {
 		return this.trim('[\\r\\n]');
 	}
@@ -245,15 +252,11 @@ export default class Bundle {
 			let i = 0;
 
 			do {
-				source = this.sources[i];
-
+				source = this.sources[i++];
 				if (!source) {
 					break;
 				}
-
-				source.content.trimStart(charType);
-				i += 1;
-			} while (source.content.toString() === ''); // TODO faster way to determine non-empty source?
+			} while (!source.content.trimStartAborted(charType));
 		}
 
 		return this;
@@ -266,16 +269,12 @@ export default class Bundle {
 		let i = this.sources.length - 1;
 
 		do {
-			source = this.sources[i];
-
+			source = this.sources[i--];
 			if (!source) {
 				this.intro = this.intro.replace(rx, '');
 				break;
 			}
-
-			source.content.trimEnd(charType);
-			i -= 1;
-		} while (source.content.toString() === ''); // TODO faster way to determine non-empty source?
+		} while (!source.content.trimEndAborted(charType));
 
 		return this;
 	}

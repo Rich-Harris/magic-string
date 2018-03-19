@@ -1172,4 +1172,23 @@ describe( 'MagicString', () => {
 			assert.equal( s.toString(), '   abcdefghijkl   ' );
 		});
 	});
+
+	describe( 'isEmpty', () => {
+		it( 'should support isEmpty', () => {
+			const s = new MagicString( ' abcde   fghijkl ' );
+
+			assert.equal( s.isEmpty(), false );
+
+			s.prepend( '  ' );
+			s.append( '  ' );
+			s.remove( 1, 6 );
+			s.remove( 9, 15 );
+
+			assert.equal( s.isEmpty(), false );
+
+			s.remove( 15, 16 );
+
+			assert.equal( s.isEmpty(), true );
+		});
+	});
 });
