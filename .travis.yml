@@ -1,10 +1,4 @@
-sudo: false
 language: node_js
 node_js:
-  - "4"
   - "node"
-env:
-  global:
-    - BUILD_TIMEOUT=10000
-install: npm install
-script: npm test
+  - "6"
