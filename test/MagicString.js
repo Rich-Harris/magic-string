@@ -1191,4 +1191,27 @@ describe( 'MagicString', () => {
 			assert.equal( s.isEmpty(), true );
 		});
 	});
+
+	describe( 'lastLine', () => {
+		it( 'should support lastLine', () => {
+			const s = new MagicString( ' abcde\nfghijkl ' );
+
+			assert.equal( s.lastLine(), 'fghijkl ' );
+
+			s.prepend( '  ' );
+			s.append( '  ' );
+			s.remove( 1, 6 );
+			s.remove( 9, 15 );
+
+			assert.equal( s.lastLine(), 'fg  ' );
+
+			s.overwrite( 7, 8, '\n' );
+
+			assert.equal( s.lastLine(), 'g  ' );
+
+			s.append('\n//lastline');
+
+			assert.equal( s.lastLine(), '//lastline' );
+		});
+	});
 });

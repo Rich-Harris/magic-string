@@ -7,6 +7,8 @@ import getLocator from './utils/getLocator.js';
 import Mappings from './utils/Mappings.js';
 import Stats from './utils/Stats.js';
 
+const n = '\n';
+
 const warned = {
 	insertLeft: false,
 	insertRight: false,
@@ -460,6 +462,8 @@ export default class MagicString {
 	}
 
 	lastChar() {
+		if (this.outro.length)
+			return this.outro[this.outro.length - 1];
 		let chunk = this.lastChunk;
 		do {
 			if (chunk.outro.length)
@@ -469,7 +473,43 @@ export default class MagicString {
 			if (chunk.intro.length)
 				return chunk.intro[chunk.intro.length - 1];
 		} while (chunk = chunk.previous);
+		if (this.intro.length)
+			return this.intro[this.intro.length - 1];
 		return '';
+	}
+
+	lastLine() {
+		let lineIndex = this.outro.lastIndexOf(n);
+		if (lineIndex !== -1)
+			return this.outro.substr(lineIndex + 1);
+		let lineStr = this.outro;
+		let chunk = this.lastChunk;
+		do {
+			if (chunk.outro.length > 0) {
+				lineIndex = chunk.outro.lastIndexOf(n);
+				if (lineIndex !== -1)
+					return chunk.outro.substr(lineIndex + 1) + lineStr;
+				lineStr = chunk.outro + lineStr;
+			}
+
+			if (chunk.content.length > 0) {
+				lineIndex = chunk.content.lastIndexOf(n);
+				if (lineIndex !== -1)
+					return chunk.content.substr(lineIndex + 1) + lineStr;
+				lineStr = chunk.content + lineStr;
+			}
+
+			if (chunk.intro.length > 0) {
+				lineIndex = chunk.intro.lastIndexOf(n);
+				if (lineIndex !== -1)
+					return chunk.intro.substr(lineIndex + 1) + lineStr;
+				lineStr = chunk.intro + lineStr;
+			}
+		} while (chunk = chunk.previous);
+		lineIndex = this.intro.lastIndexOf(n);
+		if (lineIndex !== -1)
+			return this.intro.substr(lineIndex + 1) + lineStr;
+		return this.intro + lineStr;
 	}
 
 	slice(start = 0, end = this.original.length) {
