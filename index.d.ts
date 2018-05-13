@@ -93,6 +93,8 @@ export default class MagicString {
   snip(start: number, end: number): MagicString;
   trim(): MagicString;
 
+  lastChar(): string;
+  lastLine(): string;
   isEmpty(): boolean;
 
   original: string;
