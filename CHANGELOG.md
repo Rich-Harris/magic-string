@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.24.1
+
+* Add `lastLine` and `lastChar` methods ([#142](https://github.com/Rich-Harris/magic-string/pull/142))
+
 ## 0.24.0
 
 * Add `isEmpty` methods ([#137](https://github.com/Rich-Harris/magic-string/pull/137))
