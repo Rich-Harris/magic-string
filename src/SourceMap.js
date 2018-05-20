@@ -14,6 +14,7 @@ export default class SourceMap {
 		this.version = 3;
 		this.file = properties.file;
 		this.sources = properties.sources;
+		this.sourceRoot = properties.sourceRoot;
 		this.sourcesContent = properties.sourcesContent;
 		this.names = properties.names;
 		this.mappings = encode(properties.mappings);
