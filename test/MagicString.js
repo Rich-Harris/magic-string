@@ -1162,6 +1162,12 @@ describe( 'MagicString', () => {
 			const s = new MagicString( '  abcdefghijkl  ' );
 			assert.strictEqual( s.trim(), s );
 		});
+
+		it( 'should support trimming chunks with intro and outro', () => {
+			const s = new MagicString( '    \n' );
+			s.appendRight(4, 'test');
+			assert.strictEqual( s.trim().toString(), 'test' );
+		});
 	});
 
 	describe( 'trimLines', () => {

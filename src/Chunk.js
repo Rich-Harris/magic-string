@@ -121,12 +121,12 @@ export default class Chunk {
 
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
-				this.split(this.start + trimmed.length).edit('', false);
+				this.split(this.start + trimmed.length).edit('', undefined, true);
 			}
 			return true;
 
 		} else {
-			this.edit('', false);
+			this.edit('', undefined, true);
 
 			this.intro = this.intro.replace(rx, '');
 			if (this.intro.length) return true;
@@ -142,12 +142,12 @@ export default class Chunk {
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
 				this.split(this.end - trimmed.length);
-				this.edit('', false);
+				this.edit('', undefined, true);
 			}
 			return true;
 
 		} else {
-			this.edit('', false);
+			this.edit('', undefined, true);
 
 			this.outro = this.outro.replace(rx, '');
 			if (this.outro.length) return true;
