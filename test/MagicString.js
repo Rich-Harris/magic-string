@@ -1192,6 +1192,25 @@ describe( 'MagicString', () => {
 		});
 	});
 
+	describe( 'length', () => {
+		it( 'should support length', () => {
+			const s = new MagicString( ' abcde   fghijkl ' );
+
+			assert.equal( s.length(), 17 );
+
+			s.prepend( '  ' );
+			s.append( '  ' );
+			s.remove( 1, 6 );
+			s.remove( 9, 15 );
+
+			assert.equal( s.length(), 6 );
+
+			s.remove( 15, 16 );
+
+			assert.equal( s.length(), 5 );
+		});
+	});
+
 	describe( 'lastLine', () => {
 		it( 'should support lastLine', () => {
 			const s = new MagicString( ' abcde\nfghijkl ' );

@@ -632,6 +632,15 @@ export default class MagicString {
 		return true;
 	}
 
+	length() {
+		let chunk = this.firstChunk;
+		let length = 0;
+		do {
+			length += chunk.intro.length + chunk.content.length + chunk.outro.length;
+		} while (chunk = chunk.next);
+		return length;
+	}
+
 	trimLines() {
 		return this.trim('[\\r\\n]');
 	}

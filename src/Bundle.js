@@ -235,6 +235,10 @@ export default class Bundle {
 		return true;
 	}
 
+	length() {
+		return this.sources.reduce((length, source) => length + source.content.length(), this.intro.length);
+	}
+
 	trimLines() {
 		return this.trim('[\\r\\n]');
 	}
