@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.25.0
+
+* Add `length` method ([#145](https://github.com/Rich-Harris/magic-string/pull/145))
+* Fix trimming chunks with intro/outro ([#144](https://github.com/Rich-Harris/magic-string/pull/144))
+
 ## 0.24.1
 
 * Add `lastLine` and `lastChar` methods ([#142](https://github.com/Rich-Harris/magic-string/pull/142))
