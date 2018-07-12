@@ -92,7 +92,10 @@ export default class MagicString {
   remove(start: number, end: number): MagicString;
   slice(start: number, end: number): string;
   snip(start: number, end: number): MagicString;
-  trim(): MagicString;
+  trim(charType?: string): MagicString;
+  trimStart(charType?: string): MagicString;
+  trimEnd(charType?: string): MagicString;
+  trimLines(): MagicString;
 
   lastChar(): string;
   lastLine(): string;
