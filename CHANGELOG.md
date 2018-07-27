@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.25.1
+
+* Additional types for index.d.ts ([#148](https://github.com/Rich-Harris/magic-string/pull/148))
+
 ## 0.25.0
 
 * Add `length` method ([#145](https://github.com/Rich-Harris/magic-string/pull/145))
