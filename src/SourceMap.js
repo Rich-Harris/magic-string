@@ -6,7 +6,7 @@ let btoa = () => {
 if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
 	btoa = window.btoa;
 } else if (typeof Buffer === 'function') {
-	btoa = str => new Buffer(str).toString('base64');
+	btoa = str => Buffer.from(str, 'utf-8').toString('base64');
 }
 
 export default class SourceMap {
