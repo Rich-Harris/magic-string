@@ -1,5 +1,10 @@
 # magic-string changelog
 
+## 0.25.2
+
+* Remove deprecated `new Buffer(...)`
+* Handle characters outside Latin1 range when generating a sourcemap in browser ([#154](https://github.com/Rich-Harris/magic-string/issues/154))
+
 ## 0.25.1
 
 * Additional types for index.d.ts ([#148](https://github.com/Rich-Harris/magic-string/pull/148))
