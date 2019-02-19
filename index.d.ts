@@ -21,7 +21,7 @@ export interface DecodedSourceMap {
 export class SourceMap {
   constructor(properties: DecodedSourceMap);
 
-  version: string;
+  version: number;
   file: string;
   sources: string[];
   sourcesContent: string[];
