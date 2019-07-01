@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.25.3
+
+* Fix typing of `SourceMap.version`.
+
 ## 0.25.2
 
 * Remove deprecated `new Buffer(...)`
