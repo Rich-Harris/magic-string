@@ -17,7 +17,7 @@ fs.readFile( 'app.source.js', function ( err, result ) {
 	magicString = new MagicString( result.toString() );
 
 	while ( match = pattern.exec( source ) ) {
-		magicString.replace( match.index, match.index + 3, 'answer' );
+		magicString.overwrite( match.index, match.index + 3, 'answer' );
 	}
 
 	transpiled = magicString.toString() + '\n//# sourceMappingURL=app.js.map';
@@ -28,8 +28,8 @@ fs.readFile( 'app.source.js', function ( err, result ) {
 		hires: true
 	});
 
-	fs.writeFile( 'app.js', transpiled );
-	fs.writeFile( 'app.js.map', map );
+	fs.writeFileSync( 'app.js', transpiled );
+	fs.writeFileSync( 'app.js.map', map );
 
-	fs.writeFile( 'app.inlinemap.js', transpiled + '\n//#sourceMappingURL=' + map.toUrl() );
+	fs.writeFileSync( 'app.inlinemap.js', transpiled + '\n//#sourceMappingURL=' + map.toUrl() );
 });
