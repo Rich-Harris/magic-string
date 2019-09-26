@@ -203,6 +203,18 @@ describe('MagicString', () => {
 			assert.equal(loc.column, 10);
 		});
 
+		it('should generate a correct sourcemap for prepend content when hires = false', () => {
+			const s = new MagicString('x\nq');
+
+			s.prepend('y\n');
+
+			const map = s.generateMap({
+				includeContent: true,
+			});
+
+			assert.equal(map.mappings,';AAAA;AACA');
+		});
+
 		it('should generate a correct sourcemap for indented content', () => {
 			const s = new MagicString('var answer = 42;\nconsole.log("the answer is %s", answer);');
 
