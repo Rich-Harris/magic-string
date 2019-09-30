@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.25.4
+
+* Clone `intro` and `outro` ([#162](https://github.com/Rich-Harris/magic-string/issues/162))
+
 ## 0.25.3
 
 * Fix typing of `SourceMap.version`.
