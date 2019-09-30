@@ -165,6 +165,17 @@ describe('MagicString', () => {
 			assert.notStrictEqual(source.sourcemapLocations, clone.sourcemapLocations);
 			assert.deepEqual(source.sourcemapLocations, clone.sourcemapLocations);
 		});
+
+		it('should clone intro and outro', () => {
+			const source = new MagicString('defghi');
+
+			source.prepend('abc');
+			source.append('jkl');
+
+			const clone = source.clone();
+
+			assert.equal(source.toString(), clone.toString());
+		});
 	});
 
 	describe('generateMap', () => {
