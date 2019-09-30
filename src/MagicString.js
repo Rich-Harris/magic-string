@@ -125,6 +125,9 @@ export default class MagicString {
 			cloned.sourcemapLocations[loc] = true;
 		});
 
+		cloned.intro = this.intro;
+		cloned.outro = this.outro;
+
 		return cloned;
 	}
 
