@@ -10,12 +10,17 @@ export interface SourceMapOptions {
   includeContent: boolean;
 }
 
+export type SourceMapSegment =
+  | [number]
+  | [number, number, number, number]
+  | [number, number, number, number, number];
+
 export interface DecodedSourceMap {
   file: string;
   sources: string[];
   sourcesContent: string[];
   names: string[];
-  mappings: number[][][];
+  mappings: SourceMapSegment[][];
 }
 
 export class SourceMap {
