@@ -38,13 +38,14 @@ export default class Mappings {
 				this.generatedCodeLine += 1;
 				this.raw[this.generatedCodeLine] = this.rawSegments = [];
 				this.generatedCodeColumn = 0;
+				first = true;
 			} else {
 				loc.column += 1;
 				this.generatedCodeColumn += 1;
+				first = false;
 			}
 
 			originalCharIndex += 1;
-			first = false;
 		}
 
 		this.pending = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
