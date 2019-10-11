@@ -17,7 +17,7 @@ export interface BundledSourceFileRecord {
 }
 
 export interface BundleSourceMapOptions extends SourceMapOptions {
-  includeContent: (source: BundledSourceFileRecord) => boolean;
+  includeContent: boolean | ((source: BundledSourceFileRecord) => boolean);
 }
 
 export type SourceMapSegment =
