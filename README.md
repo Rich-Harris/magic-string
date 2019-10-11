@@ -226,7 +226,8 @@ bundle.toString();
 //   console.log( answer );
 // }());
 
-// options are as per `s.generateMap()` above
+// options are as per `s.generateMap()` above except that `options.includeContent` can also
+// be a function with the signature `function(source: { filename: string, content: string }): boolean`
 var map = bundle.generateMap({
   file: 'bundle.js',
   includeContent: true,

@@ -147,7 +147,9 @@ export default class Bundle {
 				return options.file ? getRelativePath(options.file, source.filename) : source.filename;
 			}),
 			sourcesContent: this.uniqueSources.map(source => {
-				return options.includeContent ? source.content : null;
+				const includeContent = typeof options.includeContent === 'function' ? options.includeContent(source) : options.includeContent;
+
+				return includeContent ? source.content : null;
 			}),
 			names,
 			mappings: mappings.raw
