@@ -27,12 +27,20 @@ export default class Mappings {
 		let originalCharIndex = chunk.start;
 		let first = true;
 
+		let len = this.rawSegments.length;
 		while (originalCharIndex < chunk.end) {
 			if (this.hires || first || sourcemapLocations[originalCharIndex]) {
-				this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column]);
+				if (len !== 0) {
+					const segment = this.rawSegments[len - 1];
+					if (segment[0] === this.generatedCodeColumn) {
+						len -= 1; // overwrite segments for removed code
+					}
+				}
+				this.rawSegments[len++] = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
 			}
 
 			if (original[originalCharIndex] === '\n') {
+				len = 0;
 				loc.line += 1;
 				loc.column = 0;
 				this.generatedCodeLine += 1;
