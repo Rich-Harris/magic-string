@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.25.5
+
+* Use a bitset to reduce memory consumption ([#167](https://github.com/Rich-Harris/magic-string/issues/167))
+
 ## 0.25.4
 
 * Clone `intro` and `outro` ([#162](https://github.com/Rich-Harris/magic-string/issues/162))
