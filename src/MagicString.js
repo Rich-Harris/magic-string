@@ -1,3 +1,4 @@
+import BitSet from './BitSet.js';
 import Chunk from './Chunk.js';
 import SourceMap from './SourceMap.js';
 import guessIndent from './utils/guessIndent.js';
@@ -30,7 +31,7 @@ export default class MagicString {
 			byEnd:                 { writable: true, value: {} },
 			filename:              { writable: true, value: options.filename },
 			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
-			sourcemapLocations:    { writable: true, value: {} },
+			sourcemapLocations:    { writable: true, value: new BitSet() },
 			storedNames:           { writable: true, value: {} },
 			indentStr:             { writable: true, value: guessIndent(string) }
 		});
@@ -44,7 +45,7 @@ export default class MagicString {
 	}
 
 	addSourcemapLocation(char) {
-		this.sourcemapLocations[char] = true;
+		this.sourcemapLocations.add(char);
 	}
 
 	append(content) {
@@ -121,9 +122,7 @@ export default class MagicString {
 			cloned.indentExclusionRanges = this.indentExclusionRanges.slice();
 		}
 
-		Object.keys(this.sourcemapLocations).forEach(loc => {
-			cloned.sourcemapLocations[loc] = true;
-		});
+		cloned.sourcemapLocations = new BitSet(this.sourcemapLocations);
 
 		cloned.intro = this.intro;
 		cloned.outro = this.outro;

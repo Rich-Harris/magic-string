@@ -28,7 +28,7 @@ export default class Mappings {
 		let first = true;
 
 		while (originalCharIndex < chunk.end) {
-			if (this.hires || first || sourcemapLocations[originalCharIndex]) {
+			if (this.hires || first || sourcemapLocations.has(originalCharIndex)) {
 				this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column]);
 			}
 
