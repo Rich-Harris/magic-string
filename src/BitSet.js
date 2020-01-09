@@ -4,12 +4,10 @@ export default class BitSet {
 	}
 
 	add(n) {
-		this.bits[Math.floor(n / BITS)] |= 1 << n % BITS;
+		this.bits[n >> 5] |= 1 << (n & 31);
 	}
 
 	has(n) {
-		return !!(this.bits[Math.floor(n / BITS)] & (1 << n % BITS));
+		return !!(this.bits[n >> 5] & (1 << (n & 31)));
 	}
 }
-
-const BITS = 32;
