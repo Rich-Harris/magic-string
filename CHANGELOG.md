@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.25.6
+
+* Use bitwise operators for small performance boost ([#171](https://github.com/Rich-Harris/magic-string/pull/171))
+
 ## 0.25.5
 
 * Use a bitset to reduce memory consumption ([#167](https://github.com/Rich-Harris/magic-string/issues/167))
