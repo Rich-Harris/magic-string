@@ -48,9 +48,7 @@ export default class Mappings {
 			originalCharIndex += 1;
 		}
 
-		this.pending = sourceIndex > 0
-			? [this.generatedCodeColumn, sourceIndex, loc.line, loc.column]
-			: null;
+		this.pending = null;
 	}
 
 	advance(str) {
