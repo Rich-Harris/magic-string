@@ -35,6 +35,7 @@
     "pretest": "npm run lint && npm run build",
     "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
     "build": "rollup -c",
+    "prepare": "npm run build",
     "prepublishOnly": "rm -rf dist && npm test",
     "lint": "eslint src test",
     "watch": "rollup -cw"
