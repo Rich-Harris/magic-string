@@ -1,5 +1,9 @@
 # magic-string changelog
 
+## 0.25.7
+
+* fix bundle mappings after remove and move in multiple sources ([#172](https://github.com/Rich-Harris/magic-string/issues/172))
+
 ## 0.25.6
 
 * Use bitwise operators for small performance boost ([#171](https://github.com/Rich-Harris/magic-string/pull/171))
