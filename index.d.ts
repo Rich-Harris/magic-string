@@ -46,7 +46,7 @@ export class Bundle {
   generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
   getIndentString(): string;
   indent(indentStr?: string): Bundle;
-  indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
+  indentExclusionRanges?: ExclusionRange | Array<ExclusionRange>;
   prepend(str: string): Bundle;
   toString(): string;
   trimLines(): Bundle;
