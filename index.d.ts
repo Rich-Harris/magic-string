@@ -75,7 +75,7 @@ export interface OverwriteOptions {
 }
 
 export default class MagicString {
-  constructor(str: string, options?: MagicStringOptions);
+  constructor(str: string, options?: Partial<MagicStringOptions>);
   addSourcemapLocation(char: number): void;
   append(content: string): MagicString;
   appendLeft(index: number, content: string): MagicString;
