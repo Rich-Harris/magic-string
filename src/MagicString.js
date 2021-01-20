@@ -368,7 +368,7 @@ export default class MagicString {
 
 			first.edit(content, storeName, contentOnly);
 
-			if (first !== last) {
+			if (first !== last && first.next) {
 				let chunk = first.next;
 				while (chunk !== last) {
 					chunk.edit('', false);
