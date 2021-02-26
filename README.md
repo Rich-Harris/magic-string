@@ -56,8 +56,8 @@ var map = s.generateMap({
   includeContent: true
 }); // generates a v3 sourcemap
 
-require( 'fs' ).writeFile( 'converted.js', s.toString() );
-require( 'fs' ).writeFile( 'converted.js.map', map.toString() );
+require( 'fs' ).writeFile( 'converted.js', s.toString() , ()=>{} );
+require( 'fs' ).writeFile( 'converted.js.map', map.toString(), ()=>{} );
 ```
 
 You can pass an options argument:
