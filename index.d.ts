@@ -60,8 +60,8 @@ export class Bundle {
 export type ExclusionRange = [ number, number ];
 
 export interface MagicStringOptions {
-  filename: string,
-  indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
+  filename?: string,
+  indentExclusionRanges?: ExclusionRange | Array<ExclusionRange>;
 }
 
 export interface IndentOptions {
