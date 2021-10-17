@@ -7,15 +7,17 @@ class IntegrityCheckingMagicString extends MagicString {
 		let chunk = this.firstChunk;
 		let numNodes = 0;
 		while (chunk) {
-			assert.strictEqual(this.byStart[chunk.start], chunk);
-			assert.strictEqual(this.byEnd[chunk.end], chunk);
-			assert.strictEqual(chunk.previous, prevChunk);
-			if (prevChunk) {
-				assert.strictEqual(prevChunk.next, chunk);
+			if (!chunk.isCopy) {
+				assert.strictEqual(this.byStart[chunk.start], chunk);
+				assert.strictEqual(this.byEnd[chunk.end], chunk);
+				assert.strictEqual(chunk.previous, prevChunk);
+				if (prevChunk) {
+					assert.strictEqual(prevChunk.next, chunk);
+				}
+				numNodes++;
 			}
 			prevChunk = chunk;
 			chunk = chunk.next;
-			numNodes++;
 		}
 		assert.strictEqual(prevChunk, this.lastChunk);
 		assert.strictEqual(this.lastChunk.next, null);

@@ -359,6 +359,9 @@ export default class MagicString {
 				lastDuped = nextDuped;
 			}
 		}
+		if (DEBUG) {
+			duplicates.forEach(dupe => dupe.isCopy = true);
+		}
 		const newFirst = duplicates[0];
 		const newLast = duplicates[duplicates.length - 1];
 
