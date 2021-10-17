@@ -815,6 +815,34 @@ describe('MagicString', () => {
 			s.overwrite(2, 5, 'foo');
 			assert.throws(() => s.copy(3, 6, 9), /Cannot split a chunk that has already been edited/);
 		});
+
+		it('cannot overwrite area where something was inserted', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			assert.throws(() => s.overwrite(8, 10, 'foo'), /Cannot overwrite across a split point/);
+		});
+
+		it('can overwrite area from where something was copied', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			s.overwrite(2, 5, 'foo');
+			assert.equal(s.toString(), 'abfooFghiDEFjkl');
+		});
+
+		it('can surround inserted area by copy region', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			s.copy(8, 10, 11);
+			assert.equal(s.toString(), 'abcDEFghiDEFjkiDEFjl');
+		});
+
+		it('returns this', () => {
+			const s = new MagicString('abcdefghijkl');
+			assert.strictEqual(s.copy(3, 6, 9), s);
+		});
 	});
 
 	describe('overwrite', () => {
