@@ -81,6 +81,7 @@ export default class MagicString {
   appendLeft(index: number, content: string): MagicString;
   appendRight(index: number, content: string): MagicString;
   clone(): MagicString;
+  copy(start: number, end: number, index: number): MagicString;
   generateMap(options?: Partial<SourceMapOptions>): SourceMap;
   generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
   getIndentString(): string;
