@@ -824,11 +824,26 @@ describe('MagicString', () => {
 			assert.equal(s.toString(), 'a&^...!?defghijkl');
 		});
 
-		it('disallows overwriting across moved content', () => {
+		it('disallows overwriting partially overlapping moved content', () => {
 			const s = new MagicString('abcdefghijkl');
 
 			s.move(6, 9, 3);
 			assert.throws(() => s.overwrite(5, 7, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('disallows overwriting fully surrounding content moved away', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('disallows overwriting fully surrounding content moved away even if there is another split', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			s.appendLeft(5, 'foo');
+			assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/);
 		});
 
 		it('allows later insertions at the end', () => {
