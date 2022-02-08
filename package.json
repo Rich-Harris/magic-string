@@ -5,9 +5,16 @@
   "version": "0.25.7",
   "repository": "https://github.com/rich-harris/magic-string",
   "main": "dist/magic-string.cjs.js",
-  "module": "dist/magic-string.es.js",
-  "jsnext:main": "dist/magic-string.es.js",
+  "module": "dist/magic-string.es.mjs",
+  "jsnext:main": "dist/magic-string.es.mjs",
   "typings": "index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/magic-string.es.mjs",
+      "require": "./dist/magic-string.cjs.js"
+    }
+  },
   "license": "MIT",
   "dependencies": {
     "sourcemap-codec": "^1.4.4"

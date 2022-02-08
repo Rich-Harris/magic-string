@@ -15,7 +15,7 @@ export default [
 		external: ['sourcemap-codec'],
 		plugins,
 		output: {
-			file: 'dist/magic-string.es.js',
+			file: 'dist/magic-string.es.mjs',
 			format: 'es',
 			exports: 'named',
 			sourcemap: true
