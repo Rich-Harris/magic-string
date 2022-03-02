@@ -311,9 +311,9 @@ export default class MagicString {
 		if (newLeft) newLeft.next = first;
 		if (newRight) newRight.previous = last;
 
-		if (!first.previous) this.firstChunk = last.next;
+		if (!first.previous) this.firstChunk = oldRight;
 		if (!last.next) {
-			this.lastChunk = first.previous;
+			this.lastChunk = oldLeft;
 			this.lastChunk.next = null;
 		}
 
@@ -324,6 +324,57 @@ export default class MagicString {
 		if (!newRight) this.lastChunk = last;
 
 		if (DEBUG) this.stats.timeEnd('move');
+		return this;
+	}
+
+	copy(start, end, index) {
+		if (DEBUG) this.stats.time('copy');
+
+		this._split(start);
+		this._split(end);
+		this._split(index);
+
+		const first = this.byStart[start];
+		const last = this.byEnd[end];
+
+		const newRight = this.byStart[index];
+		if (!newRight && last === this.lastChunk) return this;
+		const newLeft = newRight ? newRight.previous : this.lastChunk;
+
+		const duplicates = [first.clone()];
+		if (first !== last) {
+			let lastOld = first;
+			let lastDuped = duplicates[duplicates.length - 1];
+			while (true) {
+				const nextOld = lastOld.next;
+				const nextDuped = nextOld.clone();
+
+				lastDuped.next = nextDuped;
+				nextDuped.previous = lastDuped;
+
+				duplicates.push(nextDuped);
+
+				if (nextOld === last) break;
+				lastOld = nextOld;
+				lastDuped = nextDuped;
+			}
+		}
+		if (DEBUG) {
+			duplicates.forEach(dupe => dupe.isCopy = true);
+		}
+		const newFirst = duplicates[0];
+		const newLast = duplicates[duplicates.length - 1];
+
+		if (newLeft) newLeft.next = newFirst;
+		newFirst.previous = newLeft;
+
+		if (newRight) newRight.previous = newLast;
+		newLast.next = newRight || null;
+
+		if (!newLeft) this.firstChunk = newFirst;
+		if (!newRight) this.lastChunk = newLast;
+
+		if (DEBUG) this.stats.timeEnd('copy');
 		return this;
 	}
 

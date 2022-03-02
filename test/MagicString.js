@@ -721,6 +721,130 @@ describe('MagicString', () => {
 		});
 	});
 
+	describe('copy', () => {
+		it('copies characters', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			assert.equal(s.toString(), 'abcDEFghiDEFjkl');
+		});
+
+		it('copies to the beginning', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 0);
+			assert.equal(s.toString(), 'DEFabcDEFghijkl');
+		});
+
+		it('copies to the end', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 12);
+			assert.equal(s.toString(), 'abcDEFghijklDEF');
+		});
+
+		it('allows pasting selection into itself', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 4);
+			assert.equal(s.toString(), 'abcDDEFEFghijkl');
+		});
+
+		it('puts multiple insertions in the same place in the order they were inserted', () => {
+			const s = new MagicString('ABcDEfghijkl');
+
+			s.copy(3, 5, 9);
+			s.copy(0, 2, 9);
+			assert.equal(s.toString(), 'ABcDEfghiDEABjkl');
+		});
+
+		it('carries over append made beforehand at beginning of selection', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.appendRight(3, 'x');
+			s.copy(3, 6, 9);
+			assert.equal(s.toString(), 'abcxDEFghixDEFjkl');
+		});
+
+		it('carries over append made beforehand at end of selection', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.appendLeft(6, 'x');
+			s.copy(3, 6, 9);
+			assert.equal(s.toString(), 'abcDEFxghiDEFxjkl');
+		});
+
+		it('carries over overwrite made beforehand in middle of selection', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.overwrite(4, 5, 'xy');
+			s.copy(3, 6, 9);
+			assert.equal(s.toString(), 'abcDxyFghiDxyFjkl');
+		});
+
+		it('does not carry over changes made after copy', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			s.overwrite(4, 5, 'xy');
+			s.appendRight(4, 'a');
+			s.appendLeft(5, 'b');
+			assert.equal(s.toString(), 'abcDaxybFghiDEFjkl');
+		});
+
+		it('does not carry over changes next to the selection', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.appendRight(6, 'x');
+			s.overwrite(2, 3, 'foo');
+			s.appendLeft(3, 'y');
+			s.copy(3, 6, 9);
+			assert.equal(s.toString(), 'abfooyDEFxghiDEFjkl');
+		});
+
+		it('cannot insert into an overwritten area', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.overwrite(8, 10, 'foo');
+			assert.throws(() => s.copy(3, 6, 9), /Cannot split a chunk that has already been edited/);
+		});
+
+		it('cannot copy part of overwritten area', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.overwrite(2, 5, 'foo');
+			assert.throws(() => s.copy(3, 6, 9), /Cannot split a chunk that has already been edited/);
+		});
+
+		it('cannot overwrite area where something was inserted', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			assert.throws(() => s.overwrite(8, 10, 'foo'), /Cannot overwrite across a split point/);
+		});
+
+		it('can overwrite area from where something was copied', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			s.overwrite(2, 5, 'foo');
+			assert.equal(s.toString(), 'abfooFghiDEFjkl');
+		});
+
+		it('can surround inserted area by copy region', () => {
+			const s = new MagicString('abcDEFghijkl');
+
+			s.copy(3, 6, 9);
+			s.copy(8, 10, 11);
+			assert.equal(s.toString(), 'abcDEFghiDEFjkiDEFjl');
+		});
+
+		it('returns this', () => {
+			const s = new MagicString('abcdefghijkl');
+			assert.strictEqual(s.copy(3, 6, 9), s);
+		});
+	});
+
 	describe('overwrite', () => {
 		it('should replace characters', () => {
 			const s = new MagicString('abcdefghijkl');

@@ -95,6 +95,16 @@ Appends the specified `content` at the `index` in the original string. If a rang
 
 Does what you'd expect.
 
+### s.copy( start, end, index )
+
+Copies the characters from `start` to `end` to `index`, keeping the original characters in place.
+
+Note a caveat: if you make any changes to the area you'll copy later (appendLeft/Right, overwrite), the changes are carried over to the new region as well. However, any changes you make afterwards are only made to the original area. 
+
+Returns `this`.
+
+_Implementation detail: the created duplicate segments aren't added to the `byStart`/`byEnd` indexes - the original chunks stay there, so there's pretty much no way to address the created (copied) characters for appends etc. They are only reachable by the `.next`/`.previous` chains, and eventually as first/last chunk. Please don't do insane things and everything will keep working as you can expect._
+
 ### s.generateDecodedMap( options )
 
 Generates a sourcemap object with raw mappings in array form, rather than encoded as a string. See `generateMap` documentation below for options details. Useful if you need to manipulate the sourcemap further, but most of the time you will use `generateMap` instead.

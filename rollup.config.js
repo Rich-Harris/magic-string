@@ -5,7 +5,7 @@ import replace from 'rollup-plugin-replace';
 const plugins = [
 	buble({ exclude: 'node_modules/**' }),
 	nodeResolve(),
-	replace({ DEBUG: false })
+	replace({ DEBUG: !!process.env.DEBUG })
 ];
 
 export default [

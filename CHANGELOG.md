@@ -1,8 +1,13 @@
 # magic-string changelog
 
+## 0.26.0 (unreleased)
+
+* Add a new method `MagicString.copy(start, end, index)`, which works like `.move()`, but
+also keeps the original code in place. See Readme for caveats ([#193](https://github.com/Rich-Harris/magic-string/pull/193))
+
 ## 0.25.7
 
-* fix bundle mappings after remove and move in multiple sources ([#172](https://github.com/Rich-Harris/magic-string/issues/172))
+* Fix bundle mappings after remove and move in multiple sources ([#172](https://github.com/Rich-Harris/magic-string/issues/172))
 
 ## 0.25.6
 
