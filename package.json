@@ -42,7 +42,7 @@
     "lint": "eslint src test",
     "watch": "rollup -cw",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "release": "bumpp -x \"npm run changelog\" --commit --tag --push"
+    "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish"
   },
   "files": [
     "dist/*",
