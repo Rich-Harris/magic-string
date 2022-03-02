@@ -495,6 +495,32 @@ var template = (function () {
 				column: 16
 			});
 		});
+
+		it('supports a function for includeContent', () => {
+			const b = new MagicString.Bundle();
+
+			const files = {
+				'one.js': new MagicString('function one () {}', { filename: 'one.js' }),
+				'two.js': new MagicString('function two () {}', { filename: 'two.js' }),
+			};
+
+			b.addSource(files['one.js']);
+			b.addSource(files['two.js']);
+
+			const map = b.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent(source) {
+					assert.ok(files[source.filename]);
+					assert.equal(files[source.filename].original, source.content);
+
+					return source.filename === 'one.js';
+				}
+			});
+
+			assert.equal(map.sourcesContent[0], files['one.js'].original);
+			assert.equal(map.sourcesContent[1], null);
+		});
 	});
 
 	describe('indent', () => {

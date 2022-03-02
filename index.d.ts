@@ -10,6 +10,16 @@ export interface SourceMapOptions {
   includeContent: boolean;
 }
 
+
+export interface BundledSourceFileRecord {
+  filename: string | null;
+  content: string;
+}
+
+export interface BundleSourceMapOptions extends SourceMapOptions {
+  includeContent: boolean | ((source: BundledSourceFileRecord) => boolean);
+}
+
 export type SourceMapSegment =
   | [number]
   | [number, number, number, number]
@@ -42,8 +52,8 @@ export class Bundle {
   addSource(source: MagicString | { filename?: string, content: MagicString }): Bundle;
   append(str: string, options?: BundleOptions): Bundle;
   clone(): Bundle;
-  generateMap(options?: Partial<SourceMapOptions>): SourceMap;
-  generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
+  generateMap(options?: Partial<BundleSourceMapOptions>): SourceMap;
+  generateDecodedMap(options?: Partial<BundleSourceMapOptions>): DecodedSourceMap;
   getIndentString(): string;
   indent(indentStr?: string): Bundle;
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
