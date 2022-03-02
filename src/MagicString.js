@@ -372,21 +372,16 @@ export default class MagicString {
 		const last = this.byEnd[end];
 
 		if (first) {
-			if (end > first.end && first.next !== this.byStart[first.end]) {
-				throw new Error('Cannot overwrite across a split point');
+			let chunk = first;
+			while (chunk !== last) {
+				if (chunk.next !== this.byStart[chunk.end]) {
+					throw new Error('Cannot overwrite across a split point');
+				}
+				chunk = chunk.next;
+				chunk.edit('', false);
 			}
 
 			first.edit(content, storeName, contentOnly);
-
-			if (first !== last) {
-				let chunk = first.next;
-				while (chunk !== last) {
-					chunk.edit('', false);
-					chunk = chunk.next;
-				}
-
-				chunk.edit('', false);
-			}
 		} else {
 			// must be inserting at the end
 			const newChunk = new Chunk(start, end, '').edit(content, storeName);
