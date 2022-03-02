@@ -38,32 +38,34 @@ To use in browser, grab the [magic-string.umd.js](https://unpkg.com/magic-string
 These examples assume you're in node.js, or something similar:
 
 ```js
-var MagicString = require( 'magic-string' );
-var s = new MagicString( 'problems = 99' );
+import MagicString from 'magic-string';
+import fs from 'fs'
 
-s.overwrite( 0, 8, 'answer' );
+const s = new MagicString('problems = 99');
+
+s.overwrite(0, 8, 'answer');
 s.toString(); // 'answer = 99'
 
-s.overwrite( 11, 13, '42' ); // character indices always refer to the original string
+s.overwrite(11, 13, '42'); // character indices always refer to the original string
 s.toString(); // 'answer = 42'
 
-s.prepend( 'var ' ).append( ';' ); // most methods are chainable
+s.prepend('var ').append(';'); // most methods are chainable
 s.toString(); // 'var answer = 42;'
 
-var map = s.generateMap({
+const map = s.generateMap({
   source: 'source.js',
   file: 'converted.js.map',
   includeContent: true
 }); // generates a v3 sourcemap
 
-require( 'fs' ).writeFile( 'converted.js', s.toString() );
-require( 'fs' ).writeFile( 'converted.js.map', map.toString() );
+fs.writeFileSync('converted.js', s.toString());
+fs.writeFileSync('converted.js.map', map.toString());
 ```
 
 You can pass an options argument:
 
 ```js
-var s = new MagicString( someCode, {
+const s = new MagicString(someCode, {
   // both these options will be used if you later
   // call `bundle.addSource( s )` - see below
   filename: 'foo.js',
@@ -200,16 +202,16 @@ Returns true if the resulting source is empty (disregarding white space).
 To concatenate several sources, use `MagicString.Bundle`:
 
 ```js
-var bundle = new MagicString.Bundle();
+const bundle = new MagicString.Bundle();
 
 bundle.addSource({
   filename: 'foo.js',
-  content: new MagicString( 'var answer = 42;' )
+  content: new MagicString('var answer = 42;')
 });
 
 bundle.addSource({
   filename: 'bar.js',
-  content: new MagicString( 'console.log( answer )' )
+  content: new MagicString('console.log( answer )')
 });
 
 // Advanced: a source can include an `indentExclusionRanges` property
@@ -217,8 +219,8 @@ bundle.addSource({
 // - see documentation above
 
 bundle.indent() // optionally, pass an indent string, otherwise it will be guessed
-  .prepend( '(function () {\n' )
-  .append( '}());' );
+  .prepend('(function () {\n')
+  .append('}());');
 
 bundle.toString();
 // (function () {
@@ -227,7 +229,7 @@ bundle.toString();
 // }());
 
 // options are as per `s.generateMap()` above
-var map = bundle.generateMap({
+const map = bundle.generateMap({
   file: 'bundle.js',
   includeContent: true,
   hires: true
@@ -237,12 +239,12 @@ var map = bundle.generateMap({
 As an alternative syntax, if you a) don't have `filename` or `indentExclusionRanges` options, or b) passed those in when you used `new MagicString(...)`, you can simply pass the `MagicString` instance itself:
 
 ```js
-var bundle = new MagicString.Bundle();
-var source = new MagicString( someCode, {
+const bundle = new MagicString.Bundle();
+const source = new MagicString(someCode, {
   filename: 'foo.js'
 });
 
-bundle.addSource( source );
+bundle.addSource(source);
 ```
 
 ## License

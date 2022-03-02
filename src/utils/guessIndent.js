@@ -1,8 +1,8 @@
 export default function guessIndent(code) {
 	const lines = code.split('\n');
 
-	const tabbed = lines.filter(line => /^\t+/.test(line));
-	const spaced = lines.filter(line => /^ {2,}/.test(line));
+	const tabbed = lines.filter((line) => /^\t+/.test(line));
+	const spaced = lines.filter((line) => /^ {2,}/.test(line));
 
 	if (tabbed.length === 0 && spaced.length === 0) {
 		return null;
