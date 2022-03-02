@@ -1,4 +1,3 @@
-# magic-string changelog
 
 ## 0.25.7
 
