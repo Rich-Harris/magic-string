@@ -1,14 +1,38 @@
 {
   "name": "magic-string",
-  "description": "Modify strings, generate sourcemaps",
-  "author": "Rich Harris",
   "version": "0.25.8",
+  "description": "Modify strings, generate sourcemaps",
+  "keywords": [
+    "string",
+    "string manipulation",
+    "sourcemap",
+    "templating",
+    "transpilation"
+  ],
   "repository": "https://github.com/rich-harris/magic-string",
+  "license": "MIT",
+  "author": "Rich Harris",
   "main": "dist/magic-string.cjs.js",
   "module": "dist/magic-string.es.js",
   "jsnext:main": "dist/magic-string.es.js",
   "typings": "index.d.ts",
-  "license": "MIT",
+  "files": [
+    "dist/*",
+    "index.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
+    "lint": "eslint src test",
+    "prepare": "npm run build",
+    "prepublishOnly": "rm -rf dist && npm test",
+    "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
+    "pretest": "npm run lint && npm run build",
+    "test": "mocha",
+    "watch": "rollup -cw"
+  },
   "dependencies": {
     "sourcemap-codec": "^1.4.8"
   },
@@ -24,29 +48,5 @@
     "rollup": "^2.69.0",
     "source-map": "^0.6.1",
     "source-map-support": "^0.5.21"
-  },
-  "keywords": [
-    "string",
-    "string manipulation",
-    "sourcemap",
-    "templating",
-    "transpilation"
-  ],
-  "scripts": {
-    "test": "mocha",
-    "pretest": "npm run lint && npm run build",
-    "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
-    "build": "rollup -c",
-    "prepare": "npm run build",
-    "prepublishOnly": "rm -rf dist && npm test",
-    "lint": "eslint src test",
-    "watch": "rollup -cw",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish"
-  },
-  "files": [
-    "dist/*",
-    "index.d.ts",
-    "README.md"
-  ]
+  }
 }
