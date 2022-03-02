@@ -12,19 +12,19 @@ export interface SourceMapOptions {
    * line - but they're quicker to generate and less bulky.
    * If sourcemap locations have been specified with s.addSourceMapLocation(), they will be used here.
    */
-  hires: boolean;
+  hires?: boolean;
   /**
    * The filename where you plan to write the sourcemap.
    */
-  file: string;
+  file?: string;
   /**
    * The filename of the file containing the original source.
    */
-  source: string;
+  source?: string;
   /**
    * Whether to include the original content in the map's sourcesContent array.
    */
-  includeContent: boolean;
+  includeContent?: boolean;
 }
 
 export type SourceMapSegment =
@@ -56,7 +56,7 @@ export class SourceMap {
   toString(): string;
   /**
    * Returns a DataURI containing the sourcemap. Useful for doing this sort of thing:
-   * `generateMap(options?: Partial<SourceMapOptions>): SourceMap;`
+   * `generateMap(options?: SourceMapOptions): SourceMap;`
    */
   toUrl(): string;
 }
@@ -66,8 +66,8 @@ export class Bundle {
   addSource(source: MagicString | { filename?: string, content: MagicString }): Bundle;
   append(str: string, options?: BundleOptions): Bundle;
   clone(): Bundle;
-  generateMap(options?: Partial<SourceMapOptions>): SourceMap;
-  generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
+  generateMap(options?: SourceMapOptions): SourceMap;
+  generateDecodedMap(options?: SourceMapOptions): DecodedSourceMap;
   getIndentString(): string;
   indent(indentStr?: string): Bundle;
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
@@ -84,13 +84,13 @@ export class Bundle {
 export type ExclusionRange = [ number, number ];
 
 export interface MagicStringOptions {
-  filename: string,
-  indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
+  filename?: string,
+  indentExclusionRanges?: ExclusionRange | Array<ExclusionRange>;
 }
 
 export interface IndentOptions {
-  exclude: ExclusionRange | Array<ExclusionRange>;
-  indentStart: boolean;
+  exclude?: ExclusionRange | Array<ExclusionRange>;
+  indentStart?: boolean;
 }
 
 export interface OverwriteOptions {
@@ -99,7 +99,7 @@ export interface OverwriteOptions {
 }
 
 export default class MagicString {
-  constructor(str: string, options?: Partial<MagicStringOptions>);
+  constructor(str: string, options?: MagicStringOptions);
   /**
    * Adds the specified character index (with respect to the original string) to sourcemap mappings, if `hires` is false.
    */
@@ -127,12 +127,12 @@ export default class MagicString {
   /**
    * Generates a version 3 sourcemap.
    */
-  generateMap(options?: Partial<SourceMapOptions>): SourceMap;
+  generateMap(options?: SourceMapOptions): SourceMap;
   /**
    * Generates a sourcemap object with raw mappings in array form, rather than encoded as a string.
    * Useful if you need to manipulate the sourcemap further, but most of the time you will use `generateMap` instead.
    */
-  generateDecodedMap(options?: Partial<SourceMapOptions>): DecodedSourceMap;
+  generateDecodedMap(options?: SourceMapOptions): DecodedSourceMap;
   getIndentString(): string;
 
   /**
