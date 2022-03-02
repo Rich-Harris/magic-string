@@ -204,6 +204,10 @@ export default class MagicString {
    * Removes empty lines from the start and end.
    */
   trimLines(): MagicString;
+  /**
+   * String replacement with RegExp or string.
+   */
+  replace(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): MagicString;
 
   lastChar(): string;
   lastLine(): string;
