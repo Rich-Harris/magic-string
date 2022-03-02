@@ -99,7 +99,7 @@ export interface OverwriteOptions {
 }
 
 export default class MagicString {
-  constructor(str: string, options?: MagicStringOptions);
+  constructor(str: string, options?: Partial<MagicStringOptions>);
   /**
    * Adds the specified character index (with respect to the original string) to sourcemap mappings, if `hires` is false.
    */

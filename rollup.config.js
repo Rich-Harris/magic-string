@@ -1,10 +1,10 @@
 import buble from 'rollup-plugin-buble';
-import resolve from 'rollup-plugin-node-resolve';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from 'rollup-plugin-replace';
 
 const plugins = [
 	buble({ exclude: 'node_modules/**' }),
-	resolve(),
+	nodeResolve(),
 	replace({ DEBUG: false })
 ];
 
