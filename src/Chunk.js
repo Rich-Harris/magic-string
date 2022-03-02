@@ -14,7 +14,7 @@ export default class Chunk {
 		// we make these non-enumerable, for sanity while debugging
 		Object.defineProperties(this, {
 			previous: { writable: true, value: null },
-			next:     { writable: true, value: null }
+			next: { writable: true, value: null },
 		});
 	}
 
@@ -124,7 +124,6 @@ export default class Chunk {
 				this.split(this.start + trimmed.length).edit('', undefined, true);
 			}
 			return true;
-
 		} else {
 			this.edit('', undefined, true);
 
@@ -145,7 +144,6 @@ export default class Chunk {
 				this.edit('', undefined, true);
 			}
 			return true;
-
 		} else {
 			this.edit('', undefined, true);
 

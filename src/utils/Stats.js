@@ -1,7 +1,7 @@
 export default class Stats {
 	constructor() {
 		Object.defineProperties(this, {
-			startTimes: { value: {} }
+			startTimes: { value: {} },
 		});
 	}
 

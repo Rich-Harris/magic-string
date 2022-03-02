@@ -1,4 +1,12 @@
-# magic-string changelog
+## [0.25.8](https://github.com/rich-harris/magic-string/compare/v0.25.7...v0.25.8) (2022-03-02)
+
+
+### Bug Fixes
+
+* **types:** mark `MagicString` options as optional ([#183](https://github.com/rich-harris/magic-string/issues/183)) ([15c3e66](https://github.com/rich-harris/magic-string/commit/15c3e6691a2cce79d5298af15fd8a2b02facef88))
+
+
+
 
 ## 0.25.7
 
