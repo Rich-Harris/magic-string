@@ -13,7 +13,7 @@ const n = '\n';
 const warned = {
 	insertLeft: false,
 	insertRight: false,
-	storeName: false
+	storeName: false,
 };
 
 export default class MagicString {
@@ -21,19 +21,19 @@ export default class MagicString {
 		const chunk = new Chunk(0, string.length, string);
 
 		Object.defineProperties(this, {
-			original:              { writable: true, value: string },
-			outro:                 { writable: true, value: '' },
-			intro:                 { writable: true, value: '' },
-			firstChunk:            { writable: true, value: chunk },
-			lastChunk:             { writable: true, value: chunk },
-			lastSearchedChunk:     { writable: true, value: chunk },
-			byStart:               { writable: true, value: {} },
-			byEnd:                 { writable: true, value: {} },
-			filename:              { writable: true, value: options.filename },
+			original: { writable: true, value: string },
+			outro: { writable: true, value: '' },
+			intro: { writable: true, value: '' },
+			firstChunk: { writable: true, value: chunk },
+			lastChunk: { writable: true, value: chunk },
+			lastSearchedChunk: { writable: true, value: chunk },
+			byStart: { writable: true, value: {} },
+			byEnd: { writable: true, value: {} },
+			filename: { writable: true, value: options.filename },
 			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
-			sourcemapLocations:    { writable: true, value: new BitSet() },
-			storedNames:           { writable: true, value: {} },
-			indentStr:             { writable: true, value: guessIndent(string) }
+			sourcemapLocations: { writable: true, value: new BitSet() },
+			storedNames: { writable: true, value: {} },
+			indentStr: { writable: true, value: guessIndent(string) },
 		});
 
 		if (DEBUG) {
@@ -143,7 +143,7 @@ export default class MagicString {
 			mappings.advance(this.intro);
 		}
 
-		this.firstChunk.eachNext(chunk => {
+		this.firstChunk.eachNext((chunk) => {
 			const loc = locate(chunk.start);
 
 			if (chunk.intro.length) mappings.advance(chunk.intro);
@@ -167,7 +167,7 @@ export default class MagicString {
 			sources: [options.source ? getRelativePath(options.file || '', options.source) : null],
 			sourcesContent: options.includeContent ? [this.original] : [null],
 			names,
-			mappings: mappings.raw
+			mappings: mappings.raw,
 		};
 	}
 
@@ -199,7 +199,7 @@ export default class MagicString {
 		if (options.exclude) {
 			const exclusions =
 				typeof options.exclude[0] === 'number' ? [options.exclude] : options.exclude;
-			exclusions.forEach(exclusion => {
+			exclusions.forEach((exclusion) => {
 				for (let i = exclusion[0]; i < exclusion[1]; i += 1) {
 					isExcluded[i] = true;
 				}
@@ -207,7 +207,7 @@ export default class MagicString {
 		}
 
 		let shouldIndentNextCharacter = options.indentStart !== false;
-		const replacer = match => {
+		const replacer = (match) => {
 			if (shouldIndentNextCharacter) return `${indentStr}${match}`;
 			shouldIndentNextCharacter = true;
 			return match;
@@ -265,12 +265,16 @@ export default class MagicString {
 	}
 
 	insert() {
-		throw new Error('magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)');
+		throw new Error(
+			'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)'
+		);
 	}
 
 	insertLeft(index, content) {
 		if (!warned.insertLeft) {
-			console.warn('magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead'); // eslint-disable-line no-console
+			console.warn(
+				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead'
+			); // eslint-disable-line no-console
 			warned.insertLeft = true;
 		}
 
@@ -279,7 +283,9 @@ export default class MagicString {
 
 	insertRight(index, content) {
 		if (!warned.insertRight) {
-			console.warn('magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead'); // eslint-disable-line no-console
+			console.warn(
+				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead'
+			); // eslint-disable-line no-console
 			warned.insertRight = true;
 		}
 
@@ -335,7 +341,9 @@ export default class MagicString {
 
 		if (end > this.original.length) throw new Error('end is out of bounds');
 		if (start === end)
-			throw new Error('Cannot overwrite a zero-length range – use appendLeft or prependRight instead');
+			throw new Error(
+				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead'
+			);
 
 		if (DEBUG) this.stats.time('overwrite');
 
@@ -344,7 +352,9 @@ export default class MagicString {
 
 		if (options === true) {
 			if (!warned.storeName) {
-				console.warn('The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string'); // eslint-disable-line no-console
+				console.warn(
+					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string'
+				); // eslint-disable-line no-console
 				warned.storeName = true;
 			}
 
@@ -464,53 +474,43 @@ export default class MagicString {
 	}
 
 	lastChar() {
-		if (this.outro.length)
-			return this.outro[this.outro.length - 1];
+		if (this.outro.length) return this.outro[this.outro.length - 1];
 		let chunk = this.lastChunk;
 		do {
-			if (chunk.outro.length)
-				return chunk.outro[chunk.outro.length - 1];
-			if (chunk.content.length)
-				return chunk.content[chunk.content.length - 1];
-			if (chunk.intro.length)
-				return chunk.intro[chunk.intro.length - 1];
-		} while (chunk = chunk.previous);
-		if (this.intro.length)
-			return this.intro[this.intro.length - 1];
+			if (chunk.outro.length) return chunk.outro[chunk.outro.length - 1];
+			if (chunk.content.length) return chunk.content[chunk.content.length - 1];
+			if (chunk.intro.length) return chunk.intro[chunk.intro.length - 1];
+		} while ((chunk = chunk.previous));
+		if (this.intro.length) return this.intro[this.intro.length - 1];
 		return '';
 	}
 
 	lastLine() {
 		let lineIndex = this.outro.lastIndexOf(n);
-		if (lineIndex !== -1)
-			return this.outro.substr(lineIndex + 1);
+		if (lineIndex !== -1) return this.outro.substr(lineIndex + 1);
 		let lineStr = this.outro;
 		let chunk = this.lastChunk;
 		do {
 			if (chunk.outro.length > 0) {
 				lineIndex = chunk.outro.lastIndexOf(n);
-				if (lineIndex !== -1)
-					return chunk.outro.substr(lineIndex + 1) + lineStr;
+				if (lineIndex !== -1) return chunk.outro.substr(lineIndex + 1) + lineStr;
 				lineStr = chunk.outro + lineStr;
 			}
 
 			if (chunk.content.length > 0) {
 				lineIndex = chunk.content.lastIndexOf(n);
-				if (lineIndex !== -1)
-					return chunk.content.substr(lineIndex + 1) + lineStr;
+				if (lineIndex !== -1) return chunk.content.substr(lineIndex + 1) + lineStr;
 				lineStr = chunk.content + lineStr;
 			}
 
 			if (chunk.intro.length > 0) {
 				lineIndex = chunk.intro.lastIndexOf(n);
-				if (lineIndex !== -1)
-					return chunk.intro.substr(lineIndex + 1) + lineStr;
+				if (lineIndex !== -1) return chunk.intro.substr(lineIndex + 1) + lineStr;
 				lineStr = chunk.intro + lineStr;
 			}
-		} while (chunk = chunk.previous);
+		} while ((chunk = chunk.previous));
 		lineIndex = this.intro.lastIndexOf(n);
-		if (lineIndex !== -1)
-			return this.intro.substr(lineIndex + 1) + lineStr;
+		if (lineIndex !== -1) return this.intro.substr(lineIndex + 1) + lineStr;
 		return this.intro + lineStr;
 	}
 
@@ -592,9 +592,7 @@ export default class MagicString {
 			// zero-length edited chunks are a special case (overlapping replacements)
 			const loc = getLocator(this.original)(index);
 			throw new Error(
-				`Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${
-					chunk.original
-				}")`
+				`Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")`
 			);
 		}
 
@@ -626,11 +624,13 @@ export default class MagicString {
 	isEmpty() {
 		let chunk = this.firstChunk;
 		do {
-			if (chunk.intro.length && chunk.intro.trim() ||
-					chunk.content.length && chunk.content.trim() ||
-					chunk.outro.length && chunk.outro.trim())
+			if (
+				(chunk.intro.length && chunk.intro.trim()) ||
+				(chunk.content.length && chunk.content.trim()) ||
+				(chunk.outro.length && chunk.outro.trim())
+			)
 				return false;
-		} while (chunk = chunk.next);
+		} while ((chunk = chunk.next));
 		return true;
 	}
 
@@ -639,7 +639,7 @@ export default class MagicString {
 		let length = 0;
 		do {
 			length += chunk.intro.length + chunk.content.length + chunk.outro.length;
-		} while (chunk = chunk.next);
+		} while ((chunk = chunk.next));
 		return length;
 	}
 
