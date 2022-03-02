@@ -30,7 +30,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node_version }}
-          cache: "pnpm"
 
       - name: Install
         run: npm i
