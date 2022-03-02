@@ -117,6 +117,10 @@ The returned sourcemap has two (non-enumerable) methods attached for convenience
 code += '\n//# sourceMappingURL=' + map.toUrl();
 ```
 
+### s.hasChanged()
+
+Indicates if the string has been changed.
+
 ### s.indent( prefix[, options] )
 
 Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the indentation will be guessed from the original content, falling back to a single tab character. Returns `this`.

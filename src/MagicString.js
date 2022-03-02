@@ -717,4 +717,8 @@ export default class MagicString {
 		this.trimStartAborted(charType);
 		return this;
 	}
+
+	hasChanged() {
+		return this.original !== this.toString();
+	}
 }

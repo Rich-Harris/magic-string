@@ -1262,4 +1262,24 @@ describe('MagicString', () => {
 			assert.equal(s.lastLine(), '//lastline');
 		});
 	});
+
+	describe('hasChanged', () => {
+		it('should works', () => {
+			const s = new MagicString(' abcde   fghijkl ');
+
+			assert.ok(!s.hasChanged());
+		
+			assert.ok(s.clone().prepend('  ').hasChanged());
+			assert.ok(s.clone().overwrite(1, 2, 'b').hasChanged());
+			assert.ok(s.clone().remove(1, 6).hasChanged());
+
+			s.trim();
+
+			assert.ok(s.hasChanged());
+
+			const clone = s.clone();
+
+			assert.ok(clone.hasChanged());
+		});
+	});
 });
