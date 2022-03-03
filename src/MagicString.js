@@ -715,7 +715,7 @@ export default class MagicString {
 
 	hasChanged() {
 		return this.original !== this.toString();
-  }
+	}
 
 	replace(searchValue, replacement) {
 		function getReplacement(match) {

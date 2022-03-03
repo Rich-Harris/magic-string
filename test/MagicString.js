@@ -1295,8 +1295,8 @@ describe('MagicString', () => {
 			const clone = s.clone();
 
 			assert.ok(clone.hasChanged());
-    });
-  });
+		});
+	});
   
 	describe('replace', () => {
 		it('works with string replace', () => {
