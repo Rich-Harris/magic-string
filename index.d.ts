@@ -217,6 +217,11 @@ export default class MagicString {
   isEmpty(): boolean;
   length(): number;
 
+  /**
+   * Indicates if the string has been changed.
+   */
+  hasChanged(): boolean;
+
   original: string;
   /**
    * Returns the generated string.

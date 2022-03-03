@@ -713,6 +713,10 @@ export default class MagicString {
 		return this;
 	}
 
+	hasChanged() {
+		return this.original !== this.toString();
+	}
+
 	replace(searchValue, replacement) {
 		function getReplacement(match) {
 			if (typeof replacement === 'string') {
