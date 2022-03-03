@@ -1,5 +1,21 @@
 # [0.26.0](https://github.com/rich-harris/magic-string/compare/v0.25.9...v0.26.0) (2022-03-03)
 
+## BREAKING CHANGES
+
+* Support of Node.js v10 is dropped. Now `magic-string` requires Node.js v12 or higher. ([#204](https://github.com/Rich-Harris/magic-string/pull/204))
+* ESM bundle is now shipped with `.mjs` extension ([#197](https://github.com/Rich-Harris/magic-string/pull/197))
+
+```diff
+-  "module": "dist/magic-string.es.js",
++  "module": "dist/magic-string.es.mjs",
++  "exports": {
++    "./package.json": "./package.json",
++    ".": {
++      "import": "./dist/magic-string.es.mjs",
++      "require": "./dist/magic-string.cjs.js"
++    }
++  },
+```
 
 ### Features
 
