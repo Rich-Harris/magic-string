@@ -174,7 +174,7 @@ import MagicString from 'magic-string'
 
 const s = new MagicString(source)
 
-s.replace(foo, 'bar')
+s.replace('foo', 'bar')
 s.replace(/foo/g, 'bar')
 s.replace(/(\w)(\d+)/g, (_, $1, $2) => $1.toUpperCase() + $2)
 ```
