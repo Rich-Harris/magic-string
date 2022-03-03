@@ -4,9 +4,9 @@ let btoa = () => {
 	throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
 };
 if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
-	btoa = str => window.btoa(unescape(encodeURIComponent(str)));
+	btoa = (str) => window.btoa(unescape(encodeURIComponent(str)));
 } else if (typeof Buffer === 'function') {
-	btoa = str => Buffer.from(str, 'utf-8').toString('base64');
+	btoa = (str) => Buffer.from(str, 'utf-8').toString('base64');
 }
 
 export default class SourceMap {
