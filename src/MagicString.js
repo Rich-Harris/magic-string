@@ -365,7 +365,11 @@ export default class MagicString {
 
 		if (storeName) {
 			const original = this.original.slice(start, end);
-			Object.defineProperty(this.storedNames, original, { writable: true, value: true, enumerable: true });
+			Object.defineProperty(this.storedNames, original, {
+				writable: true,
+				value: true,
+				enumerable: true,
+			});
 		}
 
 		const first = this.byStart[start];
@@ -722,24 +726,20 @@ export default class MagicString {
 			if (typeof replacement === 'string') {
 				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
 					// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
-					if (i === '$')
-						return '$';
-					if (i === '&')
-						return match[0];
+					if (i === '$') return '$';
+					if (i === '&') return match[0];
 					const num = +i;
-					if (num < match.length)
-						return match[+i];
+					if (num < match.length) return match[+i];
 					return `$${i}`;
 				});
-			}
-			else {
+			} else {
 				return replacement(...match, match.index, str, match.groups);
 			}
 		}
 		function matchAll(re, str) {
 			let match;
 			const matches = [];
-			while (match = re.exec(str)) {
+			while ((match = re.exec(str))) {
 				matches.push(match);
 			}
 			return matches;
@@ -748,13 +748,20 @@ export default class MagicString {
 			const matches = matchAll(searchValue, this.original);
 			matches.forEach((match) => {
 				if (match.index != null)
-					this.overwrite(match.index, match.index + match[0].length, getReplacement(match, this.original));
+					this.overwrite(
+						match.index,
+						match.index + match[0].length,
+						getReplacement(match, this.original)
+					);
 			});
-		}
-		else {
+		} else {
 			const match = this.original.match(searchValue);
 			if (match && match.index != null)
-				this.overwrite(match.index, match.index + match[0].length, getReplacement(match, this.original));
+				this.overwrite(
+					match.index,
+					match.index + match[0].length,
+					getReplacement(match, this.original)
+				);
 		}
 		return this;
 	}
