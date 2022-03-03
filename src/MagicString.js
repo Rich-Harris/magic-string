@@ -58,6 +58,8 @@ export default class MagicString {
 	appendLeft(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
+		if (!content) return this;
+
 		if (DEBUG) this.stats.time('appendLeft');
 
 		this._split(index);
@@ -76,6 +78,8 @@ export default class MagicString {
 
 	appendRight(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
+
+		if (!content) return this;
 
 		if (DEBUG) this.stats.time('appendRight');
 
@@ -345,6 +349,11 @@ export default class MagicString {
 				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead'
 			);
 
+		const original = this.original.slice(start, end);
+
+		// skip for unmodified overrides
+		if (original === content) return this;
+
 		if (DEBUG) this.stats.time('overwrite');
 
 		this._split(start);
@@ -364,7 +373,6 @@ export default class MagicString {
 		const contentOnly = options !== undefined ? options.contentOnly : false;
 
 		if (storeName) {
-			const original = this.original.slice(start, end);
 			Object.defineProperty(this.storedNames, original, {
 				writable: true,
 				value: true,
@@ -409,6 +417,8 @@ export default class MagicString {
 	prependLeft(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
+		if (!content) return this;
+
 		if (DEBUG) this.stats.time('insertRight');
 
 		this._split(index);
@@ -427,6 +437,8 @@ export default class MagicString {
 
 	prependRight(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
+
+		if (!content) return this;
 
 		if (DEBUG) this.stats.time('insertRight');
 
