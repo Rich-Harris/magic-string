@@ -21,15 +21,17 @@ export default class Bundle {
 			return this.addSource({
 				content: source,
 				filename: source.filename,
-				separator: this.separator
+				separator: this.separator,
 			});
 		}
 
 		if (!isObject(source) || !source.content) {
-			throw new Error('bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`');
+			throw new Error(
+				'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`'
+			);
 		}
 
-		['filename', 'indentExclusionRanges', 'separator'].forEach(option => {
+		['filename', 'indentExclusionRanges', 'separator'].forEach((option) => {
 			if (!hasOwnProp.call(source, option)) source[option] = source.content[option];
 		});
 
@@ -57,7 +59,7 @@ export default class Bundle {
 	append(str, options) {
 		this.addSource({
 			content: new MagicString(str),
-			separator: (options && options.separator) || ''
+			separator: (options && options.separator) || '',
 		});
 
 		return this;
@@ -66,14 +68,14 @@ export default class Bundle {
 	clone() {
 		const bundle = new Bundle({
 			intro: this.intro,
-			separator: this.separator
+			separator: this.separator,
 		});
 
-		this.sources.forEach(source => {
+		this.sources.forEach((source) => {
 			bundle.addSource({
 				filename: source.filename,
 				content: source.content.clone(),
-				separator: source.separator
+				separator: source.separator,
 			});
 		});
 
@@ -82,8 +84,8 @@ export default class Bundle {
 
 	generateDecodedMap(options = {}) {
 		const names = [];
-		this.sources.forEach(source => {
-			Object.keys(source.content.storedNames).forEach(name => {
+		this.sources.forEach((source) => {
+			Object.keys(source.content.storedNames).forEach((name) => {
 				if (!~names.indexOf(name)) names.push(name);
 			});
 		});
@@ -107,7 +109,7 @@ export default class Bundle {
 				mappings.advance(magicString.intro);
 			}
 
-			magicString.firstChunk.eachNext(chunk => {
+			magicString.firstChunk.eachNext((chunk) => {
 				const loc = locate(chunk.start);
 
 				if (chunk.intro.length) mappings.advance(chunk.intro);
@@ -143,14 +145,14 @@ export default class Bundle {
 
 		return {
 			file: options.file ? options.file.split(/[/\\]/).pop() : null,
-			sources: this.uniqueSources.map(source => {
+			sources: this.uniqueSources.map((source) => {
 				return options.file ? getRelativePath(options.file, source.filename) : source.filename;
 			}),
-			sourcesContent: this.uniqueSources.map(source => {
+			sourcesContent: this.uniqueSources.map((source) => {
 				return options.includeContent ? source.content : null;
 			}),
 			names,
-			mappings: mappings.raw
+			mappings: mappings.raw,
 		};
 	}
 
@@ -161,7 +163,7 @@ export default class Bundle {
 	getIndentString() {
 		const indentStringCounts = {};
 
-		this.sources.forEach(source => {
+		this.sources.forEach((source) => {
 			const indentStr = source.content.indentStr;
 
 			if (indentStr === null) return;
@@ -192,7 +194,7 @@ export default class Bundle {
 
 			source.content.indent(indentStr, {
 				exclude: source.indentExclusionRanges,
-				indentStart //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+				indentStart, //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
 			});
 
 			trailingNewline = source.content.lastChar() === '\n';
@@ -227,16 +229,17 @@ export default class Bundle {
 		return this.intro + body;
 	}
 
-	isEmpty () {
-		if (this.intro.length && this.intro.trim())
-			return false;
-		if (this.sources.some(source => !source.content.isEmpty()))
-			return false;
+	isEmpty() {
+		if (this.intro.length && this.intro.trim()) return false;
+		if (this.sources.some((source) => !source.content.isEmpty())) return false;
 		return true;
 	}
 
 	length() {
-		return this.sources.reduce((length, source) => length + source.content.length(), this.intro.length);
+		return this.sources.reduce(
+			(length, source) => length + source.content.length(),
+			this.intro.length
+		);
 	}
 
 	trimLines() {

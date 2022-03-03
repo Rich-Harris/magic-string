@@ -25,6 +25,7 @@ class IntegrityCheckingMagicString extends MagicString {
 }
 
 for (const key in MagicString.prototype) {
+	// eslint-disable-next-line no-prototype-builtins
 	if (!MagicString.prototype.hasOwnProperty(key)) {
 		continue;
 	}
