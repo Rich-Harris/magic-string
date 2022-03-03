@@ -712,4 +712,46 @@ export default class MagicString {
 		this.trimStartAborted(charType);
 		return this;
 	}
+
+	replace(searchValue, replacement) {
+		function getReplacement(match) {
+			if (typeof replacement === 'string') {
+				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
+					// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
+					if (i === '$')
+						return '$';
+					if (i === '&')
+						return match[0];
+					const num = +i;
+					if (num < match.length)
+						return match[+i];
+					return `$${i}`;
+				});
+			}
+			else {
+				return replacement(...match);
+			}
+		}
+		function matchAll(re, str) {
+			let match;
+			const matches = [];
+			while (match = re.exec(str)) {
+				matches.push(match);
+			}
+			return matches;
+		}
+		if (typeof searchValue !== 'string' && searchValue.global) {
+			const matches = matchAll(searchValue, this.original);
+			matches.forEach((match) => {
+				if (match.index != null)
+					this.overwrite(match.index, match.index + match[0].length, getReplacement(match));
+			});
+		}
+		else {
+			const match = this.original.match(searchValue);
+			if (match && match.index != null)
+				this.overwrite(match.index, match.index + match[0].length, getReplacement(match));
+		}
+		return this;
+	}
 }

@@ -1277,4 +1277,40 @@ describe('MagicString', () => {
 			assert.equal(s.lastLine(), '//lastline');
 		});
 	});
+
+	describe('replace', () => {
+		it('works with string replace', () => {
+			const code = '1 2 1 2';
+			const s = new MagicString(code);
+
+			s.replace('2', '3');
+
+			assert.strictEqual(s.toString(), '1 3 1 2');
+		});
+
+		it('works with global regex replace', () => {
+			const s = new MagicString('1 2 3 4 a b c');
+
+			s.replace(/(\d)/g, 'xx$1$10');
+
+			assert.strictEqual(s.toString(), 'xx1$10 xx2$10 xx3$10 xx4$10 a b c');
+		});
+
+		it('works with global regex replace $$', () => {
+			const s = new MagicString('1 2 3 4 a b c');
+
+			s.replace(/(\d)/g, '$$');
+
+			assert.strictEqual(s.toString(),'$ $ $ $ a b c');
+		});
+
+		it('works with global regex replace function', () => {
+			const code = 'hey this is magic';
+			const s = new MagicString(code);
+
+			s.replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`);
+
+			assert.strictEqual(s.toString(),'Hey This Is Magic');
+		});
+	});
 });
