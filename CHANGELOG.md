@@ -1,3 +1,12 @@
+## [0.26.1](https://github.com/rich-harris/magic-string/compare/v0.26.0...v0.26.1) (2022-03-03)
+
+
+### Bug Fixes
+
+* **replace:** match replacer function signature with spec ([902541f](https://github.com/rich-harris/magic-string/commit/902541fdff3998e3c957908de10769d2af1a3c70))
+
+
+
 # [0.26.0](https://github.com/rich-harris/magic-string/compare/v0.25.9...v0.26.0) (2022-03-03)
 
 ## BREAKING CHANGES
