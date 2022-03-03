@@ -165,6 +165,24 @@ Same as `s.appendLeft(...)`, except that the inserted content will go *before* a
 
 Same as `s.appendRight(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
 
+### s.replace( regexp, substitution )
+
+String replacement with RegExp or string, a replacer function is also supported. Returns `this`.
+
+```ts
+import MagicString from 'magic-string'
+
+const s = new MagicString(source)
+
+s.replace(foo, 'bar')
+s.replace(/foo/g, 'bar')
+s.replace(/(\w)(\d+)/g, (_, $1, $2) => $1.toUpperCase() + $2)
+```
+
+The differences from [`String.replace`]((https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace)):
+- It will always match against the **original string**
+- It mutates the magic string state (use `.clone()` to be immutable)
+
 ### s.remove( start, end )
 
 Removes the characters from `start` to `end` (of the original string, **not** the generated string). Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `this`.

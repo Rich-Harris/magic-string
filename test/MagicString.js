@@ -824,11 +824,26 @@ describe('MagicString', () => {
 			assert.equal(s.toString(), 'a&^...!?defghijkl');
 		});
 
-		it('disallows overwriting across moved content', () => {
+		it('disallows overwriting partially overlapping moved content', () => {
 			const s = new MagicString('abcdefghijkl');
 
 			s.move(6, 9, 3);
 			assert.throws(() => s.overwrite(5, 7, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('disallows overwriting fully surrounding content moved away', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('disallows overwriting fully surrounding content moved away even if there is another split', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			s.appendLeft(5, 'foo');
+			assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/);
 		});
 
 		it('allows later insertions at the end', () => {
@@ -1280,6 +1295,42 @@ describe('MagicString', () => {
 			const clone = s.clone();
 
 			assert.ok(clone.hasChanged());
+    });
+  });
+  
+	describe('replace', () => {
+		it('works with string replace', () => {
+			const code = '1 2 1 2';
+			const s = new MagicString(code);
+
+			s.replace('2', '3');
+
+			assert.strictEqual(s.toString(), '1 3 1 2');
+		});
+
+		it('works with global regex replace', () => {
+			const s = new MagicString('1 2 3 4 a b c');
+
+			s.replace(/(\d)/g, 'xx$1$10');
+
+			assert.strictEqual(s.toString(), 'xx1$10 xx2$10 xx3$10 xx4$10 a b c');
+		});
+
+		it('works with global regex replace $$', () => {
+			const s = new MagicString('1 2 3 4 a b c');
+
+			s.replace(/(\d)/g, '$$');
+
+			assert.strictEqual(s.toString(),'$ $ $ $ a b c');
+		});
+
+		it('works with global regex replace function', () => {
+			const code = 'hey this is magic';
+			const s = new MagicString(code);
+
+			s.replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`);
+
+			assert.strictEqual(s.toString(),'Hey This Is Magic');
 		});
 	});
 });

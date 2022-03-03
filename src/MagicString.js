@@ -365,28 +365,23 @@ export default class MagicString {
 
 		if (storeName) {
 			const original = this.original.slice(start, end);
-			this.storedNames[original] = true;
+			Object.defineProperty(this.storedNames, original, { writable: true, value: true, enumerable: true });
 		}
 
 		const first = this.byStart[start];
 		const last = this.byEnd[end];
 
 		if (first) {
-			if (end > first.end && first.next !== this.byStart[first.end]) {
-				throw new Error('Cannot overwrite across a split point');
+			let chunk = first;
+			while (chunk !== last) {
+				if (chunk.next !== this.byStart[chunk.end]) {
+					throw new Error('Cannot overwrite across a split point');
+				}
+				chunk = chunk.next;
+				chunk.edit('', false);
 			}
 
 			first.edit(content, storeName, contentOnly);
-
-			if (first !== last) {
-				let chunk = first.next;
-				while (chunk !== last) {
-					chunk.edit('', false);
-					chunk = chunk.next;
-				}
-
-				chunk.edit('', false);
-			}
 		} else {
 			// must be inserting at the end
 			const newChunk = new Chunk(start, end, '').edit(content, storeName);
@@ -720,5 +715,47 @@ export default class MagicString {
 
 	hasChanged() {
 		return this.original !== this.toString();
+  }
+
+	replace(searchValue, replacement) {
+		function getReplacement(match) {
+			if (typeof replacement === 'string') {
+				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
+					// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
+					if (i === '$')
+						return '$';
+					if (i === '&')
+						return match[0];
+					const num = +i;
+					if (num < match.length)
+						return match[+i];
+					return `$${i}`;
+				});
+			}
+			else {
+				return replacement(...match);
+			}
+		}
+		function matchAll(re, str) {
+			let match;
+			const matches = [];
+			while (match = re.exec(str)) {
+				matches.push(match);
+			}
+			return matches;
+		}
+		if (typeof searchValue !== 'string' && searchValue.global) {
+			const matches = matchAll(searchValue, this.original);
+			matches.forEach((match) => {
+				if (match.index != null)
+					this.overwrite(match.index, match.index + match[0].length, getReplacement(match));
+			});
+		}
+		else {
+			const match = this.original.match(searchValue);
+			if (match && match.index != null)
+				this.overwrite(match.index, match.index + match[0].length, getReplacement(match));
+		}
+		return this;
 	}
 }

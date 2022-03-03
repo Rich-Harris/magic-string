@@ -1,9 +1,7 @@
-import buble from '@rollup/plugin-buble';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 
 const plugins = [
-	buble({ exclude: 'node_modules/**' }),
 	nodeResolve(),
 	replace({ DEBUG: false, preventAssignment: true })
 ];
@@ -15,7 +13,7 @@ export default [
 		external: ['sourcemap-codec'],
 		plugins,
 		output: {
-			file: 'dist/magic-string.es.js',
+			file: 'dist/magic-string.es.mjs',
 			format: 'es',
 			exports: 'named',
 			sourcemap: true

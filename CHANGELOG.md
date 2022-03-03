@@ -1,3 +1,14 @@
+## [0.25.9](https://github.com/rich-harris/magic-string/compare/v0.25.8...v0.25.9) (2022-03-03)
+
+
+### Bug Fixes
+
+* allowed overwrite across moved content preceded by split ([#192](https://github.com/rich-harris/magic-string/issues/192)) ([403fa86](https://github.com/rich-harris/magic-string/commit/403fa86b3dcc73f6b2eff177218b7bd4d3128f63))
+* **types:** make options partial by default ([2815e77](https://github.com/rich-harris/magic-string/commit/2815e77dd20ff9f776282420eaacfb4aa9e70cd7))
+* use defineProperty for appending prop in `storeName` ([#194](https://github.com/rich-harris/magic-string/issues/194)) ([96b7cd3](https://github.com/rich-harris/magic-string/commit/96b7cd37016c1e3fd7037b3910ae56f806a9c09f))
+
+
+
 ## [0.25.8](https://github.com/rich-harris/magic-string/compare/v0.25.7...v0.25.8) (2022-03-02)
 
 
