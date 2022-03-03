@@ -365,7 +365,7 @@ export default class MagicString {
 
 		if (storeName) {
 			const original = this.original.slice(start, end);
-			Object.defineProperty(this.storedNames, original, { writable: true, value: true });
+			Object.defineProperty(this.storedNames, original, { writable: true, value: true, enumerable: true });
 		}
 
 		const first = this.byStart[start];
