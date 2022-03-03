@@ -1332,5 +1332,19 @@ describe('MagicString', () => {
 
 			assert.strictEqual(s.toString(),'Hey This Is Magic');
 		});
+
+		it('replace function offset', () => {
+			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_function_as_a_parameter
+			function replacer(match, p1, p2, p3, offset, string, groups) {
+				// p1 is nondigits, p2 digits, and p3 non-alphanumerics
+				return [match, p1, p2, p3, offset, string, groups].join(' - ');
+			}
+			const code = 'abc12345#$*%';
+			const regex = /([^\d]*)(\d*)([^\w]*)/;
+			assert.strictEqual(
+				code.replace(regex, replacer),
+				new MagicString(code).replace(regex, replacer).toString()
+			);
+		});
 	});
 });

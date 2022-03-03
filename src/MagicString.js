@@ -718,7 +718,7 @@ export default class MagicString {
 	}
 
 	replace(searchValue, replacement) {
-		function getReplacement(match) {
+		function getReplacement(match, str) {
 			if (typeof replacement === 'string') {
 				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
 					// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
@@ -733,7 +733,7 @@ export default class MagicString {
 				});
 			}
 			else {
-				return replacement(...match);
+				return replacement(...match, match.index, str, match.groups);
 			}
 		}
 		function matchAll(re, str) {
@@ -748,13 +748,13 @@ export default class MagicString {
 			const matches = matchAll(searchValue, this.original);
 			matches.forEach((match) => {
 				if (match.index != null)
-					this.overwrite(match.index, match.index + match[0].length, getReplacement(match));
+					this.overwrite(match.index, match.index + match[0].length, getReplacement(match, this.original));
 			});
 		}
 		else {
 			const match = this.original.match(searchValue);
 			if (match && match.index != null)
-				this.overwrite(match.index, match.index + match[0].length, getReplacement(match));
+				this.overwrite(match.index, match.index + match[0].length, getReplacement(match, this.original));
 		}
 		return this;
 	}
