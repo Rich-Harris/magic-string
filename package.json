@@ -13,8 +13,15 @@
   "license": "MIT",
   "author": "Rich Harris",
   "main": "dist/magic-string.cjs.js",
-  "module": "dist/magic-string.es.js",
-  "jsnext:main": "dist/magic-string.es.js",
+  "module": "dist/magic-string.es.mjs",
+  "jsnext:main": "dist/magic-string.es.mjs",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/magic-string.es.mjs",
+      "require": "./dist/magic-string.cjs.js"
+    }
+  },
   "typings": "index.d.ts",
   "files": [
     "dist/*",
