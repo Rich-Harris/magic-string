@@ -1,3 +1,13 @@
+# [0.26.0](https://github.com/rich-harris/magic-string/compare/v0.25.9...v0.26.0) (2022-03-03)
+
+
+### Features
+
+* new `hasChanged` method ([#202](https://github.com/rich-harris/magic-string/issues/202)) ([5f2dba7](https://github.com/rich-harris/magic-string/commit/5f2dba72774c444538ed10aa5f2096104cb0b4bb))
+* support `replace` method ([#203](https://github.com/rich-harris/magic-string/issues/203)) ([cd74ea2](https://github.com/rich-harris/magic-string/commit/cd74ea2e374f526079ae1a9b9f29bc9cc2fd2ac3))
+
+
+
 ## [0.25.9](https://github.com/rich-harris/magic-string/compare/v0.25.8...v0.25.9) (2022-03-03)
 
 
