@@ -361,7 +361,7 @@ export default class MagicString {
 			options = { storeName: true };
 		}
 		const storeName = options !== undefined ? options.storeName : false;
-		const contentOnly = options !== undefined ? options.contentOnly : false;
+		const contentOnly = options !== undefined ? options.contentOnly : true;
 
 		if (storeName) {
 			const original = this.original.slice(start, end);

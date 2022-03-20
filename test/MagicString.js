@@ -767,11 +767,11 @@ describe('MagicString', () => {
 			assert.equal(s.toString(), 'DEFGHIjkl');
 		});
 
-		it('replaces zero-length inserts inside overwrite', () => {
+		it('replaces zero-length inserts inside overwrite with `contentOnly: false`', () => {
 			const s = new MagicString('abcdefghijkl');
 
 			s.appendLeft(6, 'XXX');
-			s.overwrite(3, 9, 'DEFGHI');
+			s.overwrite(3, 9, 'DEFGHI', { contentOnly: false });
 			assert.equal(s.toString(), 'abcDEFGHIjkl');
 		});
 
@@ -802,7 +802,18 @@ describe('MagicString', () => {
 			assert.throws(() => s.overwrite(0, 1, []), TypeError);
 		});
 
-		it('replaces interior inserts', () => {
+		it('replaces interior inserts with `contentOnly: false`', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.appendLeft(1, '&');
+			s.prependRight(1, '^');
+			s.appendLeft(3, '!');
+			s.prependRight(3, '?');
+			s.overwrite(1, 3, '...', { contentOnly: false });
+			assert.equal(s.toString(), 'a&...?defghijkl');
+		});
+
+		it('preserves interior inserts', () => {
 			const s = new MagicString('abcdefghijkl');
 
 			s.appendLeft(1, '&');
@@ -810,17 +821,6 @@ describe('MagicString', () => {
 			s.appendLeft(3, '!');
 			s.prependRight(3, '?');
 			s.overwrite(1, 3, '...');
-			assert.equal(s.toString(), 'a&...?defghijkl');
-		});
-
-		it('preserves interior inserts with `contentOnly: true`', () => {
-			const s = new MagicString('abcdefghijkl');
-
-			s.appendLeft(1, '&');
-			s.prependRight(1, '^');
-			s.appendLeft(3, '!');
-			s.prependRight(3, '?');
-			s.overwrite(1, 3, '...', { contentOnly: true });
 			assert.equal(s.toString(), 'a&^...!?defghijkl');
 		});
 
@@ -846,11 +846,11 @@ describe('MagicString', () => {
 			assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/);
 		});
 
-		it('allows later insertions at the end', () => {
+		it('allows later insertions at the end with `contentOnly: false`', () => {
 			const s = new MagicString('abcdefg');
 
 			s.appendLeft(4, '(');
-			s.overwrite(2, 7, '');
+			s.overwrite(2, 7, '', { contentOnly: false });
 			s.appendLeft(7, 'h');
 			assert.equal(s.toString(), 'abh');
 		});

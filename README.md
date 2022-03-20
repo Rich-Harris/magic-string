@@ -151,7 +151,7 @@ Moves the characters from `start` and `end` to `index`. Returns `this`.
 
 Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
 
-The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and a `contentOnly` property which determines whether only the content is overwritten, or anything that was appended/prepended to the range as well.
+The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and a `contentOnly` property which defaults to `true` and determines whether only the content is overwritten, or anything that was appended/prepended to the range as well.
 
 ### s.prepend( content )
 
