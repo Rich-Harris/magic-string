@@ -334,6 +334,15 @@ export default class MagicString {
 	}
 
 	overwrite(start, end, content, options) {
+		console.warn(
+			'magicString.overwrite(...) is deprecated. Use magicString.update(...) instead'
+		); // eslint-disable-line no-console
+		options = options || {};
+		options.overwrite = !options.contentOnly;
+		return this.update(start, end, content, options);
+	}
+
+	update(start, end, content, options) {
 		if (typeof content !== 'string') throw new TypeError('replacement content must be a string');
 
 		while (start < 0) start += this.original.length;
@@ -361,7 +370,7 @@ export default class MagicString {
 			options = { storeName: true };
 		}
 		const storeName = options !== undefined ? options.storeName : false;
-		const contentOnly = options !== undefined ? options.contentOnly : false;
+		const overwrite = options !== undefined ? options.overwrite : false;
 
 		if (storeName) {
 			const original = this.original.slice(start, end);
@@ -385,7 +394,7 @@ export default class MagicString {
 				chunk.edit('', false);
 			}
 
-			first.edit(content, storeName, contentOnly);
+			first.edit(content, storeName, !overwrite);
 		} else {
 			// must be inserting at the end
 			const newChunk = new Chunk(start, end, '').edit(content, storeName);
