@@ -1,3 +1,12 @@
+## [0.26.2](https://github.com/rich-harris/magic-string/compare/v0.26.1...v0.26.2) (2022-05-11)
+
+
+### Bug Fixes
+
+* specify types in exports ([#214](https://github.com/rich-harris/magic-string/issues/214)) ([985e7b4](https://github.com/rich-harris/magic-string/commit/985e7b4d8a6fd5911d2ad2e6524999e9198a6b9f))
+
+
+
 ## [0.26.1](https://github.com/rich-harris/magic-string/compare/v0.26.0...v0.26.1) (2022-03-03)
 
 
