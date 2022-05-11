@@ -19,7 +19,8 @@
     "./package.json": "./package.json",
     ".": {
       "import": "./dist/magic-string.es.mjs",
-      "require": "./dist/magic-string.cjs.js"
+      "require": "./dist/magic-string.cjs.js",
+      "types": "./index.d.ts"
     }
   },
   "typings": "index.d.ts",
