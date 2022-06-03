@@ -42,9 +42,6 @@
     "bench": "npm run build && node benchmark/index.mjs",
     "watch": "rollup -cw"
   },
-  "dependencies": {
-    "sourcemap-codec": "^1.4.8"
-  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@rollup/plugin-replace": "^4.0.0",
@@ -60,5 +57,8 @@
   },
   "engines": {
     "node": ">=12"
+  },
+  "dependencies": {
+    "@jridgewell/sourcemap-codec": "^1.4.13"
   }
 }

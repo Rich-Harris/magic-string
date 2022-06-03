@@ -10,7 +10,7 @@ export default [
 	/* esm */
 	{
 		input: 'src/index.js',
-		external: ['sourcemap-codec'],
+		external: ['@jridgewell/sourcemap-codec'],
 		plugins,
 		output: {
 			file: 'dist/magic-string.es.mjs',
@@ -23,7 +23,7 @@ export default [
 	/* cjs */
 	{
 		input: 'src/index-legacy.js',
-		external: ['sourcemap-codec'],
+		external: ['@jridgewell/sourcemap-codec'],
 		plugins,
 		output: {
 			file: 'dist/magic-string.cjs.js',
