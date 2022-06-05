@@ -164,7 +164,7 @@ export default class Bundle {
 		const indentStringCounts = {};
 
 		this.sources.forEach((source) => {
-			const indentStr = source.content.indentStr;
+			const indentStr = source.content._getRawIndentString();
 
 			if (indentStr === null) return;
 

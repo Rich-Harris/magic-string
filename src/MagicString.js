@@ -33,7 +33,7 @@ export default class MagicString {
 			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 			sourcemapLocations: { writable: true, value: new BitSet() },
 			storedNames: { writable: true, value: {} },
-			indentStr: { writable: true, value: guessIndent(string) },
+			indentStr: { writable: true, value: undefined },
 		});
 
 		if (DEBUG) {
@@ -175,7 +175,19 @@ export default class MagicString {
 		return new SourceMap(this.generateDecodedMap(options));
 	}
 
+	_ensureindentStr() {
+		if (this.indentStr === undefined) {
+			this.indentStr = guessIndent(this.original);
+		}
+	}
+
+	_getRawIndentString() {
+		this._ensureindentStr();
+		return this.indentStr;
+	}
+
 	getIndentString() {
+		this._ensureindentStr();
 		return this.indentStr === null ? '\t' : this.indentStr;
 	}
 
@@ -187,7 +199,10 @@ export default class MagicString {
 			indentStr = undefined;
 		}
 
-		indentStr = indentStr !== undefined ? indentStr : this.indentStr || '\t';
+		if (indentStr === undefined) {
+			this._ensureindentStr();
+			indentStr = this.indentStr || '\t';
+		}
 
 		if (indentStr === '') return this; // noop
 

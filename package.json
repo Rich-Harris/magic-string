@@ -39,6 +39,7 @@
     "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
     "pretest": "npm run lint && npm run build",
     "test": "mocha",
+    "bench": "npm run build && node benchmark/index.mjs",
     "watch": "rollup -cw"
   },
   "dependencies": {
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@rollup/plugin-replace": "^4.0.0",
+    "benchmark": "^2.1.4",
     "bumpp": "^7.1.1",
     "conventional-changelog-cli": "^2.2.2",
     "eslint": "^8.10.0",
