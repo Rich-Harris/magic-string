@@ -334,9 +334,6 @@ export default class MagicString {
 	}
 
 	overwrite(start, end, content, options) {
-		console.warn(
-			'magicString.overwrite(...) is deprecated. Use magicString.update(...) instead'
-		); // eslint-disable-line no-console
 		options = options || {};
 		options.overwrite = !options.contentOnly;
 		return this.update(start, end, content, options);
