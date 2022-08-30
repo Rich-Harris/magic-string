@@ -1,13 +1,18 @@
 import { encode } from 'sourcemap-codec';
 
-let btoa = () => {
-	throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
-};
-if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
-	btoa = (str) => window.btoa(unescape(encodeURIComponent(str)));
-} else if (typeof Buffer === 'function') {
-	btoa = (str) => Buffer.from(str, 'utf-8').toString('base64');
+function getBtoa () {
+	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+		return (str) => window.btoa(unescape(encodeURIComponent(str)));
+	} else if (typeof Buffer === 'function') {
+		return (str) => Buffer.from(str, 'utf-8').toString('base64');
+	} else {
+		return () => {
+			throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.');
+		};
+	}
 }
+
+const btoa = /*#__PURE__*/ getBtoa();
 
 export default class SourceMap {
 	constructor(properties) {
