@@ -1,3 +1,12 @@
+## [0.26.3](https://github.com/rich-harris/magic-string/compare/v0.26.2...v0.26.3) (2022-08-30)
+
+
+### Performance Improvements
+
+* delay guess encoded ([#216](https://github.com/rich-harris/magic-string/issues/216)) ([69b13c7](https://github.com/rich-harris/magic-string/commit/69b13c7a09af742e4f31cf419e8f96e6db32ab5a))
+
+
+
 ## [0.26.2](https://github.com/rich-harris/magic-string/compare/v0.26.1...v0.26.2) (2022-05-11)
 
 
