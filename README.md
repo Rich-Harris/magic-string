@@ -165,9 +165,9 @@ Same as `s.appendLeft(...)`, except that the inserted content will go *before* a
 
 Same as `s.appendRight(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
 
-### s.replace( regexp, substitution )
+### s.replace( regexpOrString, substitution )
 
-String replacement with RegExp or string, a replacer function is also supported. Returns `this`.
+String replacement with RegExp or string. When using a RegExp, replacer function is also supported. Returns `this`.
 
 ```ts
 import MagicString from 'magic-string'

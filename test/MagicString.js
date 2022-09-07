@@ -1305,7 +1305,28 @@ describe('MagicString', () => {
 
 			s.replace('2', '3');
 
-			assert.strictEqual(s.toString(), '1 3 1 2');
+			assert.strictEqual(s.toString(), '1 3 1 3');
+		});
+
+		it('Should not treat string as regexp', () => {
+			assert.strictEqual(
+				new MagicString('1234').replace('.', '*').toString(),
+				'1234'
+			);
+		});
+
+		it('Should use substitution directly', () => {
+			assert.strictEqual(
+				new MagicString('11').replace('1', '$0$1').toString(),
+				'$0$1$0$1'
+			);
+		});
+
+		it('Should not search back', () => {
+			assert.strictEqual(
+				new MagicString('121212').replace('12', '21').toString(),
+				'212121'
+			);
 		});
 
 		it('works with global regex replace', () => {

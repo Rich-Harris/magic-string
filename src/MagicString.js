@@ -736,7 +736,7 @@ export default class MagicString {
 		return this.original !== this.toString();
 	}
 
-	replace(searchValue, replacement) {
+	_replaceRegexp(searchValue, replacement) {
 		function getReplacement(match, str) {
 			if (typeof replacement === 'string') {
 				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
@@ -759,7 +759,7 @@ export default class MagicString {
 			}
 			return matches;
 		}
-		if (typeof searchValue !== 'string' && searchValue.global) {
+		if (searchValue.global) {
 			const matches = matchAll(searchValue, this.original);
 			matches.forEach((match) => {
 				if (match.index != null)
@@ -779,5 +779,26 @@ export default class MagicString {
 				);
 		}
 		return this;
+	}
+
+	_replaceString(string, replacement) {
+		const { original } = this;
+		const stringLength = string.length;
+		for (
+			let index = original.indexOf(string);
+			index !== -1;
+			index = original.indexOf(string, index + stringLength)
+		) {
+			this.overwrite(index, index + stringLength, replacement);
+		}
+
+		return this;
+	}
+
+	replace(searchValue, replacement) {
+		return this[typeof searchValue === 'string' ? '_replaceString' : '_replaceRegexp'](
+			searchValue,
+			replacement
+		);
 	}
 }
