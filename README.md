@@ -169,6 +169,11 @@ Same as `s.appendRight(...)`, except that the inserted content will go *before* 
 
 String replacement with RegExp or string. When using a RegExp, replacer function is also supported. Returns `this`.
 
+### s.replaceAll( regexpOrString, substitution )
+
+Same as `s.replace`, but replace all matched strings instead of just one.
+If `substitution` is a regex, then it must have the global (`g`) flag set, or a `TypeError` is thrown. Matches the behavior of the bultin [`String.property.replaceAll`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll).
+
 ```ts
 import MagicString from 'magic-string'
 

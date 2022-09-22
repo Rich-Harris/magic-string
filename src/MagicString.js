@@ -820,7 +820,9 @@ export default class MagicString {
 		}
 
 		if (!searchValue.global) {
-			throw new TypeError('MagicString.prototype.replaceAll called with a non-global RegExp argument');
+			throw new TypeError(
+				'MagicString.prototype.replaceAll called with a non-global RegExp argument'
+			);
 		}
 
 		return this._replaceRegexp(searchValue, replacement);
