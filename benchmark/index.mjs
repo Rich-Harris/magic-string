@@ -75,6 +75,13 @@ async function bench() {
 	}, s => {
 		s.replace(/replacement/g, 'replacement\nReplacement');
 	});
+
+	const size = 1000000;
+	runWithInstance('overwrite', ['a'.repeat(size)], s => {
+		for (let i = 1; i < size; i+=2) {
+			s.overwrite(i, i+1, 'b');
+		}
+	});
 }
 
 bench();
