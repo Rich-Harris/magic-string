@@ -796,9 +796,10 @@ export default class MagicString {
 	}
 
 	replace(searchValue, replacement) {
-		return this[typeof searchValue === 'string' ? '_replaceString' : '_replaceRegexp'](
-			searchValue,
-			replacement
-		);
+		if (typeof searchValue === 'string') {
+			return this._replaceString(searchValue, replacement);
+		}
+
+		return this_replaceRegexp(searchValue, replacement);
 	}
 }
