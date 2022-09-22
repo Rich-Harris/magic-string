@@ -1305,7 +1305,7 @@ describe('MagicString', () => {
 
 			s.replace('2', '3');
 
-			assert.strictEqual(s.toString(), '1 3 1 3');
+			assert.strictEqual(s.toString(), '1 3 1 2');
 		});
 
 		it('Should not treat string as regexp', () => {
@@ -1318,13 +1318,13 @@ describe('MagicString', () => {
 		it('Should use substitution directly', () => {
 			assert.strictEqual(
 				new MagicString('11').replace('1', '$0$1').toString(),
-				'$0$1$0$1'
+				'$0$11'
 			);
 		});
 
 		it('Should not search back', () => {
 			assert.strictEqual(
-				new MagicString('121212').replace('12', '21').toString(),
+				new MagicString('122121').replace('12', '21').toString(),
 				'212121'
 			);
 		});
@@ -1365,6 +1365,63 @@ describe('MagicString', () => {
 			assert.strictEqual(
 				code.replace(regex, replacer),
 				new MagicString(code).replace(regex, replacer).toString()
+			);
+		});
+	});
+  
+	describe('replaceAll', () => {
+		it('works with string replace', () => {
+			assert.strictEqual(
+				new MagicString('1212').replaceAll('2', '3').toString(),
+				'1313',
+			);
+		});
+
+		it('Should not treat string as regexp', () => {
+			assert.strictEqual(
+				new MagicString('1234').replaceAll('.', '*').toString(),
+				'1234'
+			);
+		});
+
+		it('Should use substitution directly', () => {
+			assert.strictEqual(
+				new MagicString('11').replaceAll('1', '$0$1').toString(),
+				'$0$1$0$1'
+			);
+		});
+
+		it('Should not search back', () => {
+			assert.strictEqual(
+				new MagicString('121212').replaceAll('12', '21').toString(),
+				'212121'
+			);
+		});
+
+		it('global regex result the same as .replace', () => {
+			assert.strictEqual(
+				new MagicString('1 2 3 4 a b c').replaceAll(/(\d)/g, 'xx$1$10').toString(),
+				new MagicString('1 2 3 4 a b c').replace(/(\d)/g, 'xx$1$10').toString(),
+			);
+
+			assert.strictEqual(
+				new MagicString('1 2 3 4 a b c').replaceAll(/(\d)/g, '$$').toString(),
+				new MagicString('1 2 3 4 a b c').replace(/(\d)/g, '$$').toString(),
+			);
+
+			assert.strictEqual(
+				new MagicString('hey this is magic').replaceAll(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`).toString(),
+				new MagicString('hey this is magic').replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`).toString(),
+			);
+		});
+
+		it('rejects with non-global regexp', () => {
+			assert.throws(
+				() => new MagicString('123').replaceAll(/./, ''),
+				{
+					name: 'TypeError',
+					message: 'MagicString.prototype.replaceAll called with a non-global RegExp argument',
+				},
 			);
 		});
 	});

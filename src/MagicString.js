@@ -783,6 +783,25 @@ export default class MagicString {
 
 	_replaceString(string, replacement) {
 		const { original } = this;
+		const index = original.indexOf(string);
+
+		if (index !== -1) {
+			this.overwrite(index, index + string.length, replacement);
+		}
+
+		return this;
+	}
+
+	replace(searchValue, replacement) {
+		if (typeof searchValue === 'string') {
+			return this._replaceString(searchValue, replacement);
+		}
+
+		return this._replaceRegexp(searchValue, replacement);
+	}
+
+	_replaceAllString(string, replacement) {
+		const { original } = this;
 		const stringLength = string.length;
 		for (
 			let index = original.indexOf(string);
@@ -795,11 +814,15 @@ export default class MagicString {
 		return this;
 	}
 
-	replace(searchValue, replacement) {
+	replaceAll(searchValue, replacement) {
 		if (typeof searchValue === 'string') {
-			return this._replaceString(searchValue, replacement);
+			return this._replaceAllString(searchValue, replacement);
 		}
 
-		return this_replaceRegexp(searchValue, replacement);
+		if (!searchValue.global) {
+			throw new TypeError('MagicString.prototype.replaceAll called with a non-global RegExp argument');
+		}
+
+		return this._replaceRegexp(searchValue, replacement);
 	}
 }
