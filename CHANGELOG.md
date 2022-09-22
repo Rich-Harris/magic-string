@@ -1,3 +1,17 @@
+## [0.26.4](https://github.com/rich-harris/magic-string/compare/v0.26.3...v0.26.4) (2022-09-22)
+
+
+### Features
+
+* fix `.replace()` when searching string, add `.replaceAll()` ([#222](https://github.com/rich-harris/magic-string/issues/222)) ([04a05bd](https://github.com/rich-harris/magic-string/commit/04a05bdc9bf56e00e616a0ae07923fbd9b63fbd0))
+
+
+### Performance Improvements
+
+* avoiding use of Object.defineProperty in Chunk constructor ([#219](https://github.com/rich-harris/magic-string/issues/219)) ([130794b](https://github.com/rich-harris/magic-string/commit/130794bb8bfd9f21eb1f50c36a1da8eb5443d256))
+
+
+
 ## [0.26.3](https://github.com/rich-harris/magic-string/compare/v0.26.2...v0.26.3) (2022-08-30)
 
 
