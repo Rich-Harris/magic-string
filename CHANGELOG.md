@@ -1,3 +1,12 @@
+## [0.26.5](https://github.com/rich-harris/magic-string/compare/v0.26.4...v0.26.5) (2022-09-30)
+
+
+### Bug Fixes
+
+* update typescript definition file to contain `replaceAll()` ([#224](https://github.com/rich-harris/magic-string/issues/224)) ([45a4921](https://github.com/rich-harris/magic-string/commit/45a49214ba244b906f4d20450debc8edcc06e2a8))
+
+
+
 ## [0.26.4](https://github.com/rich-harris/magic-string/compare/v0.26.3...v0.26.4) (2022-09-22)
 
 
