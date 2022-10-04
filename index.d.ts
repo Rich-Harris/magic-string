@@ -160,7 +160,7 @@ export default class MagicString {
    */
   move(start: number, end: number, index: number): MagicString;
   /**
-   * __Note:__ It may be preferred to use `s.update(...)` instead
+   * __Note:__ It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting content
    * 
    * Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply.
    *
