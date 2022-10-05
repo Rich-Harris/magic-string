@@ -224,6 +224,10 @@ export default class MagicString {
    * String replacement with RegExp or string.
    */
   replace(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): MagicString;
+  /**
+   * Same as `s.replace`, but replace all matched strings instead of just one.
+   */
+  replaceAll(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): MagicString;
 
   lastChar(): string;
   lastLine(): string;

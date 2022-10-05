@@ -1,5 +1,5 @@
 const assert = require('assert');
-const SourceMapConsumer = require('source-map').SourceMapConsumer;
+const SourceMapConsumer = require('source-map-js').SourceMapConsumer;
 const MagicString = require('../');
 
 require('source-map-support').install();

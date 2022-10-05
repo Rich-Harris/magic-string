@@ -1,6 +1,6 @@
 {
   "name": "magic-string",
-  "version": "0.26.1",
+  "version": "0.26.5",
   "description": "Modify strings, generate sourcemaps",
   "keywords": [
     "string",
@@ -12,17 +12,18 @@
   "repository": "https://github.com/rich-harris/magic-string",
   "license": "MIT",
   "author": "Rich Harris",
-  "main": "dist/magic-string.cjs.js",
-  "module": "dist/magic-string.es.mjs",
-  "jsnext:main": "dist/magic-string.es.mjs",
+  "main": "./dist/magic-string.cjs.js",
+  "module": "./dist/magic-string.es.mjs",
+  "jsnext:main": "./dist/magic-string.es.mjs",
+  "types": "./index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": "./dist/magic-string.es.mjs",
-      "require": "./dist/magic-string.cjs.js"
+      "require": "./dist/magic-string.cjs.js",
+      "types": "./index.d.ts"
     }
   },
-  "typings": "index.d.ts",
   "files": [
     "dist/*",
     "index.d.ts",
@@ -38,21 +39,23 @@
     "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
     "pretest": "npm run lint && npm run build",
     "test": "mocha",
+    "bench": "npm run build && node benchmark/index.mjs",
     "watch": "rollup -cw"
   },
   "dependencies": {
     "sourcemap-codec": "^1.4.8"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.1.3",
+    "@rollup/plugin-node-resolve": "^14.1.0",
     "@rollup/plugin-replace": "^4.0.0",
-    "bumpp": "^7.1.1",
+    "benchmark": "^2.1.4",
+    "bumpp": "^8.2.1",
     "conventional-changelog-cli": "^2.2.2",
-    "eslint": "^8.10.0",
-    "mocha": "^9.2.1",
-    "prettier": "^2.5.1",
-    "rollup": "^2.69.0",
-    "source-map": "^0.6.1",
+    "eslint": "^8.23.1",
+    "mocha": "^10.0.0",
+    "prettier": "^2.7.1",
+    "rollup": "^2.79.1",
+    "source-map-js": "^1.0.2",
     "source-map-support": "^0.5.21"
   },
   "engines": {

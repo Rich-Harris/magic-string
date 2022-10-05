@@ -11,11 +11,16 @@ export default class Chunk {
 		this.storeName = false;
 		this.edited = false;
 
-		// we make these non-enumerable, for sanity while debugging
-		Object.defineProperties(this, {
-			previous: { writable: true, value: null },
-			next: { writable: true, value: null },
-		});
+		if (DEBUG) {
+			// we make these non-enumerable, for sanity while debugging
+			Object.defineProperties(this, {
+				previous: { writable: true, value: null },
+				next: { writable: true, value: null },
+			});
+		} else {
+			this.previous = null;
+			this.next = null;
+		}
 	}
 
 	appendLeft(content) {

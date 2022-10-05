@@ -1,3 +1,44 @@
+## [0.26.5](https://github.com/rich-harris/magic-string/compare/v0.26.4...v0.26.5) (2022-09-30)
+
+
+### Bug Fixes
+
+* update typescript definition file to contain `replaceAll()` ([#224](https://github.com/rich-harris/magic-string/issues/224)) ([45a4921](https://github.com/rich-harris/magic-string/commit/45a49214ba244b906f4d20450debc8edcc06e2a8))
+
+
+
+## [0.26.4](https://github.com/rich-harris/magic-string/compare/v0.26.3...v0.26.4) (2022-09-22)
+
+
+### Features
+
+* fix `.replace()` when searching string, add `.replaceAll()` ([#222](https://github.com/rich-harris/magic-string/issues/222)) ([04a05bd](https://github.com/rich-harris/magic-string/commit/04a05bdc9bf56e00e616a0ae07923fbd9b63fbd0))
+
+
+### Performance Improvements
+
+* avoiding use of Object.defineProperty in Chunk constructor ([#219](https://github.com/rich-harris/magic-string/issues/219)) ([130794b](https://github.com/rich-harris/magic-string/commit/130794bb8bfd9f21eb1f50c36a1da8eb5443d256))
+
+
+
+## [0.26.3](https://github.com/rich-harris/magic-string/compare/v0.26.2...v0.26.3) (2022-08-30)
+
+
+### Performance Improvements
+
+* delay guess encoded ([#216](https://github.com/rich-harris/magic-string/issues/216)) ([69b13c7](https://github.com/rich-harris/magic-string/commit/69b13c7a09af742e4f31cf419e8f96e6db32ab5a))
+
+
+
+## [0.26.2](https://github.com/rich-harris/magic-string/compare/v0.26.1...v0.26.2) (2022-05-11)
+
+
+### Bug Fixes
+
+* specify types in exports ([#214](https://github.com/rich-harris/magic-string/issues/214)) ([985e7b4](https://github.com/rich-harris/magic-string/commit/985e7b4d8a6fd5911d2ad2e6524999e9198a6b9f))
+
+
+
 ## [0.26.1](https://github.com/rich-harris/magic-string/compare/v0.26.0...v0.26.1) (2022-03-03)
 
 

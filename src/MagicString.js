@@ -33,7 +33,7 @@ export default class MagicString {
 			indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
 			sourcemapLocations: { writable: true, value: new BitSet() },
 			storedNames: { writable: true, value: {} },
-			indentStr: { writable: true, value: guessIndent(string) },
+			indentStr: { writable: true, value: undefined },
 		});
 
 		if (DEBUG) {
@@ -175,7 +175,19 @@ export default class MagicString {
 		return new SourceMap(this.generateDecodedMap(options));
 	}
 
+	_ensureindentStr() {
+		if (this.indentStr === undefined) {
+			this.indentStr = guessIndent(this.original);
+		}
+	}
+
+	_getRawIndentString() {
+		this._ensureindentStr();
+		return this.indentStr;
+	}
+
 	getIndentString() {
+		this._ensureindentStr();
 		return this.indentStr === null ? '\t' : this.indentStr;
 	}
 
@@ -187,7 +199,10 @@ export default class MagicString {
 			indentStr = undefined;
 		}
 
-		indentStr = indentStr !== undefined ? indentStr : this.indentStr || '\t';
+		if (indentStr === undefined) {
+			this._ensureindentStr();
+			indentStr = this.indentStr || '\t';
+		}
 
 		if (indentStr === '') return this; // noop
 
@@ -727,7 +742,7 @@ export default class MagicString {
 		return this.original !== this.toString();
 	}
 
-	replace(searchValue, replacement) {
+	_replaceRegexp(searchValue, replacement) {
 		function getReplacement(match, str) {
 			if (typeof replacement === 'string') {
 				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
@@ -750,7 +765,7 @@ export default class MagicString {
 			}
 			return matches;
 		}
-		if (typeof searchValue !== 'string' && searchValue.global) {
+		if (searchValue.global) {
 			const matches = matchAll(searchValue, this.original);
 			matches.forEach((match) => {
 				if (match.index != null)
@@ -770,5 +785,52 @@ export default class MagicString {
 				);
 		}
 		return this;
+	}
+
+	_replaceString(string, replacement) {
+		const { original } = this;
+		const index = original.indexOf(string);
+
+		if (index !== -1) {
+			this.overwrite(index, index + string.length, replacement);
+		}
+
+		return this;
+	}
+
+	replace(searchValue, replacement) {
+		if (typeof searchValue === 'string') {
+			return this._replaceString(searchValue, replacement);
+		}
+
+		return this._replaceRegexp(searchValue, replacement);
+	}
+
+	_replaceAllString(string, replacement) {
+		const { original } = this;
+		const stringLength = string.length;
+		for (
+			let index = original.indexOf(string);
+			index !== -1;
+			index = original.indexOf(string, index + stringLength)
+		) {
+			this.overwrite(index, index + stringLength, replacement);
+		}
+
+		return this;
+	}
+
+	replaceAll(searchValue, replacement) {
+		if (typeof searchValue === 'string') {
+			return this._replaceAllString(searchValue, replacement);
+		}
+
+		if (!searchValue.global) {
+			throw new TypeError(
+				'MagicString.prototype.replaceAll called with a non-global RegExp argument'
+			);
+		}
+
+		return this._replaceRegexp(searchValue, replacement);
 	}
 }
