@@ -1,3 +1,12 @@
+## [0.26.6](https://github.com/rich-harris/magic-string/compare/v0.26.5...v0.26.6) (2022-10-05)
+
+
+### Features
+
+* add `update` method as safer alternative to `overwrite` ([#212](https://github.com/rich-harris/magic-string/issues/212)) ([9a312e3](https://github.com/rich-harris/magic-string/commit/9a312e37a02629f7496c6cfcf307832e991669a3))
+
+
+
 ## [0.26.5](https://github.com/rich-harris/magic-string/compare/v0.26.4...v0.26.5) (2022-09-30)
 
 
