@@ -856,6 +856,141 @@ describe('MagicString', () => {
 		});
 	});
 
+	describe('update', () => {
+		it('should replace characters', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.update(5, 8, 'FGH');
+			assert.equal(s.toString(), 'abcdeFGHijkl');
+		});
+
+		it('should throw an error if overlapping replacements are attempted', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.update(7, 11, 'xx');
+
+			assert.throws(() => s.update(8, 12, 'yy'), /Cannot split a chunk that has already been edited/);
+
+			assert.equal(s.toString(), 'abcdefgxxl');
+
+			s.update(6, 12, 'yes');
+			assert.equal(s.toString(), 'abcdefyes');
+		});
+
+		it('should allow contiguous but non-overlapping replacements', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.update(3, 6, 'DEF');
+			assert.equal(s.toString(), 'abcDEFghijkl');
+
+			s.update(6, 9, 'GHI');
+			assert.equal(s.toString(), 'abcDEFGHIjkl');
+
+			s.update(0, 3, 'ABC');
+			assert.equal(s.toString(), 'ABCDEFGHIjkl');
+
+			s.update(9, 12, 'JKL');
+			assert.equal(s.toString(), 'ABCDEFGHIJKL');
+		});
+
+		it('does not replace zero-length inserts at update start location', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.remove(0, 6);
+			s.appendLeft(6, 'DEF');
+			s.update(6, 9, 'GHI');
+			assert.equal(s.toString(), 'DEFGHIjkl');
+		});
+
+		it('replaces zero-length inserts inside update with overwrite option', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.appendLeft(6, 'XXX');
+			s.update(3, 9, 'DEFGHI', { overwrite: true });
+			assert.equal(s.toString(), 'abcDEFGHIjkl');
+		});
+
+		it('replaces non-zero-length inserts inside update', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.update(3, 4, 'XXX');
+			s.update(3, 5, 'DE');
+			assert.equal(s.toString(), 'abcDEfghijkl');
+
+			s.update(7, 8, 'YYY');
+			s.update(6, 8, 'GH');
+			assert.equal(s.toString(), 'abcDEfGHijkl');
+		});
+
+		it('should return this', () => {
+			const s = new MagicString('abcdefghijkl');
+			assert.strictEqual(s.update(3, 4, 'D'), s);
+		});
+
+		it('should disallow updating zero-length ranges', () => {
+			const s = new MagicString('x');
+			assert.throws(() => s.update(0, 0, 'anything'), /Cannot overwrite a zero-length range – use appendLeft or prependRight instead/);
+		});
+
+		it('should throw when given non-string content', () => {
+			const s = new MagicString('');
+			assert.throws(() => s.update(0, 1, []), TypeError);
+		});
+
+		it('replaces interior inserts with overwrite option', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.appendLeft(1, '&');
+			s.prependRight(1, '^');
+			s.appendLeft(3, '!');
+			s.prependRight(3, '?');
+			s.update(1, 3, '...', { overwrite: true });
+			assert.equal(s.toString(), 'a&...?defghijkl');
+		});
+
+		it('preserves interior inserts with `contentOnly: true`', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.appendLeft(1, '&');
+			s.prependRight(1, '^');
+			s.appendLeft(3, '!');
+			s.prependRight(3, '?');
+			s.update(1, 3, '...', { contentOnly: true });
+			assert.equal(s.toString(), 'a&^...!?defghijkl');
+		});
+
+		it('disallows overwriting partially overlapping moved content', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			assert.throws(() => s.update(5, 7, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('disallows overwriting fully surrounding content moved away', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			assert.throws(() => s.update(4, 11, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('disallows overwriting fully surrounding content moved away even if there is another split', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			s.move(6, 9, 3);
+			s.appendLeft(5, 'foo');
+			assert.throws(() => s.update(4, 11, 'XX'), /Cannot overwrite across a split point/);
+		});
+
+		it('allows later insertions at the end with overwrite option', () => {
+			const s = new MagicString('abcdefg');
+
+			s.appendLeft(4, '(');
+			s.update(2, 7, '', { overwrite: true });
+			s.appendLeft(7, 'h');
+			assert.equal(s.toString(), 'abh');
+		});
+	});
+
 	describe('prepend', () => {
 		it('should prepend content', () => {
 			const s = new MagicString('abcdefghijkl');

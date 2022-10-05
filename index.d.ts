@@ -98,6 +98,11 @@ export interface OverwriteOptions {
   contentOnly?: boolean;
 }
 
+export interface UpdateOptions {
+  storeName?: boolean;
+  overwrite?: boolean;
+}
+
 export default class MagicString {
   constructor(str: string, options?: MagicStringOptions);
   /**
@@ -155,13 +160,24 @@ export default class MagicString {
    */
   move(start: number, end: number, index: number): MagicString;
   /**
-   * Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply.
+   * Replaces the characters from `start` to `end` with `content`, along with the appended/prepended content in 
+   * that range. The same restrictions as `s.remove()` apply.
    *
    * The fourth argument is optional. It can have a storeName property — if true, the original name will be stored
    * for later inclusion in a sourcemap's names array — and a contentOnly property which determines whether only
    * the content is overwritten, or anything that was appended/prepended to the range as well.
+   * 
+   * It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
    */
   overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): MagicString;
+  /**
+   * Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply.
+   *
+   * The fourth argument is optional. It can have a storeName property — if true, the original name will be stored
+   * for later inclusion in a sourcemap's names array — and an overwrite property which determines whether only
+   * the content is overwritten, or anything that was appended/prepended to the range as well.
+   */
+  update(start: number, end: number, content: string, options?: boolean | UpdateOptions): MagicString;
   /**
    * Prepends the string with the specified content. 
    */

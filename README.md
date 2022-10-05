@@ -43,10 +43,10 @@ import fs from 'fs'
 
 const s = new MagicString('problems = 99');
 
-s.overwrite(0, 8, 'answer');
+s.update(0, 8, 'answer');
 s.toString(); // 'answer = 99'
 
-s.overwrite(11, 13, '42'); // character indices always refer to the original string
+s.update(11, 13, '42'); // character indices always refer to the original string
 s.toString(); // 'answer = 42'
 
 s.prepend('var ').append(';'); // most methods are chainable
@@ -135,6 +135,10 @@ The `options` argument can have an `exclude` property, which is an array of `[st
 
 **DEPRECATED** since 0.17 – use `s.prependRight(...)` instead
 
+### s.isEmpty()
+
+Returns true if the resulting source is empty (disregarding white space).
+
 ### s.locate( index )
 
 **DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
@@ -149,9 +153,11 @@ Moves the characters from `start` and `end` to `index`. Returns `this`.
 
 ### s.overwrite( start, end, content[, options] )
 
-Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
+Replaces the characters from `start` to `end` with `content`, along with the appended/prepended content in that range. The same restrictions as `s.remove()` apply. Returns `this`.
 
 The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and a `contentOnly` property which determines whether only the content is overwritten, or anything that was appended/prepended to the range as well.
+
+It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
 
 ### s.prepend( content )
 
@@ -220,9 +226,13 @@ Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the e
 
 Removes empty lines from the start and end. Returns `this`.
 
-### s.isEmpty()
+### s.update( start, end, content[, options] )
 
-Returns true if the resulting source is empty (disregarding white space).
+Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply. Returns `this`.
+
+The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and an `overwrite` property which defaults to `false` and determines whether anything that was appended/prepended to the range will be overwritten along with the original content.
+
+`s.update(start, end, content)` is equivalent to `s.overwrite(start, end, content, { contentOnly: true })`.
 
 ## Bundling
 
