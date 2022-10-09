@@ -350,8 +350,7 @@ export default class MagicString {
 
 	overwrite(start, end, content, options) {
 		options = options || {};
-		options.overwrite = !options.contentOnly;
-		return this.update(start, end, content, options);
+		return this.update(start, end, content, { ...options, overwrite: !options.contentOnly });
 	}
 
 	update(start, end, content, options) {
