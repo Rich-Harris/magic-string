@@ -1,3 +1,12 @@
+## [0.26.7](https://github.com/rich-harris/magic-string/compare/v0.26.6...v0.26.7) (2022-10-09)
+
+
+### Bug Fixes
+
+* avoid mutating provided options ([#227](https://github.com/rich-harris/magic-string/issues/227)) ([01d033e](https://github.com/rich-harris/magic-string/commit/01d033e6e8630ef1d0482d9a3899f1da2bf933d5))
+
+
+
 ## [0.26.6](https://github.com/rich-harris/magic-string/compare/v0.26.5...v0.26.6) (2022-10-05)
 
 
