@@ -147,7 +147,7 @@ Returns true if the resulting source is empty (disregarding white space).
 
 **DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
-### s.move( start, end, newIndex )
+### s.move( start, end, index )
 
 Moves the characters from `start` and `end` to `index`. Returns `this`.
 
