@@ -12,6 +12,7 @@
   "repository": "https://github.com/rich-harris/magic-string",
   "license": "MIT",
   "author": "Rich Harris",
+  "type": "module",
   "main": "./dist/magic-string.cjs.js",
   "module": "./dist/magic-string.es.mjs",
   "jsnext:main": "./dist/magic-string.es.mjs",
