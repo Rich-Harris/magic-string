@@ -1,3 +1,12 @@
+# [0.27.0](https://github.com/rich-harris/magic-string/compare/v0.26.7...v0.27.0) (2022-12-03)
+
+
+### Performance Improvements
+
+* use @jridgewell/sourcemap-codec ([e68f3e0](https://github.com/rich-harris/magic-string/commit/e68f3e05fe6d87acc1c41eddae97fc32e004320b))
+
+
+
 ## [0.26.7](https://github.com/rich-harris/magic-string/compare/v0.26.6...v0.26.7) (2022-10-09)
 
 
