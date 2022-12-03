@@ -1,4 +1,4 @@
-import { encode } from 'sourcemap-codec';
+import { encode } from '@jridgewell/sourcemap-codec';
 
 function getBtoa () {
 	if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
