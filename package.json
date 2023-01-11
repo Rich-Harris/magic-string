@@ -19,9 +19,9 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "types": "./index.d.ts",
       "import": "./dist/magic-string.es.mjs",
-      "require": "./dist/magic-string.cjs.js",
-      "types": "./index.d.ts"
+      "require": "./dist/magic-string.cjs.js"
     }
   },
   "files": [
@@ -33,7 +33,7 @@
     "build": "rollup -c",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
-    "lint": "eslint src test",
+    "lint": "eslint src test && publint",
     "prepare": "npm run build",
     "prepublishOnly": "rm -rf dist && npm test",
     "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
@@ -51,6 +51,7 @@
     "eslint": "^8.23.1",
     "mocha": "^10.0.0",
     "prettier": "^2.7.1",
+    "publint": "^0.1.7",
     "rollup": "^2.79.1",
     "source-map-js": "^1.0.2",
     "source-map-support": "^0.5.21"
