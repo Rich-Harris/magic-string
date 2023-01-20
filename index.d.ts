@@ -35,7 +35,7 @@ export type SourceMapSegment =
 export interface DecodedSourceMap {
   file: string;
   sources: string[];
-  sourcesContent: string[];
+  sourcesContent: (string | null)[];
   names: string[];
   mappings: SourceMapSegment[][];
 }
@@ -46,7 +46,7 @@ export class SourceMap {
   version: number;
   file: string;
   sources: string[];
-  sourcesContent: string[];
+  sourcesContent: (string | null)[];
   names: string[];
   mappings: string;
 
