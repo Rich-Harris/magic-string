@@ -19,9 +19,9 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "types": "./index.d.ts",
       "import": "./dist/magic-string.es.mjs",
-      "require": "./dist/magic-string.cjs.js",
-      "types": "./index.d.ts"
+      "require": "./dist/magic-string.cjs.js"
     }
   },
   "files": [
