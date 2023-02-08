@@ -35,9 +35,9 @@
     "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
     "lint": "eslint src test && publint",
     "prepare": "npm run build",
-    "prepublishOnly": "rm -rf dist && npm test",
+    "prepublishOnly": "npm run lint && rm -rf dist && npm test",
     "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
-    "pretest": "npm run lint && npm run build",
+    "pretest": "npm run build",
     "test": "mocha",
     "bench": "npm run build && node benchmark/index.mjs",
     "watch": "rollup -cw"
