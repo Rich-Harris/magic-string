@@ -1,3 +1,12 @@
+# [0.29.0](https://github.com/rich-harris/magic-string/compare/v0.28.0...v0.29.0) (2023-02-11)
+
+
+### Features
+
+* **x_google_ignoreList:** initial support for ignore lists ([3c711cd](https://github.com/rich-harris/magic-string/commit/3c711cd56de6c9735f92e41e457353005c2c0d1c))
+
+
+
 # [0.28.0](https://github.com/rich-harris/magic-string/compare/v0.27.0...v0.28.0) (2023-02-11)
 
 
