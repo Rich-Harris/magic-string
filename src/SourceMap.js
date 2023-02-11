@@ -22,6 +22,9 @@ export default class SourceMap {
 		this.sourcesContent = properties.sourcesContent;
 		this.names = properties.names;
 		this.mappings = encode(properties.mappings);
+		if (typeof properties.x_google_ignoreList !== 'undefined') {
+			this.x_google_ignoreList = properties.x_google_ignoreList;
+		}
 	}
 
 	toString() {

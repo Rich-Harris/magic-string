@@ -38,6 +38,7 @@ export interface DecodedSourceMap {
   sourcesContent: (string | null)[];
   names: string[];
   mappings: SourceMapSegment[][];
+  x_google_ignoreList?: number[];
 }
 
 export class SourceMap {
@@ -49,6 +50,7 @@ export class SourceMap {
   sourcesContent: (string | null)[];
   names: string[];
   mappings: string;
+  x_google_ignoreList?: number[];
 
   /**
    * Returns the equivalent of `JSON.stringify(map)`
