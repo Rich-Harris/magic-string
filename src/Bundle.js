@@ -144,7 +144,7 @@ export default class Bundle {
 		});
 
 		return {
-			file: options.file ? options.file.split(/[/\\]/).pop() : null,
+			file: options.file ? options.file.split(/[/\\]/).pop() : undefined,
 			sources: this.uniqueSources.map((source) => {
 				return options.file ? getRelativePath(options.file, source.filename) : source.filename;
 			}),
