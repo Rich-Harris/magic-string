@@ -65,7 +65,17 @@ export class SourceMap {
 
 export class Bundle {
   constructor(options?: BundleOptions);
-  addSource(source: MagicString | { filename?: string, content: MagicString }): Bundle;
+  /**
+   * Adds the specified source to the bundle, which can either be a `MagicString` object directly,
+   * or an options object that holds a magic string `content` property and optionally provides
+   * a `filename` for the source within the bundle, as well as an optional `ignoreList` hint
+   * (which defaults to `false`). The `filename` is used when constructing the source map for the
+   * bundle, to identify this `source` in the source map's `sources` field. The `ignoreList` hint
+   * is used to populate the `x_google_ignoreList` extension field in the source map, which is a
+   * mechanism for tools to signal to debuggers that certain sources should be ignored by default
+   * (depending on user preferences).
+   */
+  addSource(source: MagicString | { filename?: string, content: MagicString, ignoreList?: boolean }): Bundle;
   append(str: string, options?: BundleOptions): Bundle;
   clone(): Bundle;
   generateMap(options?: SourceMapOptions): SourceMap;
@@ -117,7 +127,7 @@ export default class MagicString {
   append(content: string): MagicString;
   /**
    * Appends the specified content at the index in the original string.
-   * If a range *ending* with index is subsequently moved, the insert will be moved with it. 
+   * If a range *ending* with index is subsequently moved, the insert will be moved with it.
    * See also `s.prependLeft(...)`.
    */
   appendLeft(index: number, content: string): MagicString;
@@ -162,13 +172,13 @@ export default class MagicString {
    */
   move(start: number, end: number, index: number): MagicString;
   /**
-   * Replaces the characters from `start` to `end` with `content`, along with the appended/prepended content in 
+   * Replaces the characters from `start` to `end` with `content`, along with the appended/prepended content in
    * that range. The same restrictions as `s.remove()` apply.
    *
    * The fourth argument is optional. It can have a storeName property — if true, the original name will be stored
    * for later inclusion in a sourcemap's names array — and a contentOnly property which determines whether only
    * the content is overwritten, or anything that was appended/prepended to the range as well.
-   * 
+   *
    * It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
    */
   overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): MagicString;
@@ -181,7 +191,7 @@ export default class MagicString {
    */
   update(start: number, end: number, content: string, options?: boolean | UpdateOptions): MagicString;
   /**
-   * Prepends the string with the specified content. 
+   * Prepends the string with the specified content.
    */
   prepend(content: string): MagicString;
   /**

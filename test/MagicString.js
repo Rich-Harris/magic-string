@@ -13,6 +13,12 @@ describe('MagicString', () => {
 
 			assert.equal(s.filename, 'foo.js');
 		});
+
+		it('stores ignore-list hint', () => {
+			const s = new MagicString('abc', { ignoreList: true });
+
+			assert.equal(s.ignoreList, true);
+		});
 	});
 
 	describe('append', () => {
@@ -417,6 +423,16 @@ describe('MagicString', () => {
 
 			const map = s.generateMap();
 			assert.equal(map.mappings, 'IAAA');
+		});
+
+		it('generates x_google_ignoreList', () => {
+			const s = new MagicString('function foo(){}', {
+				ignoreList: true
+		  });
+
+			const map = s.generateMap({ source: 'foo.js' });
+			assert.deepEqual(map.sources, ['foo.js']);
+			assert.deepEqual(map.x_google_ignoreList, [0]);
 		});
 	});
 

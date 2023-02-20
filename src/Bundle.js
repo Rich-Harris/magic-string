@@ -31,7 +31,7 @@ export default class Bundle {
 			);
 		}
 
-		['filename', 'indentExclusionRanges', 'separator'].forEach((option) => {
+		['filename', 'ignoreList', 'indentExclusionRanges', 'separator'].forEach((option) => {
 			if (!hasOwnProp.call(source, option)) source[option] = source.content[option];
 		});
 
@@ -84,6 +84,7 @@ export default class Bundle {
 
 	generateDecodedMap(options = {}) {
 		const names = [];
+		let x_google_ignoreList = undefined;
 		this.sources.forEach((source) => {
 			Object.keys(source.content.storedNames).forEach((name) => {
 				if (!~names.indexOf(name)) names.push(name);
@@ -141,6 +142,13 @@ export default class Bundle {
 			if (magicString.outro) {
 				mappings.advance(magicString.outro);
 			}
+
+			if (source.ignoreList && sourceIndex !== -1) {
+				if (x_google_ignoreList === undefined) {
+					x_google_ignoreList = [];
+				}
+				x_google_ignoreList.push(sourceIndex);
+			}
 		});
 
 		return {
@@ -153,6 +161,7 @@ export default class Bundle {
 			}),
 			names,
 			mappings: mappings.raw,
+			x_google_ignoreList,
 		};
 	}
 

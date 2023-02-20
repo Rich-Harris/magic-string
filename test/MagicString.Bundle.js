@@ -27,17 +27,32 @@ describe('MagicString.Bundle', () => {
 			assert.strictEqual(b.sources[0].indentExclusionRanges, array);
 		});
 
+		it('should accept ignore-list hint', () => {
+			const b = new MagicString.Bundle();
+			const foo = new MagicString('foo', {filename: 'foo.js'});
+			const bar = new MagicString('bar', {filename: 'bar.js'});
+
+			b.addSource({content: foo, ignoreList: true});
+			b.addSource({content: bar, ignoreList: false});
+			assert.strictEqual(b.sources[0].content, foo);
+			assert.strictEqual(b.sources[0].ignoreList, true);
+			assert.strictEqual(b.sources[1].content, bar);
+			assert.strictEqual(b.sources[1].ignoreList, false);
+		});
+
 		it('respects MagicString init options with { content: source }', () => {
 			const b = new MagicString.Bundle();
 			const array = [];
 			const source = new MagicString('abcdefghijkl', {
 				filename: 'foo.js',
+				ignoreList: false,
 				indentExclusionRanges: array
 			});
 
 			b.addSource({ content: source });
 			assert.strictEqual(b.sources[0].content, source);
 			assert.strictEqual(b.sources[0].filename, 'foo.js');
+			assert.strictEqual(b.sources[0].ignoreList, false);
 			assert.strictEqual(b.sources[0].indentExclusionRanges, array);
 		});
 	});
@@ -343,6 +358,29 @@ describe('MagicString.Bundle', () => {
 
 			loc = smc.originalPositionFor({ line: 3, column: 9 });
 			assert.equal(loc.source, 'three.js');
+		});
+
+		it('should generate x_google_ignoreList correctly', () => {
+			const b = new MagicString.Bundle();
+
+			const one = new MagicString('function one () {}', { filename: 'one.js' });
+			const two = new MagicString('function two () {}', { filename: 'two.js' });
+			const three = new MagicString('function three () {}', { filename: 'three.js' });
+			const four = new MagicString('function four () {}', { filename: 'four.js' });
+
+			b.addSource({ content: one, ignoreList: false });
+			b.addSource({ content: two, ignoreList: true });
+			b.addSource({ content: three, ignoreList: true });
+			b.addSource({ content: four });
+
+			const map = b.generateMap({
+				file: 'output.js'
+			});
+
+			assert.deepEqual(map.x_google_ignoreList, [
+				map.sources.indexOf('two.js'),
+				map.sources.indexOf('three.js')
+			]);
 		});
 
 		it('handles prepended content', () => {
