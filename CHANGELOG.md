@@ -1,3 +1,17 @@
+# [0.30.0](https://github.com/rich-harris/magic-string/compare/v0.29.0...v0.30.0) (2023-02-22)
+
+
+### Bug Fixes
+
+* `null` is invalid for `sources` and `file` ([#242](https://github.com/rich-harris/magic-string/issues/242)) ([d4e9c31](https://github.com/rich-harris/magic-string/commit/d4e9c31082491cfa177b31ce725c9ce39491d549))
+
+
+### Features
+
+* add the ability to ignore-list sources ([#243](https://github.com/rich-harris/magic-string/issues/243)) ([e238f04](https://github.com/rich-harris/magic-string/commit/e238f04be31ec9a3e19b18b75bb5d859f9cb2654))
+
+
+
 # [0.29.0](https://github.com/rich-harris/magic-string/compare/v0.28.0...v0.29.0) (2023-02-11)
 
 
