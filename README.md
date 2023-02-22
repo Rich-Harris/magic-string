@@ -69,7 +69,8 @@ const s = new MagicString(someCode, {
   // these options will be used if you later call `bundle.addSource( s )` - see below
   filename: 'foo.js',
   indentExclusionRanges: [/*...*/],
-	ignoreList: true
+  // market source as ignore in DevTools, see below #Bundling
+  ignoreList: false
 });
 ```
 
@@ -255,9 +256,9 @@ bundle.addSource({
 // to not step into this code and also don't show the source files depending
 // on user preferences.
 bundle.addSource({
-	filename: 'some-3rdparty-library.js',
-	content: new MagicString('function myLib(){}'),
-	ignoreList: false
+  filename: 'some-3rdparty-library.js',
+  content: new MagicString('function myLib(){}'),
+  ignoreList: false // <--
 })
 
 // Advanced: a source can include an `indentExclusionRanges` property
