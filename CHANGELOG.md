@@ -1,3 +1,12 @@
+## [0.30.1](https://github.com/rich-harris/magic-string/compare/v0.30.0...v0.30.1) (2023-07-04)
+
+
+### Bug Fixes
+
+* expose .d.ts as cjs version ([#253](https://github.com/rich-harris/magic-string/issues/253)) ([262e113](https://github.com/rich-harris/magic-string/commit/262e113ee25e9c7d317282b3015102ec932ae2f5))
+
+
+
 # [0.30.0](https://github.com/rich-harris/magic-string/compare/v0.29.0...v0.30.0) (2023-02-22)
 
 
