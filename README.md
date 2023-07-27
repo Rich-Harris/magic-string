@@ -25,14 +25,6 @@ magic-string works in both node.js and browser environments. For node, install w
 npm i magic-string
 ```
 
-To use in browser, grab the [magic-string.umd.js](https://unpkg.com/magic-string/dist/magic-string.umd.js) file and add it to your page:
-
-```html
-<script src='magic-string.umd.js'></script>
-```
-
-(It also works with various module systems, if you prefer that sort of thing - it has a dependency on [vlq](https://github.com/Rich-Harris/vlq).)
-
 ## Usage
 
 These examples assume you're in node.js, or something similar:

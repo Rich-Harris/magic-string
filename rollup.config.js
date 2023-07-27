@@ -31,18 +31,5 @@ export default [
 			exports: 'default',
 			sourcemap: true
 		}
-	},
-
-	/* umd */
-	{
-		input: 'src/index-legacy.js',
-		plugins,
-		output: {
-			file: 'dist/magic-string.umd.js',
-			format: 'umd',
-			exports: 'default',
-			name: 'MagicString',
-			sourcemap: true
-		}
 	}
 ];
