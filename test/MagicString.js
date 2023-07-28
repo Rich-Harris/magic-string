@@ -434,6 +434,41 @@ describe('MagicString', () => {
 			assert.deepEqual(map.sources, ['foo.js']);
 			assert.deepEqual(map.x_google_ignoreList, [0]);
 		});
+
+		it('generates segments per word boundary with hires "boundary"', () => {
+			const s = new MagicString('function foo(){ console.log("bar") }');
+
+			// rename bar to hello
+			s.overwrite(29, 32, 'hello');
+
+			const map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true,
+				hires: 'boundary'
+			});
+			
+			assert.equal(map.mappings, 'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC,CAAC,CAAC');
+
+			const smc = new SourceMapConsumer(map);
+			let loc;
+
+			loc = smc.originalPositionFor({ line: 1, column: 3 });
+			assert.equal(loc.line, 1);
+			assert.equal(loc.column, 0);
+
+			loc = smc.originalPositionFor({ line: 1, column: 11 });
+			assert.equal(loc.line, 1);
+			assert.equal(loc.column, 9);
+
+			loc = smc.originalPositionFor({ line: 1, column: 29 });
+			assert.equal(loc.line, 1);
+			assert.equal(loc.column, 29);
+
+			loc = smc.originalPositionFor({ line: 1, column: 35 });
+			assert.equal(loc.line, 1);
+			assert.equal(loc.column, 33);
+		});
 	});
 
 	describe('getIndentString', () => {

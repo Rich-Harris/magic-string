@@ -10,9 +10,11 @@ export interface SourceMapOptions {
    * be able to pinpoint the exact location of function calls and so on.
    * With lo-res mappings, devtools may only be able to identify the correct
    * line - but they're quicker to generate and less bulky.
+   * You can also set `"boundary"` to generate a semi-hi-res mappings segmented per word boundary
+   * instead of per character, suitable for string semantics that are separated by words.
    * If sourcemap locations have been specified with s.addSourceMapLocation(), they will be used here.
    */
-  hires?: boolean;
+  hires?: boolean | 'boundary';
   /**
    * The filename where you plan to write the sourcemap.
    */
