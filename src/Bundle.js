@@ -27,7 +27,7 @@ export default class Bundle {
 
 		if (!isObject(source) || !source.content) {
 			throw new Error(
-				'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`'
+				'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`',
 			);
 		}
 
@@ -121,7 +121,7 @@ export default class Bundle {
 							sourceIndex,
 							chunk.content,
 							loc,
-							chunk.storeName ? names.indexOf(chunk.original) : -1
+							chunk.storeName ? names.indexOf(chunk.original) : -1,
 						);
 					} else {
 						mappings.addUneditedChunk(
@@ -129,7 +129,7 @@ export default class Bundle {
 							chunk,
 							magicString.original,
 							loc,
-							magicString.sourcemapLocations
+							magicString.sourcemapLocations,
 						);
 					}
 				} else {
@@ -247,7 +247,7 @@ export default class Bundle {
 	length() {
 		return this.sources.reduce(
 			(length, source) => length + source.content.length(),
-			this.intro.length
+			this.intro.length,
 		);
 	}
 

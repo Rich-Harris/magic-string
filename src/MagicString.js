@@ -154,7 +154,7 @@ export default class MagicString {
 					sourceIndex,
 					chunk.content,
 					loc,
-					chunk.storeName ? names.indexOf(chunk.original) : -1
+					chunk.storeName ? names.indexOf(chunk.original) : -1,
 				);
 			} else {
 				mappings.addUneditedChunk(sourceIndex, chunk, this.original, loc, this.sourcemapLocations);
@@ -165,11 +165,13 @@ export default class MagicString {
 
 		return {
 			file: options.file ? options.file.split(/[/\\]/).pop() : undefined,
-			sources: [options.source ? getRelativePath(options.file || '', options.source) : (options.file || '')],
+			sources: [
+				options.source ? getRelativePath(options.file || '', options.source) : options.file || '',
+			],
 			sourcesContent: options.includeContent ? [this.original] : undefined,
 			names,
 			mappings: mappings.raw,
-			x_google_ignoreList: this.ignoreList ? [sourceIndex] : undefined
+			x_google_ignoreList: this.ignoreList ? [sourceIndex] : undefined,
 		};
 	}
 
@@ -283,14 +285,14 @@ export default class MagicString {
 
 	insert() {
 		throw new Error(
-			'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)'
+			'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)',
 		);
 	}
 
 	insertLeft(index, content) {
 		if (!warned.insertLeft) {
 			console.warn(
-				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead'
+				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead',
 			); // eslint-disable-line no-console
 			warned.insertLeft = true;
 		}
@@ -301,7 +303,7 @@ export default class MagicString {
 	insertRight(index, content) {
 		if (!warned.insertRight) {
 			console.warn(
-				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead'
+				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead',
 			); // eslint-disable-line no-console
 			warned.insertRight = true;
 		}
@@ -364,7 +366,7 @@ export default class MagicString {
 		if (end > this.original.length) throw new Error('end is out of bounds');
 		if (start === end)
 			throw new Error(
-				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead'
+				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead',
 			);
 
 		if (DEBUG) this.stats.time('overwrite');
@@ -375,7 +377,7 @@ export default class MagicString {
 		if (options === true) {
 			if (!warned.storeName) {
 				console.warn(
-					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string'
+					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string',
 				); // eslint-disable-line no-console
 				warned.storeName = true;
 			}
@@ -613,7 +615,7 @@ export default class MagicString {
 			// zero-length edited chunks are a special case (overlapping replacements)
 			const loc = getLocator(this.original)(index);
 			throw new Error(
-				`Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")`
+				`Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")`,
 			);
 		}
 
@@ -773,7 +775,7 @@ export default class MagicString {
 					this.overwrite(
 						match.index,
 						match.index + match[0].length,
-						getReplacement(match, this.original)
+						getReplacement(match, this.original),
 					);
 			});
 		} else {
@@ -782,7 +784,7 @@ export default class MagicString {
 				this.overwrite(
 					match.index,
 					match.index + match[0].length,
-					getReplacement(match, this.original)
+					getReplacement(match, this.original),
 				);
 		}
 		return this;
@@ -828,7 +830,7 @@ export default class MagicString {
 
 		if (!searchValue.global) {
 			throw new TypeError(
-				'MagicString.prototype.replaceAll called with a non-global RegExp argument'
+				'MagicString.prototype.replaceAll called with a non-global RegExp argument',
 			);
 		}
 
