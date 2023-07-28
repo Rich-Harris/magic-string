@@ -1,3 +1,12 @@
+## [0.30.2](https://github.com/rich-harris/magic-string/compare/v0.30.1...v0.30.2) (2023-07-28)
+
+
+### Features
+
+* hires boundary ([#255](https://github.com/rich-harris/magic-string/issues/255)) ([a63d5f2](https://github.com/rich-harris/magic-string/commit/a63d5f25308ff1965ae676e2aa5311417279e7d4))
+
+
+
 ## [0.30.1](https://github.com/rich-harris/magic-string/compare/v0.30.0...v0.30.1) (2023-07-04)
 
 
