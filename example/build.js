@@ -29,7 +29,7 @@ fs.readFile( 'app.source.js', function ( err, result ) {
 	});
 
 	fs.writeFileSync( 'app.js', transpiled );
-	fs.writeFileSync( 'app.js.map', map );
+	fs.writeFileSync( 'app.js.map', JSON.stringify(map) );
 
 	fs.writeFileSync( 'app.inlinemap.js', transpiled + '\n//#sourceMappingURL=' + map.toUrl() );
 });
