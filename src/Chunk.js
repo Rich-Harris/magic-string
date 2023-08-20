@@ -147,8 +147,9 @@ export default class Chunk {
 
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
-				this.split(this.end - trimmed.length);
+				const newChunk = this.split(this.end - trimmed.length);
 				this.edit('', undefined, true);
+				newChunk.content = trimmed;
 			}
 			return true;
 		} else {
