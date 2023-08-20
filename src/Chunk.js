@@ -99,7 +99,13 @@ export default class Chunk {
 		this.end = index;
 
 		if (this.edited) {
-			// user should save the edit content record into the near changes chunk
+			// after split we should save the edit content record into the correct chunk
+			// to make sure sourcemap correct
+			// For example:
+			// '  test'.trim()
+			//     split   -> '  ' + 'test'
+			//   ✔️ edit    -> '' + 'test'
+			//   ✖️ edit    -> 'test' + '' 
 			// TODO is this block necessary?...
 			newChunk.edit('', false);
 			this.content = '';
