@@ -127,8 +127,10 @@ export default class Chunk {
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
 				this.split(this.start + trimmed.length).edit('', undefined, true);
-				// if this chunk edited, we should make sure the content is the trimmed content.
-				this.content = trimmed;
+				if (this.edited) {
+					// save the change, if it has been edited
+					this.edit(trimmed, this.storeName, true)
+				}
 			}
 			return true;
 		} else {
@@ -149,6 +151,7 @@ export default class Chunk {
 			if (trimmed !== this.content) {
 				const newChunk = this.split(this.end - trimmed.length);
 				if (this.edited) {
+					// save the change, if it has been edited
 					newChunk.edit(trimmed, this.storeName, true);
 				}
 				this.edit('', undefined, true);
