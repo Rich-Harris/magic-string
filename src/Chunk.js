@@ -99,6 +99,7 @@ export default class Chunk {
 		this.end = index;
 
 		if (this.edited) {
+			// user should save the edit content record into the near changes chunk
 			// TODO is this block necessary?...
 			newChunk.edit('', false);
 			this.content = '';
