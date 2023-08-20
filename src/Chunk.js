@@ -136,7 +136,7 @@ export default class Chunk {
 				this.split(this.start + trimmed.length).edit('', undefined, true);
 				if (this.edited) {
 					// save the change, if it has been edited
-					this.edit(trimmed, this.storeName, true)
+					this.edit(trimmed, this.storeName, true);
 				}
 			}
 			return true;
