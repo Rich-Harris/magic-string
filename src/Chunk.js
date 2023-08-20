@@ -127,6 +127,8 @@ export default class Chunk {
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
 				this.split(this.start + trimmed.length).edit('', undefined, true);
+				// if this chunk edited, we should make sure the content is the trimmed content.
+				this.content = trimmed;
 			}
 			return true;
 		} else {
