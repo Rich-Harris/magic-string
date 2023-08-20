@@ -148,8 +148,10 @@ export default class Chunk {
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
 				const newChunk = this.split(this.end - trimmed.length);
+				if (this.edited) {
+					newChunk.edit(trimmed, this.storeName, true);
+				}
 				this.edit('', undefined, true);
-				newChunk.content = trimmed;
 			}
 			return true;
 		} else {
