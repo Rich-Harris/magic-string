@@ -1,3 +1,12 @@
+## [0.30.3](https://github.com/rich-harris/magic-string/compare/v0.30.2...v0.30.3) (2023-08-21)
+
+
+### Bug Fixes
+
+* trim replaced content with space ([#257](https://github.com/rich-harris/magic-string/issues/257)) ([8088f53](https://github.com/rich-harris/magic-string/commit/8088f53873da13c81877a05ab4549fce86f537b5))
+
+
+
 ## [0.30.2](https://github.com/rich-harris/magic-string/compare/v0.30.1...v0.30.2) (2023-07-28)
 
 
