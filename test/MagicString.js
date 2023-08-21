@@ -1338,6 +1338,27 @@ describe('MagicString', () => {
 			assert.equal(s.toString(), 'defghi');
 		});
 
+		it('should trim replaced content with end space', () => {
+			const s = new MagicString('  test  ');
+			s.overwrite(2, 6, 'abcd  ');
+			s.trimEnd();
+			assert.equal(s.toString(), '  abcd');
+		});
+
+		it('should trim replaced content with start space', () => {
+			const s = new MagicString('  test  ');
+			s.overwrite(0, 6, '  abcd');
+			s.trimStart();
+			assert.equal(s.toString(), 'abcd  ');
+		});
+
+		it('should trim replaced content with start space', () => {
+			const s = new MagicString('  test  ');
+			s.overwrite(0, 8, '  abcd  ');
+			s.trim();
+			assert.equal(s.toString(), 'abcd');
+		});
+
 		it('should trim original content before replaced content', () => {
 			const s = new MagicString('abc   def');
 

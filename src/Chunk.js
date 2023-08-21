@@ -99,6 +99,13 @@ export default class Chunk {
 		this.end = index;
 
 		if (this.edited) {
+			// after split we should save the edit content record into the correct chunk
+			// to make sure sourcemap correct
+			// For example:
+			// '  test'.trim()
+			//     split   -> '  ' + 'test'
+			//   ✔️ edit    -> '' + 'test'
+			//   ✖️ edit    -> 'test' + '' 
 			// TODO is this block necessary?...
 			newChunk.edit('', false);
 			this.content = '';
@@ -127,6 +134,10 @@ export default class Chunk {
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
 				this.split(this.start + trimmed.length).edit('', undefined, true);
+				if (this.edited) {
+					// save the change, if it has been edited
+					this.edit(trimmed, this.storeName, true);
+				}
 			}
 			return true;
 		} else {
@@ -145,7 +156,11 @@ export default class Chunk {
 
 		if (trimmed.length) {
 			if (trimmed !== this.content) {
-				this.split(this.end - trimmed.length);
+				const newChunk = this.split(this.end - trimmed.length);
+				if (this.edited) {
+					// save the change, if it has been edited
+					newChunk.edit(trimmed, this.storeName, true);
+				}
 				this.edit('', undefined, true);
 			}
 			return true;
