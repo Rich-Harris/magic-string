@@ -138,10 +138,10 @@ class Chunk {
 let _btoa = () => {
   throw new Error("Unsupported environment: `btoa` or `Buffer` should be supported.");
 };
-if (typeof btoa === "function") {
-  _btoa = (str) => btoa(str);
-} else if (typeof Buffer === "function") {
+if (typeof Buffer === "function") {
   _btoa = (str) => Buffer.from(str, "utf-8").toString("base64");
+} else if (typeof btoa === "function") {
+  _btoa = btoa;
 }
 class SourceMap {
   constructor(properties) {
