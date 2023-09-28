@@ -447,7 +447,7 @@ describe('MagicString', () => {
 				includeContent: true,
 				hires: 'boundary'
 			});
-			
+
 			assert.equal(map.mappings, 'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC,CAAC,CAAC');
 
 			const smc = new SourceMapConsumer(map);
@@ -468,6 +468,28 @@ describe('MagicString', () => {
 			loc = smc.originalPositionFor({ line: 1, column: 35 });
 			assert.equal(loc.line, 1);
 			assert.equal(loc.column, 33);
+		});
+
+		it('generates a correct source map with update using a content containing a new line', () => {
+			const s = new MagicString('foobar');
+			s.update(3, 4, '\nbb');
+			assert.equal(s.toString(), 'foo\nbbar');
+
+			const map = s.generateMap({ hires: true });
+
+			const smc = new SourceMapConsumer(map);
+			const loc = smc.originalPositionFor({ line: 1, column: 3 });
+			assert.equal(loc.line, 1);
+			assert.equal(loc.column, 3);
+			const loc2 = smc.originalPositionFor({ line: 2, column: 0 });
+			assert.equal(loc2.line, 1);
+			assert.equal(loc2.column, 3);
+			const loc3 = smc.originalPositionFor({ line: 2, column: 1 });
+			assert.equal(loc3.line, 1);
+			assert.equal(loc3.column, 3);
+			const loc4 = smc.originalPositionFor({ line: 2, column: 2 });
+			assert.equal(loc4.line, 1);
+			assert.equal(loc4.column, 4);
 		});
 	});
 
@@ -1490,7 +1512,7 @@ describe('MagicString', () => {
 			const s = new MagicString(' abcde   fghijkl ');
 
 			assert.ok(!s.hasChanged());
-		
+
 			assert.ok(s.clone().prepend('  ').hasChanged());
 			assert.ok(s.clone().overwrite(1, 2, 'b').hasChanged());
 			assert.ok(s.clone().remove(1, 6).hasChanged());
@@ -1504,7 +1526,7 @@ describe('MagicString', () => {
 			assert.ok(clone.hasChanged());
 		});
 	});
-  
+
 	describe('replace', () => {
 		it('works with string replace', () => {
 			const code = '1 2 1 2';
@@ -1575,7 +1597,7 @@ describe('MagicString', () => {
 			);
 		});
 	});
-  
+
 	describe('replaceAll', () => {
 		it('works with string replace', () => {
 			assert.strictEqual(

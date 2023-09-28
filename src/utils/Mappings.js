@@ -12,16 +12,35 @@ export default class Mappings {
 
 	addEdit(sourceIndex, content, loc, nameIndex) {
 		if (content.length) {
+			let contentLineEnd = content.indexOf('\n', 0);
+			let previousContentLineEnd = -1;
+			while (contentLineEnd >= 0) {
+				const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
+				if (nameIndex >= 0) {
+					segment.push(nameIndex);
+				}
+				this.rawSegments.push(segment);
+
+				this.generatedCodeLine += 1;
+				this.raw[this.generatedCodeLine] = this.rawSegments = [];
+				this.generatedCodeColumn = 0;
+
+				previousContentLineEnd = contentLineEnd;
+				contentLineEnd = content.indexOf('\n', contentLineEnd + 1);
+			}
+
 			const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
 			if (nameIndex >= 0) {
 				segment.push(nameIndex);
 			}
 			this.rawSegments.push(segment);
+
+			this.advance(content.slice(previousContentLineEnd + 1));
 		} else if (this.pending) {
 			this.rawSegments.push(this.pending);
+			this.advance(content);
 		}
 
-		this.advance(content);
 		this.pending = null;
 	}
 
