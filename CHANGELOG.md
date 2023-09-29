@@ -1,3 +1,13 @@
+## [0.30.4](https://github.com/rich-harris/magic-string/compare/v0.30.3...v0.30.4) (2023-09-29)
+
+
+### Bug Fixes
+
+* correct mappings for update containing new line ([#261](https://github.com/rich-harris/magic-string/issues/261)) ([adaece9](https://github.com/rich-harris/magic-string/commit/adaece9f2370fd1266e89f2fc84c294e1f1b935c))
+* use global `btoa`, support services worker, close [#258](https://github.com/rich-harris/magic-string/issues/258) ([#259](https://github.com/rich-harris/magic-string/issues/259)) ([2dea20b](https://github.com/rich-harris/magic-string/commit/2dea20bab7ca0f776013826074d474f476d281bc))
+
+
+
 ## [0.30.3](https://github.com/rich-harris/magic-string/compare/v0.30.2...v0.30.3) (2023-08-21)
 
 
