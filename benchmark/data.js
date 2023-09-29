@@ -135,13 +135,13 @@ class Chunk {
     }
   }
 }
-let btoa = () => {
-  throw new Error("Unsupported environment: `window.btoa` or `Buffer` should be supported.");
+let _btoa = () => {
+  throw new Error("Unsupported environment: `btoa` or `Buffer` should be supported.");
 };
-if (typeof window !== "undefined" && typeof window.btoa === "function") {
-  btoa = (str) => window.btoa(unescape(encodeURIComponent(str)));
-} else if (typeof Buffer === "function") {
-  btoa = (str) => Buffer.from(str, "utf-8").toString("base64");
+if (typeof Buffer === "function") {
+  _btoa = (str) => Buffer.from(str, "utf-8").toString("base64");
+} else if (typeof btoa === "function") {
+  _btoa = btoa;
 }
 class SourceMap {
   constructor(properties) {
@@ -156,7 +156,7 @@ class SourceMap {
     return JSON.stringify(this);
   }
   toUrl() {
-    return "data:application/json;charset=utf-8;base64," + btoa(this.toString());
+    return "data:application/json;charset=utf-8;base64," + _btoa(this.toString());
   }
 }
 function guessIndent(code) {
