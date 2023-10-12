@@ -37,7 +37,7 @@ export type SourceMapSegment =
 export interface DecodedSourceMap {
   file: string;
   sources: string[];
-  sourcesContent: (string | null)[];
+  sourcesContent?: string[];
   names: string[];
   mappings: SourceMapSegment[][];
   x_google_ignoreList?: number[];
@@ -49,7 +49,7 @@ export class SourceMap {
   version: number;
   file: string;
   sources: string[];
-  sourcesContent: (string | null)[];
+  sourcesContent?: string[];
   names: string[];
   mappings: string;
   x_google_ignoreList?: number[];
@@ -80,8 +80,8 @@ export class Bundle {
   addSource(source: MagicString | { filename?: string, content: MagicString, ignoreList?: boolean }): Bundle;
   append(str: string, options?: BundleOptions): Bundle;
   clone(): Bundle;
-  generateMap(options?: SourceMapOptions): SourceMap;
-  generateDecodedMap(options?: SourceMapOptions): DecodedSourceMap;
+  generateMap(options?: SourceMapOptions): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> };
+  generateDecodedMap(options?: SourceMapOptions): Omit<DecodedSourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> };
   getIndentString(): string;
   indent(indentStr?: string): Bundle;
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
