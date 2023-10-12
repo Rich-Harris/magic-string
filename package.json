@@ -1,6 +1,6 @@
 {
   "name": "magic-string",
-  "version": "0.30.4",
+  "version": "0.30.5",
   "description": "Modify strings, generate sourcemaps",
   "keywords": [
     "string",

@@ -1,3 +1,12 @@
+## [0.30.5](https://github.com/rich-harris/magic-string/compare/v0.30.4...v0.30.5) (2023-10-12)
+
+
+### Bug Fixes
+
+* update `sourcesContent` type ([#263](https://github.com/rich-harris/magic-string/issues/263)) ([0e2068d](https://github.com/rich-harris/magic-string/commit/0e2068d6cee9d53c7a242b95f56ea99be3248142))
+
+
+
 ## [0.30.4](https://github.com/rich-harris/magic-string/compare/v0.30.3...v0.30.4) (2023-09-29)
 
 
