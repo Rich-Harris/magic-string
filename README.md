@@ -1,7 +1,7 @@
 # magic-string
 
-<a href="https://travis-ci.org/Rich-Harris/magic-string">
-  <img src="http://img.shields.io/travis/Rich-Harris/magic-string.svg"
+<a href="https://github.com/Rich-Harris/magic-string/actions/workflows/test.yml">
+  <img src="https://img.shields.io/github/actions/workflow/status/Rich-Harris/magic-string/test.yml"
        alt="build status">
 </a>
 <a href="https://npmjs.org/package/magic-string">
