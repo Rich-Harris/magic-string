@@ -1,3 +1,12 @@
+## [0.30.6](https://github.com/rich-harris/magic-string/compare/v0.30.5...v0.30.6) (2024-01-31)
+
+
+### Features
+
+* support Web Workers by using the global `btoa` ([#269](https://github.com/rich-harris/magic-string/issues/269)) ([8679648](https://github.com/rich-harris/magic-string/commit/86796487f30436cd26291834ae7445fc40ce6139))
+
+
+
 ## [0.30.5](https://github.com/rich-harris/magic-string/compare/v0.30.4...v0.30.5) (2023-10-12)
 
 
