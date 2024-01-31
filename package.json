@@ -42,16 +42,16 @@
     "watch": "rollup -cw"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.0",
-    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
     "benchmark": "^2.1.4",
-    "bumpp": "^9.2.0",
+    "bumpp": "^9.3.0",
     "conventional-changelog-cli": "^3.0.0",
-    "eslint": "^8.47.0",
+    "eslint": "^8.56.0",
     "mocha": "^10.2.0",
-    "prettier": "^3.0.2",
-    "publint": "^0.2.1",
-    "rollup": "^3.28.0",
+    "prettier": "^3.2.4",
+    "publint": "^0.2.7",
+    "rollup": "^4.9.6",
     "source-map-js": "^1.0.2",
     "source-map-support": "^0.5.21"
   },
