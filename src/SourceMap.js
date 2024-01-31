@@ -1,7 +1,7 @@
 import { encode } from '@jridgewell/sourcemap-codec';
 
 function getBtoa() {
-	if (typeof globalThis.btoa === 'function') {
+	if (typeof globalThis !== 'undefined' && typeof globalThis.btoa === 'function') {
 		return (str) => globalThis.btoa(unescape(encodeURIComponent(str)));
 	} else if (typeof Buffer === 'function') {
 		return (str) => Buffer.from(str, 'utf-8').toString('base64');

@@ -27,7 +27,8 @@
     "globals": {
         "DEBUG": true,
         "process": true,
-        "Buffer": true
+        "Buffer": true,
+        "globalThis": true,
     },
     "extends": "eslint:recommended",
     "parserOptions": {
