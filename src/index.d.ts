@@ -210,6 +210,10 @@ export default class MagicString {
    */
   remove(start: number, end: number): MagicString;
   /**
+   * Reset the modified characters from `start` to `end` (of the original string, **not** the generated string).
+   */
+  reset(start: number, end: number): MagicString;
+  /**
    * Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string.
    * Throws error if the indices are for characters that were already removed.
    */
