@@ -513,7 +513,7 @@ export default class MagicString {
 		let chunk = this.byStart[start];
 
 		while (chunk) {
-			chunk.resetToOriginal();
+			chunk.reset();
 
 			chunk = end > chunk.end ? this.byStart[chunk.end] : null;
 		}

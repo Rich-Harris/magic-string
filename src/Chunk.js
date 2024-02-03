@@ -84,7 +84,7 @@ export default class Chunk {
 		this.intro = content + this.intro;
 	}
 
-	resetToOriginal() {
+	reset() {
 		if (this.edited) {
 			this.content = this.original;
 			this.intro = '';
