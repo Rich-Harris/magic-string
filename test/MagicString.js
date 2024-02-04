@@ -1275,14 +1275,26 @@ describe('MagicString', () => {
 			assert.equal(s.toString(), 'acdefgi');
 		});
 
-		it('should not reset content inserted after the end of removed range', () => {
+		it('should reset modified ranges, redux', () => {
+			const s = new MagicString('abcdefghi');
+
+			s.remove(1, 8);
+			s.appendLeft(2, 'W');
+			s.appendRight(2, 'X');
+			s.prependLeft(3, 'Y');
+			s.prependRight(5, 'Z');
+			s.reset(2, 7);
+			assert.equal(s.toString(), 'aWcdefgi');
+		});
+
+		it('should not reset content inserted after the end of range', () => {
 			const s = new MagicString('ab.c;');
 
 			s.prependRight(0, '(');
 			s.prependRight(4, ')');
-			s.remove(2, 4);
-			s.reset(2, 3);
-			assert.equal(s.toString(), '(ab.);');
+			s.remove(1, 4);
+			s.reset(2, 4);
+			assert.equal(s.toString(), '(a.c);');
 		});
 
 		it('should provide a useful error when illegal removals are attempted', () => {
