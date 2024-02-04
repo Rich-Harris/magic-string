@@ -85,10 +85,11 @@ export default class Chunk {
 	}
 
 	reset() {
+		this.intro = '';
+		this.outro = '';
 		if (this.edited) {
 			this.content = this.original;
-			this.intro = '';
-			this.outro = '';
+			this.storeName = false;
 			this.edited = false;
 		}
 	}
