@@ -1,3 +1,12 @@
+## [0.30.7](https://github.com/rich-harris/magic-string/compare/v0.30.6...v0.30.7) (2024-02-05)
+
+
+### Features
+
+* new `reset` method ([#218](https://github.com/rich-harris/magic-string/issues/218)) ([#271](https://github.com/rich-harris/magic-string/issues/271)) ([3dc21e2](https://github.com/rich-harris/magic-string/commit/3dc21e26f04ad4c5314602e511afa210f922d433))
+
+
+
 ## [0.30.6](https://github.com/rich-harris/magic-string/compare/v0.30.5...v0.30.6) (2024-01-31)
 
 
