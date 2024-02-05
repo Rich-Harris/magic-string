@@ -496,6 +496,32 @@ export default class MagicString {
 		return this;
 	}
 
+	reset(start, end) {
+		while (start < 0) start += this.original.length;
+		while (end < 0) end += this.original.length;
+
+		if (start === end) return this;
+
+		if (start < 0 || end > this.original.length) throw new Error('Character is out of bounds');
+		if (start > end) throw new Error('end must be greater than start');
+
+		if (DEBUG) this.stats.time('reset');
+
+		this._split(start);
+		this._split(end);
+
+		let chunk = this.byStart[start];
+
+		while (chunk) {
+			chunk.reset();
+
+			chunk = end > chunk.end ? this.byStart[chunk.end] : null;
+		}
+
+		if (DEBUG) this.stats.timeEnd('reset');
+		return this;
+	}
+
 	lastChar() {
 		if (this.outro.length) return this.outro[this.outro.length - 1];
 		let chunk = this.lastChunk;

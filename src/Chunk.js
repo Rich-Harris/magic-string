@@ -84,6 +84,16 @@ export default class Chunk {
 		this.intro = content + this.intro;
 	}
 
+	reset() {
+		this.intro = '';
+		this.outro = '';
+		if (this.edited) {
+			this.content = this.original;
+			this.storeName = false;
+			this.edited = false;
+		}
+	}
+
 	split(index) {
 		const sliceIndex = index - this.start;
 
