@@ -199,6 +199,11 @@ If `substitution` is a regex, then it must have the global (`g`) flag set, or a 
 
 Removes the characters from `start` to `end` (of the original string, **not** the generated string). Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `this`.
 
+### s.reset( start, end )
+
+Resets the characters from `start` to `end` (of the original string, **not** the generated string).
+It can be used to restore previously removed characters and discard unwanted changes.
+
 ### s.slice( start, end )
 
 Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string. Throws error if the indices are for characters that were already removed.
