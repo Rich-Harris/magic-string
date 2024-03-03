@@ -1,3 +1,12 @@
+## [0.30.8](https://github.com/rich-harris/magic-string/compare/v0.30.7...v0.30.8) (2024-03-03)
+
+
+### Bug Fixes
+
+* handle last empty line correctly when using update/overwrite ([#274](https://github.com/rich-harris/magic-string/issues/274)) ([29c7bfa](https://github.com/rich-harris/magic-string/commit/29c7bfade8e7d91391c89cf913d65de84b19c3e9))
+
+
+
 ## [0.30.7](https://github.com/rich-harris/magic-string/compare/v0.30.6...v0.30.7) (2024-02-05)
 
 
