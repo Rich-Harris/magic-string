@@ -491,6 +491,43 @@ describe('MagicString', () => {
 			assert.equal(loc4.line, 1);
 			assert.equal(loc4.column, 4);
 		});
+
+		it('generates a correct source map with update using content ending with a new line', () => {
+			const s = new MagicString('foobar');
+			s.update(2, 3, 'od\n');
+			s.update(4, 5, 'a\nnd\n');
+			assert.equal(s.toString(), 'food\nba\nnd\nr');
+
+			const map = s.generateMap({ hires: true });
+			const smc = new SourceMapConsumer(map);
+
+			// od\n
+			const loc = smc.originalPositionFor({ line: 1, column: 3 });
+			assert.equal(loc.line, 1);
+			assert.equal(loc.column, 2);
+			const loc2 = smc.originalPositionFor({ line: 1, column: 4 });
+			assert.equal(loc2.line, 1);
+			assert.equal(loc2.column, 2);
+			const loc3 = smc.originalPositionFor({ line: 2, column: 0 });
+			assert.equal(loc3.line, 1);
+			assert.equal(loc3.column, 3);
+			const loc4 = smc.originalPositionFor({ line: 2, column: 1 });
+			assert.equal(loc4.line, 1);
+			assert.equal(loc4.column, 4);
+			// a\nnd\n
+			const loc5 = smc.originalPositionFor({ line: 2, column: 2 });
+			assert.equal(loc5.line, 1);
+			assert.equal(loc5.column, 4);
+			const loc6 = smc.originalPositionFor({ line: 2, column: 3 });
+			assert.equal(loc6.line, 1);
+			assert.equal(loc6.column, 4);
+			const loc7 = smc.originalPositionFor({ line: 3, column: 0 });
+			assert.equal(loc7.line, 1);
+			assert.equal(loc7.column, 4);
+			const loc8 = smc.originalPositionFor({ line: 4, column: 0 });
+			assert.equal(loc8.line, 1);
+			assert.equal(loc8.column, 5);
+		});
 	});
 
 	describe('getIndentString', () => {

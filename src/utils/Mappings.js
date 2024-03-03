@@ -12,9 +12,12 @@ export default class Mappings {
 
 	addEdit(sourceIndex, content, loc, nameIndex) {
 		if (content.length) {
+			const contentLengthMinusOne = content.length - 1;
 			let contentLineEnd = content.indexOf('\n', 0);
 			let previousContentLineEnd = -1;
-			while (contentLineEnd >= 0) {
+			// Loop through each line in the content and add a segment, but stop if the last line is empty,
+			// else code afterwards would fill one line too many
+			while (contentLineEnd >= 0 && contentLengthMinusOne > contentLineEnd) {
 				const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
 				if (nameIndex >= 0) {
 					segment.push(nameIndex);
