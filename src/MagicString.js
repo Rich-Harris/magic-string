@@ -797,21 +797,29 @@ export default class MagicString {
 		if (searchValue.global) {
 			const matches = matchAll(searchValue, this.original);
 			matches.forEach((match) => {
-				if (match.index != null)
-					this.overwrite(
-						match.index,
-						match.index + match[0].length,
-						getReplacement(match, this.original),
-					);
+				if (match.index != null) {
+					const replacement = getReplacement(match, this.original);
+					if (replacement !== match[0]) {
+						this.overwrite(
+							match.index,
+							match.index + match[0].length,
+							replacement
+						);
+					}
+				}
 			});
 		} else {
 			const match = this.original.match(searchValue);
-			if (match && match.index != null)
-				this.overwrite(
-					match.index,
-					match.index + match[0].length,
-					getReplacement(match, this.original),
-				);
+			if (match && match.index != null) {
+				const replacement = getReplacement(match, this.original);
+				if (replacement !== match[0]) {
+					this.overwrite(
+						match.index,
+						match.index + match[0].length,
+						replacement
+					);
+				}
+			}
 		}
 		return this;
 	}
@@ -843,7 +851,9 @@ export default class MagicString {
 			index !== -1;
 			index = original.indexOf(string, index + stringLength)
 		) {
-			this.overwrite(index, index + stringLength, replacement);
+			const previous = original.slice(index, index + stringLength);
+			if (previous !== replacement)
+				this.overwrite(index, index + stringLength, replacement);
 		}
 
 		return this;

@@ -1758,6 +1758,25 @@ describe('MagicString', () => {
 				new MagicString(code).replace(regex, replacer).toString()
 			);
 		});
+
+		it('should ignore non-changed replacements', () => {
+			const code = 'a12bc345#$*%';
+			const matched = [];
+
+			const s = new MagicString(code);
+
+			assert.strictEqual(s.firstChunk, s.lastChunk);
+
+			s.replace(/(\d)/g, (match, $1) => {
+				matched.push($1);
+				return match;
+			});
+
+			assert.strictEqual(s.toString(), code);
+			assert.deepStrictEqual(matched, ['1', '2', '3', '4', '5']);
+
+			assert.strictEqual(s.firstChunk, s.lastChunk);
+		});
 	});
 
 	describe('replaceAll', () => {
