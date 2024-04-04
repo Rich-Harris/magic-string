@@ -1,3 +1,12 @@
+## [0.30.9](https://github.com/rich-harris/magic-string/compare/v0.30.8...v0.30.9) (2024-04-04)
+
+
+### Performance Improvements
+
+* avoid create uncessary overrides for `replace` ([a1b857c](https://github.com/rich-harris/magic-string/commit/a1b857cc5a77af1ffae73355d9c467dce058e427))
+
+
+
 ## [0.30.8](https://github.com/rich-harris/magic-string/compare/v0.30.7...v0.30.8) (2024-03-03)
 
 
