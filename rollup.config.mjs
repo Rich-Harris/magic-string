@@ -1,5 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import fs from 'node:fs';
 
 const plugins = [
 	nodeResolve(),
@@ -11,7 +12,16 @@ export default [
 	{
 		input: 'src/index.js',
 		external: ['@jridgewell/sourcemap-codec'],
-		plugins,
+		plugins: [
+			...plugins,
+			{
+				name: 'copy-typescript-files',
+				generateBundle() {
+					fs.copyFileSync('src/index.d.ts', 'dist/magic-string.es.d.mts');
+					fs.copyFileSync('src/index.d.ts', 'dist/magic-string.cjs.d.ts');
+				}
+			}
+		],
 		output: {
 			file: 'dist/magic-string.es.mjs',
 			format: 'es',
