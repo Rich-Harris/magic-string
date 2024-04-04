@@ -29,7 +29,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rollup -c && cp ./src/index.d.ts ./dist/magic-string.es.d.mts && cp ./src/index.d.ts ./dist/magic-string.cjs.d.ts",
+    "build": "rollup -c",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
     "lint": "eslint src test && publint",
