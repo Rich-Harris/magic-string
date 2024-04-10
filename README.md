@@ -69,7 +69,7 @@ const s = new MagicString(someCode, {
   // these options will be used if you later call `bundle.addSource( s )` - see below
   filename: 'foo.js',
   indentExclusionRanges: [/*...*/],
-  // market source as ignore in DevTools, see below #Bundling
+  // mark source as ignore in DevTools, see below #Bundling
   ignoreList: false
 });
 ```
