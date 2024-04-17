@@ -22,28 +22,28 @@ importers:
         specifier: ^2.1.4
         version: 2.1.4
       bumpp:
-        specifier: ^9.3.0
+        specifier: ^9.4.0
         version: 9.4.0
       conventional-changelog-cli:
         specifier: ^3.0.0
         version: 3.0.0
       eslint:
-        specifier: ^8.56.0
+        specifier: ^8.57.0
         version: 8.57.0
       mocha:
-        specifier: ^10.2.0
+        specifier: ^10.4.0
         version: 10.4.0
       prettier:
-        specifier: ^3.2.4
+        specifier: ^3.2.5
         version: 3.2.5
       publint:
         specifier: ^0.2.7
         version: 0.2.7
       rollup:
-        specifier: ^3.28.0
+        specifier: ^3.29.4
         version: 3.29.4
       source-map-js:
-        specifier: ^1.0.2
+        specifier: ^1.2.0
         version: 1.2.0
       source-map-support:
         specifier: ^0.5.21
