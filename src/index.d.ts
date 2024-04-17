@@ -77,20 +77,20 @@ export class Bundle {
    * mechanism for tools to signal to debuggers that certain sources should be ignored by default
    * (depending on user preferences).
    */
-  addSource(source: MagicString | { filename?: string, content: MagicString, ignoreList?: boolean }): Bundle;
-  append(str: string, options?: BundleOptions): Bundle;
-  clone(): Bundle;
+  addSource(source: MagicString | { filename?: string, content: MagicString, ignoreList?: boolean }): this;
+  append(str: string, options?: BundleOptions): this;
+  clone(): this;
   generateMap(options?: SourceMapOptions): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> };
   generateDecodedMap(options?: SourceMapOptions): Omit<DecodedSourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> };
   getIndentString(): string;
-  indent(indentStr?: string): Bundle;
+  indent(indentStr?: string): this;
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
-  prepend(str: string): Bundle;
+  prepend(str: string): this;
   toString(): string;
-  trimLines(): Bundle;
-  trim(charType?: string): Bundle;
-  trimStart(charType?: string): Bundle;
-  trimEnd(charType?: string): Bundle;
+  trimLines(): this;
+  trim(charType?: string): this;
+  trimStart(charType?: string): this;
+  trimEnd(charType?: string): this;
   isEmpty(): boolean;
   length(): number;
 }
@@ -126,23 +126,23 @@ export default class MagicString {
   /**
    * Appends the specified content to the end of the string.
    */
-  append(content: string): MagicString;
+  append(content: string): this;
   /**
    * Appends the specified content at the index in the original string.
    * If a range *ending* with index is subsequently moved, the insert will be moved with it.
    * See also `s.prependLeft(...)`.
    */
-  appendLeft(index: number, content: string): MagicString;
+  appendLeft(index: number, content: string): this;
   /**
    * Appends the specified content at the index in the original string.
    * If a range *starting* with index is subsequently moved, the insert will be moved with it.
    * See also `s.prependRight(...)`.
    */
-  appendRight(index: number, content: string): MagicString;
+  appendRight(index: number, content: string): this;
   /**
    * Does what you'd expect.
    */
-  clone(): MagicString;
+  clone(): this;
   /**
    * Generates a version 3 sourcemap.
    */
@@ -158,7 +158,7 @@ export default class MagicString {
    * Prefixes each line of the string with prefix.
    * If prefix is not supplied, the indentation will be guessed from the original content, falling back to a single tab character.
    */
-  indent(options?: IndentOptions): MagicString;
+  indent(options?: IndentOptions): this;
   /**
    * Prefixes each line of the string with prefix.
    * If prefix is not supplied, the indentation will be guessed from the original content, falling back to a single tab character.
@@ -166,13 +166,13 @@ export default class MagicString {
    * The options argument can have an exclude property, which is an array of [start, end] character ranges.
    * These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
    */
-  indent(indentStr?: string, options?: IndentOptions): MagicString;
+  indent(indentStr?: string, options?: IndentOptions): this;
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
 
   /**
    * Moves the characters from `start and `end` to `index`.
    */
-  move(start: number, end: number, index: number): MagicString;
+  move(start: number, end: number, index: number): this;
   /**
    * Replaces the characters from `start` to `end` with `content`, along with the appended/prepended content in
    * that range. The same restrictions as `s.remove()` apply.
@@ -183,7 +183,7 @@ export default class MagicString {
    *
    * It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
    */
-  overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): MagicString;
+  overwrite(start: number, end: number, content: string, options?: boolean | OverwriteOptions): this;
   /**
    * Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply.
    *
@@ -191,28 +191,28 @@ export default class MagicString {
    * for later inclusion in a sourcemap's names array — and an overwrite property which determines whether only
    * the content is overwritten, or anything that was appended/prepended to the range as well.
    */
-  update(start: number, end: number, content: string, options?: boolean | UpdateOptions): MagicString;
+  update(start: number, end: number, content: string, options?: boolean | UpdateOptions): this;
   /**
    * Prepends the string with the specified content.
    */
-  prepend(content: string): MagicString;
+  prepend(content: string): this;
   /**
    * Same as `s.appendLeft(...)`, except that the inserted content will go *before* any previous appends or prepends at index
    */
-  prependLeft(index: number, content: string): MagicString;
+  prependLeft(index: number, content: string): this;
   /**
    * Same as `s.appendRight(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
    */
-  prependRight(index: number, content: string): MagicString;
+  prependRight(index: number, content: string): this;
   /**
    * Removes the characters from `start` to `end` (of the original string, **not** the generated string).
    * Removing the same content twice, or making removals that partially overlap, will cause an error.
    */
-  remove(start: number, end: number): MagicString;
+  remove(start: number, end: number): this;
   /**
    * Reset the modified characters from `start` to `end` (of the original string, **not** the generated string).
    */
-  reset(start: number, end: number): MagicString;
+  reset(start: number, end: number): this;
   /**
    * Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string.
    * Throws error if the indices are for characters that were already removed.
@@ -221,31 +221,31 @@ export default class MagicString {
   /**
    * Returns a clone of `s`, with all content before the `start` and `end` characters of the original string removed.
    */
-  snip(start: number, end: number): MagicString;
+  snip(start: number, end: number): this;
   /**
    * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start and end.
    */
-  trim(charType?: string): MagicString;
+  trim(charType?: string): this;
   /**
    * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start.
    */
-  trimStart(charType?: string): MagicString;
+  trimStart(charType?: string): this;
   /**
    * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the end.
    */
-  trimEnd(charType?: string): MagicString;
+  trimEnd(charType?: string): this;
   /**
    * Removes empty lines from the start and end.
    */
-  trimLines(): MagicString;
+  trimLines(): this;
   /**
    * String replacement with RegExp or string.
    */
-  replace(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): MagicString;
+  replace(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): this;
   /**
    * Same as `s.replace`, but replace all matched strings instead of just one.
    */
-  replaceAll(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): MagicString;
+  replaceAll(regex: RegExp | string, replacement: string | ((substring: string, ...args: any[]) => string)): this;
 
   lastChar(): string;
   lastLine(): string;
