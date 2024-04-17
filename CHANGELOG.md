@@ -1,3 +1,12 @@
+## [0.30.10](https://github.com/rich-harris/magic-string/compare/v0.30.9...v0.30.10) (2024-04-17)
+
+
+### Bug Fixes
+
+* **types:** improve chainable types ([#278](https://github.com/rich-harris/magic-string/issues/278)) ([072188f](https://github.com/rich-harris/magic-string/commit/072188f84398437bd75f41bf3d5df49aeae1b587))
+
+
+
 ## [0.30.9](https://github.com/rich-harris/magic-string/compare/v0.30.8...v0.30.9) (2024-04-04)
 
 
