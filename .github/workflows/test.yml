@@ -19,24 +19,25 @@ jobs:
 
     strategy:
       matrix:
-        node_version: [14.x, 16.x, 18.x, 20.x]
+        node_version: [lts/*]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node_version }}
 
+      - uses: pnpm/action-setup@v3
+
       - name: Install
-        run: npm i
+        run: pnpm i
 
       - name: Lint
-        if: ${{ matrix.node_version == '14.x' }}
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Test
-        run: npm test
+        run: pnpm test

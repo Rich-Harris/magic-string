@@ -1,6 +1,7 @@
 {
   "name": "magic-string",
   "version": "0.30.9",
+  "packageManager": "pnpm@9.0.1",
   "description": "Modify strings, generate sourcemaps",
   "keywords": [
     "string",
