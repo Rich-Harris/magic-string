@@ -1,7 +1,7 @@
 {
   "name": "magic-string",
   "version": "0.30.10",
-  "packageManager": "pnpm@9.0.1",
+  "packageManager": "pnpm@9.6.0",
   "description": "Modify strings, generate sourcemaps",
   "keywords": [
     "string",
@@ -45,19 +45,19 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-replace": "^5.0.7",
     "benchmark": "^2.1.4",
-    "bumpp": "^9.4.0",
+    "bumpp": "^9.4.1",
     "conventional-changelog-cli": "^3.0.0",
     "eslint": "^8.57.0",
-    "mocha": "^10.4.0",
-    "prettier": "^3.2.5",
-    "publint": "^0.2.7",
+    "mocha": "^10.7.0",
+    "prettier": "^3.3.3",
+    "publint": "^0.2.9",
     "rollup": "^3.29.4",
     "source-map-js": "^1.2.0",
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "@jridgewell/sourcemap-codec": "^1.4.15"
+    "@jridgewell/sourcemap-codec": "^1.5.0"
   }
 }
