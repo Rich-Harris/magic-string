@@ -360,8 +360,10 @@ export default class MagicString {
 	update(start, end, content, options) {
 		if (typeof content !== 'string') throw new TypeError('replacement content must be a string');
 
-		while (start < 0) start += this.original.length;
-		while (end < 0) end += this.original.length;
+		if (this.original.length !== 0) {
+			while (start < 0) start += this.original.length;
+			while (end < 0) end += this.original.length;
+		}
 
 		if (end > this.original.length) throw new Error('end is out of bounds');
 		if (start === end)
@@ -469,9 +471,10 @@ export default class MagicString {
 	}
 
 	remove(start, end) {
-		const is_empty = this.original.length === 0;
-		while (start < 0 && !is_empty) start += this.original.length;
-		while (end < 0 && !is_empty) end += this.original.length;
+		if (this.original.length !== 0) {
+			while (start < 0) start += this.original.length;
+			while (end < 0) end += this.original.length;
+		}
 
 		if (start === end) return this;
 
@@ -498,8 +501,10 @@ export default class MagicString {
 	}
 
 	reset(start, end) {
-		while (start < 0) start += this.original.length;
-		while (end < 0) end += this.original.length;
+		if (this.original.length !== 0) {
+			while (start < 0) start += this.original.length;
+			while (end < 0) end += this.original.length;
+		}
 
 		if (start === end) return this;
 
@@ -565,8 +570,10 @@ export default class MagicString {
 	}
 
 	slice(start = 0, end = this.original.length) {
-		while (start < 0) start += this.original.length;
-		while (end < 0) end += this.original.length;
+		if (this.original.length !== 0) {
+			while (start < 0) start += this.original.length;
+			while (end < 0) end += this.original.length;
+		}
 
 		let result = '';
 

@@ -663,10 +663,12 @@ class MagicString {
     return this.intro + lineStr;
   }
   slice(start = 0, end = this.original.length) {
-    while (start < 0)
-      start += this.original.length;
-    while (end < 0)
-      end += this.original.length;
+    if (this.original.length !== 0) {
+      while (start < 0)
+        start += this.original.length;
+      while (end < 0)
+        end += this.original.length;
+    }
     let result = "";
     let chunk = this.firstChunk;
     while (chunk && (chunk.start > start || chunk.end <= start)) {
