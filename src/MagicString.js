@@ -469,7 +469,7 @@ export default class MagicString {
 	}
 
 	remove(start, end) {
-		const is_empty = this.original.length === 0;	
+		const is_empty = this.original.length === 0;
 		while (start < 0 && !is_empty) start += this.original.length;
 		while (end < 0 && !is_empty) end += this.original.length;
 
