@@ -1234,6 +1234,19 @@ describe('MagicString', () => {
 
 			assert.equal(s.toString(), 'abchidejkl');
 		});
+
+		it('should accept negative indices', () => {
+			const s = new MagicString('abcde');
+			// "abcde"
+			//     ^
+			s.remove(-2, -1);
+			assert.equal(s.toString(), 'abce');
+		});
+
+		it('should throw error when using negative indices with empty string', () => {
+			const s = new MagicString('');
+			assert.throws(() => s.remove(-2, -1), /Error: Character is out of bounds/);
+		});
 	});
 
 	describe('reset', () => {
