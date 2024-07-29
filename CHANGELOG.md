@@ -1,3 +1,12 @@
+## [0.30.11](https://github.com/rich-harris/magic-string/compare/v0.30.10...v0.30.11) (2024-07-29)
+
+
+### Bug Fixes
+
+* not use negative indices for remove in empty string ([#281](https://github.com/rich-harris/magic-string/issues/281)) ([5c1cba0](https://github.com/rich-harris/magic-string/commit/5c1cba04ed1a45374ab17b07fc335951d59c1a61))
+
+
+
 ## [0.30.10](https://github.com/rich-harris/magic-string/compare/v0.30.9...v0.30.10) (2024-04-17)
 
 
