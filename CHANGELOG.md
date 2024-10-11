@@ -1,3 +1,12 @@
+## [0.30.12](https://github.com/rich-harris/magic-string/compare/v0.30.11...v0.30.12) (2024-10-11)
+
+
+### Performance Improvements
+
+* skip line break mappings ([#284](https://github.com/rich-harris/magic-string/issues/284)) ([5b1ecf7](https://github.com/rich-harris/magic-string/commit/5b1ecf701f663d29891c8d24b3f5869147757a99))
+
+
+
 ## [0.30.11](https://github.com/rich-harris/magic-string/compare/v0.30.10...v0.30.11) (2024-07-29)
 
 
