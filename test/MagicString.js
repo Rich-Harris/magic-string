@@ -528,6 +528,19 @@ describe('MagicString', () => {
 			assert.equal(loc8.line, 1);
 			assert.equal(loc8.column, 5);
 		});
+
+		it ('generates a source map without unneeded line break mappings', () => {
+			const s = new MagicString('function foo(){\n  console.log("bar")\n}');
+
+			const map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true,
+				hires: 'boundary'
+			});
+
+			assert.equal(map.mappings, 'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC;AACd,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,GAAG,CAAC;AACnB');
+		});
 	});
 
 	describe('getIndentString', () => {
