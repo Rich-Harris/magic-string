@@ -54,27 +54,6 @@ export default class Mappings {
 		let charInHiresBoundary = false;
 
 		while (originalCharIndex < chunk.end) {
-			if (this.hires || first || sourcemapLocations.has(originalCharIndex)) {
-				const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
-
-				if (this.hires === 'boundary') {
-					// in hires "boundary", group segments per word boundary than per char
-					if (wordRegex.test(original[originalCharIndex])) {
-						// for first char in the boundary found, start the boundary by pushing a segment
-						if (!charInHiresBoundary) {
-							this.rawSegments.push(segment);
-							charInHiresBoundary = true;
-						}
-					} else {
-						// for non-word char, end the boundary by pushing a segment
-						this.rawSegments.push(segment);
-						charInHiresBoundary = false;
-					}
-				} else {
-					this.rawSegments.push(segment);
-				}
-			}
-
 			if (original[originalCharIndex] === '\n') {
 				loc.line += 1;
 				loc.column = 0;
@@ -83,6 +62,27 @@ export default class Mappings {
 				this.generatedCodeColumn = 0;
 				first = true;
 			} else {
+				if (this.hires || first || sourcemapLocations.has(originalCharIndex)) {
+					const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
+
+					if (this.hires === 'boundary') {
+						// in hires "boundary", group segments per word boundary than per char
+						if (wordRegex.test(original[originalCharIndex])) {
+							// for first char in the boundary found, start the boundary by pushing a segment
+							if (!charInHiresBoundary) {
+								this.rawSegments.push(segment);
+								charInHiresBoundary = true;
+							}
+						} else {
+							// for non-word char, end the boundary by pushing a segment
+							this.rawSegments.push(segment);
+							charInHiresBoundary = false;
+						}
+					} else {
+						this.rawSegments.push(segment);
+					}
+				}
+
 				loc.column += 1;
 				this.generatedCodeColumn += 1;
 				first = false;
