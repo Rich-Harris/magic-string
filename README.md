@@ -193,7 +193,7 @@ The differences from [`String.replace`]((https://developer.mozilla.org/en-US/doc
 ### s.replaceAll( regexpOrString, substitution )
 
 Same as `s.replace`, but replace all matched strings instead of just one.
-If `substitution` is a regex, then it must have the global (`g`) flag set, or a `TypeError` is thrown. Matches the behavior of the builtin [`String.property.replaceAll`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll).
+If `regexpOrString` is a regex, then it must have the global (`g`) flag set, or a `TypeError` is thrown. Matches the behavior of the builtin [`String.property.replaceAll`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll). Returns `this`.
 
 ### s.remove( start, end )
 
