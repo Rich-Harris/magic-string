@@ -170,7 +170,7 @@ export default class MagicString {
   indentExclusionRanges: ExclusionRange | Array<ExclusionRange>;
 
   /**
-   * Moves the characters from `start and `end` to `index`.
+   * Moves the characters from `start` and `end` to `index`.
    */
   move(start: number, end: number, index: number): this;
   /**
