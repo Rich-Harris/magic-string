@@ -25,6 +25,9 @@ export default class SourceMap {
 		if (typeof properties.x_google_ignoreList !== 'undefined') {
 			this.x_google_ignoreList = properties.x_google_ignoreList;
 		}
+		if (typeof properties.debugId !== 'undefined') {
+			this.debugId = properties.debugId;
+		}
 	}
 
 	toString() {
