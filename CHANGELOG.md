@@ -1,3 +1,12 @@
+## [0.30.14](https://github.com/rich-harris/magic-string/compare/v0.30.13...v0.30.14) (2024-11-26)
+
+
+### Features
+
+* Include `debugId` in `SourceMap` types ([#294](https://github.com/rich-harris/magic-string/issues/294)) ([5d93dcf](https://github.com/rich-harris/magic-string/commit/5d93dcf7b59a6b6627bb591b13448d5b189b5dff))
+
+
+
 ## [0.30.13](https://github.com/rich-harris/magic-string/compare/v0.30.12...v0.30.13) (2024-11-18)
 
 
