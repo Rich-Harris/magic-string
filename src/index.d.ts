@@ -53,6 +53,7 @@ export class SourceMap {
   names: string[];
   mappings: string;
   x_google_ignoreList?: number[];
+  debugId?: string;
 
   /**
    * Returns the equivalent of `JSON.stringify(map)`
