@@ -15,6 +15,7 @@
   "author": "Rich Harris",
   "main": "./dist/magic-string.cjs.js",
   "module": "./dist/magic-string.es.mjs",
+  "sideEffects": false,
   "jsnext:main": "./dist/magic-string.es.mjs",
   "types": "./dist/magic-string.cjs.d.ts",
   "exports": {
