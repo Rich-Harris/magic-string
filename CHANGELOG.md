@@ -1,3 +1,12 @@
+## [0.30.15](https://github.com/rich-harris/magic-string/compare/v0.30.14...v0.30.15) (2024-12-10)
+
+
+### Features
+
+* add `sideEffects: false` to package.json ([#295](https://github.com/rich-harris/magic-string/issues/295)) ([889bd73](https://github.com/rich-harris/magic-string/commit/889bd738675cc599e6db591cef85c85cb36c8658))
+
+
+
 ## [0.30.14](https://github.com/rich-harris/magic-string/compare/v0.30.13...v0.30.14) (2024-11-26)
 
 
