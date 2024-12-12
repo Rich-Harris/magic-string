@@ -266,4 +266,18 @@ export default class MagicString {
    * Returns the generated string.
    */
   toString(): string;
+
+  /**
+   * Returns a proxy instance that modifies the incoming position by adding an offset.
+   */
+  withOffset(offset?: number): MagicStringOffset;
+}
+
+/**
+ * MagicString with offset
+ */
+export class MagicStringOffset extends MagicString {
+  constructor(str: string | MagicString, options?: MagicStringOptions & { offset?: number }, prototype?: MagicString );
+  offset: number;
+  s: MagicString;
 }

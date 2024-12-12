@@ -240,6 +240,16 @@ The fourth argument is optional. It can have a `storeName` property — if `true
 
 `s.update(start, end, content)` is equivalent to `s.overwrite(start, end, content, { contentOnly: true })`.
 
+### s.withOffset( offset )
+
+Returns a proxy instance that modifies the incoming position by adding an offset.
+Intercepted API: `slice`, `update`, `overwrite`, `appendLeft`, `prependLeft`, `appendRight`, `prependRight`, `move`, `clone`, `snip`, `reset`, `remove`.
+
+```ts
+const s = new MagicString('hello world').withOffset(6)
+s.slice() === 'world'
+```
+
 ## Bundling
 
 To concatenate several sources, use `MagicString.Bundle`:

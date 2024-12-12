@@ -7,6 +7,7 @@ import isObject from './utils/isObject.js';
 import getLocator from './utils/getLocator.js';
 import Mappings from './utils/Mappings.js';
 import Stats from './utils/Stats.js';
+import MagicStringOffset from './MagicStringOffset.js';
 
 const n = '\n';
 
@@ -879,5 +880,9 @@ export default class MagicString {
 		}
 
 		return this._replaceRegexp(searchValue, replacement);
+	}
+
+	withOffset(offset = 0) {
+		return new MagicStringOffset(this, { offset });
 	}
 }

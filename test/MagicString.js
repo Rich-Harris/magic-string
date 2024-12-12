@@ -1860,5 +1860,22 @@ describe('MagicString', () => {
 				},
 			);
 		});
+
+		it('with offset',()=> {
+			let s = new MagicString('hello world').withOffset(6)
+
+			assert.strictEqual(s.slice(0, 5), 'world')
+			assert.strictEqual(s.appendLeft(0, ',').toString(), 'hello ,world')
+			assert.strictEqual(s.appendRight(0, ' ').toString(), 'hello , world')
+			assert.strictEqual(s.update(-1, 0, '').toString(), 'hello, world')
+			assert.strictEqual(s.overwrite(0, 1, 'w').toString(), 'hello,world')
+
+			s = s.withOffset(9)
+			assert.strictEqual(s.slice(), 'ld')
+
+			s.offset = 10
+			s = s.clone()
+			assert.strictEqual(s.slice(), 'd')
+		})
 	});
 });
