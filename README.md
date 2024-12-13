@@ -250,10 +250,10 @@ Sets the offset property to adjust the incoming position for the following APIs:
 Example usage:
 
 ```ts
-const s = new MagicString('hello world', { offset: 6 })
+const s = new MagicString('hello world', { offset: 6 });
 // or update the offset property directly
-s.offset = 6
-s.slice() === 'world'
+s.offset = 6;
+s.slice() === 'world';
 ```
 
 ## Bundling

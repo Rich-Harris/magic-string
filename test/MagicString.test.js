@@ -1873,7 +1873,7 @@ describe('MagicString', () => {
 			});
 		});
 
-		it('with offset',() => {
+		it('with offset', () => {
 			const s = new MagicString('hello world', { offset: 6 });
 			assert.equal(s.slice(0, 5), 'world');
 			assert.equal(s.remove(0, 5).toString(), 'hello ');

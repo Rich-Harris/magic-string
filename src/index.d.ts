@@ -105,9 +105,9 @@ export class Bundle {
 export type ExclusionRange = [number, number];
 
 export interface MagicStringOptions {
-  filename?: string,
-  indentExclusionRanges?: ExclusionRange | Array<ExclusionRange>;
-  offset?: number;
+	filename?: string;
+	indentExclusionRanges?: ExclusionRange | Array<ExclusionRange>;
+	offset?: number;
 }
 
 export interface IndentOptions {
@@ -279,11 +279,11 @@ export default class MagicString {
 	 */
 	hasChanged(): boolean;
 
-  original: string;
-  /**
-   * Returns the generated string.
-   */
-  toString(): string;
+	original: string;
+	/**
+	 * Returns the generated string.
+	 */
+	toString(): string;
 
-  offset: number;
+	offset: number;
 }
