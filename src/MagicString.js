@@ -808,11 +808,7 @@ export default class MagicString {
 				if (match.index != null) {
 					const replacement = getReplacement(match, this.original);
 					if (replacement !== match[0]) {
-						this.overwrite(
-							match.index,
-							match.index + match[0].length,
-							replacement
-						);
+						this.overwrite(match.index, match.index + match[0].length, replacement);
 					}
 				}
 			});
@@ -821,11 +817,7 @@ export default class MagicString {
 			if (match && match.index != null) {
 				const replacement = getReplacement(match, this.original);
 				if (replacement !== match[0]) {
-					this.overwrite(
-						match.index,
-						match.index + match[0].length,
-						replacement
-					);
+					this.overwrite(match.index, match.index + match[0].length, replacement);
 				}
 			}
 		}
@@ -860,8 +852,7 @@ export default class MagicString {
 			index = original.indexOf(string, index + stringLength)
 		) {
 			const previous = original.slice(index, index + stringLength);
-			if (previous !== replacement)
-				this.overwrite(index, index + stringLength, replacement);
+			if (previous !== replacement) this.overwrite(index, index + stringLength, replacement);
 		}
 
 		return this;

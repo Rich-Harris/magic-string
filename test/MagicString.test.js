@@ -1,14 +1,13 @@
-const assert = require('assert');
-const SourceMapConsumer = require('source-map-js').SourceMapConsumer;
-const MagicString = require('./utils/IntegrityCheckingMagicString');
-
-require('source-map-support').install();
+import assert from 'assert';
+import { SourceMapConsumer } from 'source-map-js';
+import MagicString from './utils/IntegrityCheckingMagicString';
+import { describe, it } from 'vitest';
 
 describe('MagicString', () => {
 	describe('options', () => {
 		it('stores source file information', () => {
 			const s = new MagicString('abc', {
-				filename: 'foo.js'
+				filename: 'foo.js',
 			});
 
 			assert.equal(s.filename, 'foo.js');
@@ -137,7 +136,7 @@ describe('MagicString', () => {
 			const array = [3, 6];
 			const source = new MagicString('abcdefghijkl', {
 				filename: 'foo.js',
-				indentExclusionRanges: array
+				indentExclusionRanges: array,
 			});
 
 			const clone = source.clone();
@@ -147,10 +146,13 @@ describe('MagicString', () => {
 		});
 
 		it('should clone complex indentExclusionRanges', () => {
-			const array = [[3, 6], [7, 9]];
+			const array = [
+				[3, 6],
+				[7, 9],
+			];
 			const source = new MagicString('abcdefghijkl', {
 				filename: 'foo.js',
-				indentExclusionRanges: array
+				indentExclusionRanges: array,
 			});
 
 			const clone = source.clone();
@@ -161,7 +163,7 @@ describe('MagicString', () => {
 
 		it('should clone sourcemapLocations', () => {
 			const source = new MagicString('abcdefghijkl', {
-				filename: 'foo.js'
+				filename: 'foo.js',
 			});
 
 			source.addSourcemapLocation(3);
@@ -192,7 +194,7 @@ describe('MagicString', () => {
 				file: 'output.md',
 				source: 'input.md',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			assert.equal(map.version, 3);
@@ -201,8 +203,14 @@ describe('MagicString', () => {
 			assert.deepEqual(map.sourcesContent, ['abcdefghijkl']);
 			assert.equal(map.mappings, 'AAAA,CAAC,CAAC,CAAO,CAAC,CAAC');
 
-			assert.equal(map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAO,CAAC,CAAC"}');
-			assert.equal(map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQU8sQ0FBQyxDQUFDIn0=');
+			assert.equal(
+				map.toString(),
+				'{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAO,CAAC,CAAC"}',
+			);
+			assert.equal(
+				map.toUrl(),
+				'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxDQUFDLENBQU8sQ0FBQyxDQUFDIn0=',
+			);
 
 			const smc = new SourceMapConsumer(map);
 			let loc;
@@ -229,19 +237,19 @@ describe('MagicString', () => {
 				includeContent: true,
 			});
 
-			assert.equal(map.mappings,';AAAA;AACA');
+			assert.equal(map.mappings, ';AAAA;AACA');
 		});
 
 		it('should generate a correct sourcemap for indented content', () => {
 			const s = new MagicString('var answer = 42;\nconsole.log("the answer is %s", answer);');
 
-			s.prepend('\'use strict\';\n\n');
+			s.prepend("'use strict';\n\n");
 			s.indent('\t').prepend('(function () {\n').append('\n}).call(global);');
 
 			const map = s.generateMap({
 				source: 'input.md',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -262,7 +270,7 @@ describe('MagicString', () => {
 			const map = s.generateMap({
 				file: 'output.md',
 				source: 'input.md',
-				includeContent: true
+				includeContent: true,
 			});
 
 			assert.equal(map.version, 3);
@@ -270,8 +278,14 @@ describe('MagicString', () => {
 			assert.deepEqual(map.sources, ['input.md']);
 			assert.deepEqual(map.sourcesContent, ['abcdefghijkl']);
 
-			assert.equal(map.toString(), '{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,GAAG,GAAM,CAAC"}');
-			assert.equal(map.toUrl(), 'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsR0FBRyxHQUFNLENBQUMifQ==');
+			assert.equal(
+				map.toString(),
+				'{"version":3,"file":"output.md","sources":["input.md"],"sourcesContent":["abcdefghijkl"],"names":[],"mappings":"AAAA,GAAG,GAAM,CAAC"}',
+			);
+			assert.equal(
+				map.toUrl(),
+				'data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoib3V0cHV0Lm1kIiwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsR0FBRyxHQUFNLENBQUMifQ==',
+			);
 
 			const smc = new SourceMapConsumer(map);
 			let loc;
@@ -297,7 +311,7 @@ describe('MagicString', () => {
 			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -328,7 +342,7 @@ describe('MagicString', () => {
 			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -344,13 +358,13 @@ describe('MagicString', () => {
 			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
 
 			let numMappings = 0;
-			smc.eachMapping(() => numMappings += 1);
+			smc.eachMapping(() => (numMappings += 1));
 
 			assert.equal(numMappings, 3); // one at 0, one at the edit, one afterwards
 		});
@@ -364,7 +378,7 @@ describe('MagicString', () => {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -384,7 +398,7 @@ describe('MagicString', () => {
 				file: 'output',
 				source: 'input',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			const smc1 = new SourceMapConsumer(map1);
@@ -397,7 +411,7 @@ describe('MagicString', () => {
 				file: 'output',
 				source: 'input',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			const smc2 = new SourceMapConsumer(map2);
@@ -427,8 +441,8 @@ describe('MagicString', () => {
 
 		it('generates x_google_ignoreList', () => {
 			const s = new MagicString('function foo(){}', {
-				ignoreList: true
-		  });
+				ignoreList: true,
+			});
 
 			const map = s.generateMap({ source: 'foo.js' });
 			assert.deepEqual(map.sources, ['foo.js']);
@@ -445,10 +459,13 @@ describe('MagicString', () => {
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true,
-				hires: 'boundary'
+				hires: 'boundary',
 			});
 
-			assert.equal(map.mappings, 'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC,CAAC,CAAC');
+			assert.equal(
+				map.mappings,
+				'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC,CAAC,CAAC',
+			);
 
 			const smc = new SourceMapConsumer(map);
 			let loc;
@@ -529,17 +546,20 @@ describe('MagicString', () => {
 			assert.equal(loc8.column, 5);
 		});
 
-		it ('generates a source map without unneeded line break mappings', () => {
+		it('generates a source map without unneeded line break mappings', () => {
 			const s = new MagicString('function foo(){\n  console.log("bar")\n}');
 
 			const map = s.generateMap({
 				file: 'output.js',
 				source: 'input.js',
 				includeContent: true,
-				hires: 'boundary'
+				hires: 'boundary',
 			});
 
-			assert.equal(map.mappings, 'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC;AACd,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,GAAG,CAAC;AACnB');
+			assert.equal(
+				map.mappings,
+				'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC;AACd,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,GAAG,CAAC;AACnB',
+			);
 		});
 	});
 
@@ -857,7 +877,10 @@ describe('MagicString', () => {
 
 			s.overwrite(7, 11, 'xx');
 
-			assert.throws(() => s.overwrite(8, 12, 'yy'), /Cannot split a chunk that has already been edited/);
+			assert.throws(
+				() => s.overwrite(8, 12, 'yy'),
+				/Cannot split a chunk that has already been edited/,
+			);
 
 			assert.equal(s.toString(), 'abcdefgxxl');
 
@@ -917,7 +940,10 @@ describe('MagicString', () => {
 
 		it('should disallow overwriting zero-length ranges', () => {
 			const s = new MagicString('x');
-			assert.throws(() => s.overwrite(0, 0, 'anything'), /Cannot overwrite a zero-length range – use appendLeft or prependRight instead/);
+			assert.throws(
+				() => s.overwrite(0, 0, 'anything'),
+				/Cannot overwrite a zero-length range – use appendLeft or prependRight instead/,
+			);
 		});
 
 		it('should throw when given non-string content', () => {
@@ -992,7 +1018,10 @@ describe('MagicString', () => {
 
 			s.update(7, 11, 'xx');
 
-			assert.throws(() => s.update(8, 12, 'yy'), /Cannot split a chunk that has already been edited/);
+			assert.throws(
+				() => s.update(8, 12, 'yy'),
+				/Cannot split a chunk that has already been edited/,
+			);
 
 			assert.equal(s.toString(), 'abcdefgxxl');
 
@@ -1052,7 +1081,10 @@ describe('MagicString', () => {
 
 		it('should disallow updating zero-length ranges', () => {
 			const s = new MagicString('x');
-			assert.throws(() => s.update(0, 0, 'anything'), /Cannot overwrite a zero-length range – use appendLeft or prependRight instead/);
+			assert.throws(
+				() => s.update(0, 0, 'anything'),
+				/Cannot overwrite a zero-length range – use appendLeft or prependRight instead/,
+			);
 		});
 
 		it('should throw when given non-string content', () => {
@@ -1501,7 +1533,7 @@ describe('MagicString', () => {
 	describe('snip', () => {
 		it('should return a clone with content outside `start` and `end` removed', () => {
 			const s = new MagicString('abcdefghijkl', {
-				filename: 'foo.js'
+				filename: 'foo.js',
 			});
 
 			s.overwrite(6, 9, 'GHI');
@@ -1726,24 +1758,15 @@ describe('MagicString', () => {
 		});
 
 		it('Should not treat string as regexp', () => {
-			assert.strictEqual(
-				new MagicString('1234').replace('.', '*').toString(),
-				'1234'
-			);
+			assert.strictEqual(new MagicString('1234').replace('.', '*').toString(), '1234');
 		});
 
 		it('Should use substitution directly', () => {
-			assert.strictEqual(
-				new MagicString('11').replace('1', '$0$1').toString(),
-				'$0$11'
-			);
+			assert.strictEqual(new MagicString('11').replace('1', '$0$1').toString(), '$0$11');
 		});
 
 		it('Should not search back', () => {
-			assert.strictEqual(
-				new MagicString('122121').replace('12', '21').toString(),
-				'212121'
-			);
+			assert.strictEqual(new MagicString('122121').replace('12', '21').toString(), '212121');
 		});
 
 		it('works with global regex replace', () => {
@@ -1759,7 +1782,7 @@ describe('MagicString', () => {
 
 			s.replace(/(\d)/g, '$$');
 
-			assert.strictEqual(s.toString(),'$ $ $ $ a b c');
+			assert.strictEqual(s.toString(), '$ $ $ $ a b c');
 		});
 
 		it('works with global regex replace function', () => {
@@ -1768,7 +1791,7 @@ describe('MagicString', () => {
 
 			s.replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`);
 
-			assert.strictEqual(s.toString(),'Hey This Is Magic');
+			assert.strictEqual(s.toString(), 'Hey This Is Magic');
 		});
 
 		it('replace function offset', () => {
@@ -1781,7 +1804,7 @@ describe('MagicString', () => {
 			const regex = /([^\d]*)(\d*)([^\w]*)/;
 			assert.strictEqual(
 				code.replace(regex, replacer),
-				new MagicString(code).replace(regex, replacer).toString()
+				new MagicString(code).replace(regex, replacer).toString(),
 			);
 		});
 
@@ -1807,31 +1830,19 @@ describe('MagicString', () => {
 
 	describe('replaceAll', () => {
 		it('works with string replace', () => {
-			assert.strictEqual(
-				new MagicString('1212').replaceAll('2', '3').toString(),
-				'1313',
-			);
+			assert.strictEqual(new MagicString('1212').replaceAll('2', '3').toString(), '1313');
 		});
 
 		it('Should not treat string as regexp', () => {
-			assert.strictEqual(
-				new MagicString('1234').replaceAll('.', '*').toString(),
-				'1234'
-			);
+			assert.strictEqual(new MagicString('1234').replaceAll('.', '*').toString(), '1234');
 		});
 
 		it('Should use substitution directly', () => {
-			assert.strictEqual(
-				new MagicString('11').replaceAll('1', '$0$1').toString(),
-				'$0$1$0$1'
-			);
+			assert.strictEqual(new MagicString('11').replaceAll('1', '$0$1').toString(), '$0$1$0$1');
 		});
 
 		it('Should not search back', () => {
-			assert.strictEqual(
-				new MagicString('121212').replaceAll('12', '21').toString(),
-				'212121'
-			);
+			assert.strictEqual(new MagicString('121212').replaceAll('12', '21').toString(), '212121');
 		});
 
 		it('global regex result the same as .replace', () => {
@@ -1846,19 +1857,20 @@ describe('MagicString', () => {
 			);
 
 			assert.strictEqual(
-				new MagicString('hey this is magic').replaceAll(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`).toString(),
-				new MagicString('hey this is magic').replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`).toString(),
+				new MagicString('hey this is magic')
+					.replaceAll(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`)
+					.toString(),
+				new MagicString('hey this is magic')
+					.replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`)
+					.toString(),
 			);
 		});
 
 		it('rejects with non-global regexp', () => {
-			assert.throws(
-				() => new MagicString('123').replaceAll(/./, ''),
-				{
-					name: 'TypeError',
-					message: 'MagicString.prototype.replaceAll called with a non-global RegExp argument',
-				},
-			);
+			assert.throws(() => new MagicString('123').replaceAll(/./, ''), {
+				name: 'TypeError',
+				message: 'MagicString.prototype.replaceAll called with a non-global RegExp argument',
+			});
 		});
 	});
 });

@@ -10,6 +10,7 @@
     "templating",
     "transpilation"
   ],
+  "type": "module",
   "repository": "https://github.com/rich-harris/magic-string",
   "license": "MIT",
   "author": "Rich Harris",
@@ -33,14 +34,15 @@
   "scripts": {
     "build": "rollup -c",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "format": "prettier --single-quote --print-width 100 --use-tabs --write src/*.js src/**/*.js",
+    "format": "prettier --single-quote --print-width 100 --use-tabs --write {src,test}/*.js {src,test}/**/*.js",
     "lint": "eslint src test && publint",
     "lint:fix": "eslint src test --fix",
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint && rm -rf dist && npm test",
     "release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
     "pretest": "npm run build",
-    "test": "mocha",
+    "test": "vitest run",
+    "test:dev": "vitest",
     "bench": "npm run build && node benchmark/index.mjs",
     "watch": "rollup -cw"
   },
@@ -51,12 +53,12 @@
     "bumpp": "^9.4.1",
     "conventional-changelog-cli": "^3.0.0",
     "eslint": "^8.57.0",
-    "mocha": "^10.7.0",
     "prettier": "^3.3.3",
     "publint": "^0.2.9",
     "rollup": "^3.29.4",
     "source-map-js": "^1.2.0",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "vitest": "^2.1.8"
   },
   "dependencies": {
     "@jridgewell/sourcemap-codec": "^1.5.0"
