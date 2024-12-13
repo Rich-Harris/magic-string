@@ -3,10 +3,7 @@ import replace from '@rollup/plugin-replace';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const plugins = [
-	nodeResolve(),
-	replace({ DEBUG: false, preventAssignment: true })
-];
+const plugins = [nodeResolve(), replace({ DEBUG: false, preventAssignment: true })];
 
 export default [
 	/* esm */
@@ -21,15 +18,15 @@ export default [
 					const base = path.resolve('./src/index.d.ts');
 					fs.copyFileSync(base, path.resolve('./dist/magic-string.es.d.mts'));
 					fs.copyFileSync(base, path.resolve('./dist/magic-string.cjs.d.ts'));
-				}
-			}
+				},
+			},
 		],
 		output: {
 			file: 'dist/magic-string.es.mjs',
 			format: 'es',
 			exports: 'named',
-			sourcemap: true
-		}
+			sourcemap: true,
+		},
 	},
 
 	/* cjs */
@@ -41,8 +38,8 @@ export default [
 			file: 'dist/magic-string.cjs.js',
 			format: 'cjs',
 			exports: 'default',
-			sourcemap: true
-		}
+			sourcemap: true,
+		},
 	},
 
 	/* umd */
@@ -54,7 +51,7 @@ export default [
 			format: 'umd',
 			exports: 'default',
 			name: 'MagicString',
-			sourcemap: true
-		}
-	}
+			sourcemap: true,
+		},
+	},
 ];
