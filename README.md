@@ -240,13 +240,16 @@ The fourth argument is optional. It can have a `storeName` property — if `true
 
 `s.update(start, end, content)` is equivalent to `s.overwrite(start, end, content, { contentOnly: true })`.
 
-### s.withOffset( offset )
+### s.offset
 
-Returns a proxy instance that modifies the incoming position by adding an offset.
-Intercepted API: `slice`, `update`, `overwrite`, `appendLeft`, `prependLeft`, `appendRight`, `prependRight`, `move`, `clone`, `snip`, `reset`, `remove`.
+Sets the offset property to adjust the incoming position for the following APIs: `slice`, `update`, `overwrite`, `appendLeft`, `prependLeft`, `appendRight`, `prependRight`, `move`, `reset`, and `remove`.
+
+Example usage:
 
 ```ts
-const s = new MagicString('hello world').withOffset(6)
+const s = new MagicString('hello world', { offset: 6 })
+// or update the offset property directly
+s.offset = 6
 s.slice() === 'world'
 ```
 

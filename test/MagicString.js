@@ -1861,21 +1861,22 @@ describe('MagicString', () => {
 			);
 		});
 
-		it('with offset',()=> {
-			let s = new MagicString('hello world').withOffset(6)
+		it('with offset',() => {
+			const s = new MagicString('hello world', { offset: 6 });
+			assert.equal(s.slice(0, 5), 'world');
+			assert.equal(s.remove(0, 5).toString(), 'hello ');
+			assert.equal(s.prependLeft(0, 'w').toString(), 'hello w');
+			assert.equal(s.appendLeft(0, 'o').toString(), 'hello wo');
+			assert.equal(s.prependRight(0, 'r').toString(), 'hello wor');
+			assert.equal(s.appendRight(0, 'l').toString(), 'hello worl');
+			assert.equal(s.reset(4, 5).toString(), 'hello world');
+			assert.equal(s.update(0, 5, 'd').toString(), 'hello world');
+			assert.equal(s.overwrite(0, 5, 'rld').toString(), 'hello world');
 
-			assert.strictEqual(s.slice(0, 5), 'world')
-			assert.strictEqual(s.appendLeft(0, ',').toString(), 'hello ,world')
-			assert.strictEqual(s.appendRight(0, ' ').toString(), 'hello , world')
-			assert.strictEqual(s.update(-1, 0, '').toString(), 'hello, world')
-			assert.strictEqual(s.overwrite(0, 1, 'w').toString(), 'hello,world')
-
-			s = s.withOffset(9)
-			assert.strictEqual(s.slice(), 'ld')
-
-			s.offset = 10
-			s = s.clone()
-			assert.strictEqual(s.slice(), 'd')
-		})
+			s.offset = 1;
+			const s1 = s.clone();
+			assert.strictEqual(s1.slice(), 'ello world');
+			assert.equal(s1.move(0, 1, 2).slice(0), 'elo world');
+		});
 	});
 });

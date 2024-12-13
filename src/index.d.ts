@@ -101,6 +101,7 @@ export type ExclusionRange = [ number, number ];
 export interface MagicStringOptions {
   filename?: string,
   indentExclusionRanges?: ExclusionRange | Array<ExclusionRange>;
+  offset?: number;
 }
 
 export interface IndentOptions {
@@ -267,17 +268,5 @@ export default class MagicString {
    */
   toString(): string;
 
-  /**
-   * Returns a proxy instance that modifies the incoming position by adding an offset.
-   */
-  withOffset(offset?: number): MagicStringOffset;
-}
-
-/**
- * MagicString with offset
- */
-export class MagicStringOffset extends MagicString {
-  constructor(str: string | MagicString, options?: MagicStringOptions & { offset?: number }, prototype?: MagicString );
   offset: number;
-  s: MagicString;
 }
