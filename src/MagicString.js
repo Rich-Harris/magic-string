@@ -298,7 +298,7 @@ export default class MagicString {
 		if (!warned.insertLeft) {
 			console.warn(
 				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead',
-			); // eslint-disable-line no-console
+			);
 			warned.insertLeft = true;
 		}
 
@@ -309,7 +309,7 @@ export default class MagicString {
 		if (!warned.insertRight) {
 			console.warn(
 				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead',
-			); // eslint-disable-line no-console
+			);
 			warned.insertRight = true;
 		}
 
@@ -392,7 +392,7 @@ export default class MagicString {
 			if (!warned.storeName) {
 				console.warn(
 					'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string',
-				); // eslint-disable-line no-console
+				);
 				warned.storeName = true;
 			}
 

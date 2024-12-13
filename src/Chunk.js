@@ -115,7 +115,7 @@ export default class Chunk {
 			// '  test'.trim()
 			//     split   -> '  ' + 'test'
 			//   ✔️ edit    -> '' + 'test'
-			//   ✖️ edit    -> 'test' + '' 
+			//   ✖️ edit    -> 'test' + ''
 			// TODO is this block necessary?...
 			newChunk.edit('', false);
 			this.content = '';

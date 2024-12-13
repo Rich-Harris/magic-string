@@ -1,24 +1,23 @@
-const assert = require('assert');
-const SourceMapConsumer = require('source-map-js').SourceMapConsumer;
-const MagicString = require('../');
+import { describe, it } from 'vitest';
+import assert from 'assert';
+import MagicString, { Bundle } from '../';
+import { SourceMapConsumer } from 'source-map-js';
 
-require('source-map-support').install();
-
-describe('MagicString.Bundle', () => {
+describe('Bundle', () => {
 	describe('addSource', () => {
 		it('should return this', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			const source = new MagicString('abcdefghijkl');
 
 			assert.strictEqual(b.addSource({ content: source }), b);
 		});
 
 		it('should accept MagicString instance as a single argument', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			const array = [];
 			const source = new MagicString('abcdefghijkl', {
 				filename: 'foo.js',
-				indentExclusionRanges: array
+				indentExclusionRanges: array,
 			});
 
 			b.addSource(source);
@@ -28,12 +27,12 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should accept ignore-list hint', () => {
-			const b = new MagicString.Bundle();
-			const foo = new MagicString('foo', {filename: 'foo.js'});
-			const bar = new MagicString('bar', {filename: 'bar.js'});
+			const b = new Bundle();
+			const foo = new MagicString('foo', { filename: 'foo.js' });
+			const bar = new MagicString('bar', { filename: 'bar.js' });
 
-			b.addSource({content: foo, ignoreList: true});
-			b.addSource({content: bar, ignoreList: false});
+			b.addSource({ content: foo, ignoreList: true });
+			b.addSource({ content: bar, ignoreList: false });
 			assert.strictEqual(b.sources[0].content, foo);
 			assert.strictEqual(b.sources[0].ignoreList, true);
 			assert.strictEqual(b.sources[1].content, bar);
@@ -41,12 +40,12 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('respects MagicString init options with { content: source }', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			const array = [];
 			const source = new MagicString('abcdefghijkl', {
 				filename: 'foo.js',
 				ignoreList: false,
-				indentExclusionRanges: array
+				indentExclusionRanges: array,
 			});
 
 			b.addSource({ content: source });
@@ -59,7 +58,7 @@ describe('MagicString.Bundle', () => {
 
 	describe('append', () => {
 		it('should append content', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({ content: new MagicString('*') });
 
@@ -68,7 +67,7 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should append content before subsequent sources', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource(new MagicString('*'));
 
@@ -77,7 +76,7 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should return this', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			assert.strictEqual(b.append('x'), b);
 		});
 	});
@@ -86,7 +85,7 @@ describe('MagicString.Bundle', () => {
 		it('should clone a bundle', () => {
 			const s1 = new MagicString('abcdef');
 			const s2 = new MagicString('ghijkl');
-			const b = new MagicString.Bundle()
+			const b = new Bundle()
 				.addSource({ content: s1 })
 				.addSource({ content: s2 })
 				.prepend('>>>')
@@ -103,21 +102,20 @@ describe('MagicString.Bundle', () => {
 
 	describe('generateMap', () => {
 		it('should generate a sourcemap', () => {
-			const b = new MagicString.Bundle()
+			const b = new Bundle()
 				.addSource({
 					filename: 'foo.js',
-					content: new MagicString('var answer = 42;')
+					content: new MagicString('var answer = 42;'),
 				})
 				.addSource({
 					filename: 'bar.js',
-					content: new MagicString('console.log( answer );')
+					content: new MagicString('console.log( answer );'),
 				});
-
 
 			const map = b.generateMap({
 				file: 'bundle.js',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			assert.equal(map.version, 3);
@@ -150,20 +148,20 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should handle Windows-style paths', () => {
-			const b = new MagicString.Bundle()
+			const b = new Bundle()
 				.addSource({
 					filename: 'path\\to\\foo.js',
-					content: new MagicString('var answer = 42;')
+					content: new MagicString('var answer = 42;'),
 				})
 				.addSource({
 					filename: 'path\\to\\bar.js',
-					content: new MagicString('console.log( answer );')
+					content: new MagicString('console.log( answer );'),
 				});
 
 			const map = b.generateMap({
 				file: 'bundle.js',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			assert.equal(map.version, 3);
@@ -171,7 +169,10 @@ describe('MagicString.Bundle', () => {
 			assert.deepEqual(map.sources, ['path/to/foo.js', 'path/to/bar.js']);
 			assert.deepEqual(map.sourcesContent, ['var answer = 42;', 'console.log( answer );']);
 
-			assert.equal(map.toString(), '{"version":3,"file":"bundle.js","sources":["path/to/foo.js","path/to/bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}');
+			assert.equal(
+				map.toString(),
+				'{"version":3,"file":"bundle.js","sources":["path/to/foo.js","path/to/bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}',
+			);
 
 			const smc = new SourceMapConsumer(map);
 			let loc;
@@ -198,21 +199,23 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should handle edge case with intro content', () => {
-			const b = new MagicString.Bundle()
+			const b = new Bundle()
 				.addSource({
 					filename: 'foo.js',
-					content: new MagicString('var answer = 42;')
+					content: new MagicString('var answer = 42;'),
 				})
 				.addSource({
 					filename: 'bar.js',
-					content: new MagicString('\nconsole.log( answer );')
+					content: new MagicString('\nconsole.log( answer );'),
 				})
-				.indent().prepend('(function () {\n').append('\n}());');
+				.indent()
+				.prepend('(function () {\n')
+				.append('\n}());');
 
 			const map = b.generateMap({
 				file: 'bundle.js',
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -240,26 +243,26 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should allow missing file option when generating map', () => {
-			new MagicString.Bundle()
+			new Bundle()
 				.addSource({
 					filename: 'foo.js',
-					content: new MagicString('var answer = 42;')
+					content: new MagicString('var answer = 42;'),
 				})
 				.generateMap({
 					includeContent: true,
-					hires: true
+					hires: true,
 				});
 		});
 
 		it('should handle repeated sources', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			const foo = new MagicString('var one = 1;\nvar three = 3;', {
-				filename: 'foo.js'
+				filename: 'foo.js',
 			});
 
 			const bar = new MagicString('var two = 2;\nvar four = 4;', {
-				filename: 'bar.js'
+				filename: 'bar.js',
 			});
 
 			b.addSource(foo.snip(0, 12));
@@ -272,7 +275,7 @@ describe('MagicString.Bundle', () => {
 
 			const map = b.generateMap({
 				includeContent: true,
-				hires: true
+				hires: true,
 			});
 
 			assert.equal(map.sources.length, 2);
@@ -303,7 +306,7 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should recover original names', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			const one = new MagicString('function one () {}', { filename: 'one.js' });
 			const two = new MagicString('function two () {}', { filename: 'two.js' });
@@ -317,7 +320,7 @@ describe('MagicString.Bundle', () => {
 			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -331,7 +334,7 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should exclude sources without filename from sourcemap', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			const one = new MagicString('function one () {}', { filename: 'one.js' });
 			const two = new MagicString('function two () {}', { filename: null });
@@ -344,7 +347,7 @@ describe('MagicString.Bundle', () => {
 			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -361,7 +364,7 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should generate x_google_ignoreList correctly', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			const one = new MagicString('function one () {}', { filename: 'one.js' });
 			const two = new MagicString('function two () {}', { filename: 'two.js' });
@@ -374,17 +377,17 @@ describe('MagicString.Bundle', () => {
 			b.addSource({ content: four });
 
 			const map = b.generateMap({
-				file: 'output.js'
+				file: 'output.js',
 			});
 
 			assert.deepEqual(map.x_google_ignoreList, [
 				map.sources.indexOf('two.js'),
-				map.sources.indexOf('three.js')
+				map.sources.indexOf('three.js'),
 			]);
 		});
 
 		it('handles prepended content', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			const one = new MagicString('function one () {}', { filename: 'one.js' });
 			const two = new MagicString('function two () {}', { filename: 'two.js' });
@@ -396,7 +399,7 @@ describe('MagicString.Bundle', () => {
 			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -410,7 +413,7 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('handles appended content', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			const one = new MagicString('function one () {}', { filename: 'one.js' });
 			one.append('\nfunction oneAndAHalf() {}');
@@ -422,7 +425,7 @@ describe('MagicString.Bundle', () => {
 			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -436,12 +439,12 @@ describe('MagicString.Bundle', () => {
 		});
 
 		it('should handle empty separator', () => {
-			const b = new MagicString.Bundle({
-				separator: ''
+			const b = new Bundle({
+				separator: '',
 			});
 
 			b.addSource({
-				content: new MagicString('if ( foo ) { ')
+				content: new MagicString('if ( foo ) { '),
 			});
 
 			const s = new MagicString('console.log( 42 );');
@@ -450,11 +453,11 @@ describe('MagicString.Bundle', () => {
 
 			b.addSource({
 				filename: 'input.js',
-				content: s
+				content: s,
 			});
 
 			b.addSource({
-				content: new MagicString(' }')
+				content: new MagicString(' }'),
 			});
 
 			assert.equal(b.toString(), 'if ( foo ) { console.log( 42 ); }');
@@ -462,7 +465,7 @@ describe('MagicString.Bundle', () => {
 			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -472,17 +475,18 @@ describe('MagicString.Bundle', () => {
 				source: 'input.js',
 				name: null,
 				line: 1,
-				column: 8
+				column: 8,
 			});
 		});
 
 		// TODO tidy this up. is a recreation of a bug in Svelte
 		it('generates a correct sourcemap for a Svelte component', () => {
-			const b = new MagicString.Bundle({
-				separator: ''
+			const b = new Bundle({
+				separator: '',
 			});
 
-			const s = new MagicString(`
+			const s = new MagicString(
+				`
 <div></div>
 
 <script>
@@ -491,9 +495,10 @@ describe('MagicString.Bundle', () => {
 			console.log( 42 );
 		}
 	}
-</script>`.trim());
+</script>`.trim(),
+			);
 
-			[21, 23, 38, 42, 50, 51, 54, 59, 66, 67, 70, 72, 74, 76, 77, 81, 84, 85].forEach(pos => {
+			[21, 23, 38, 42, 50, 51, 54, 59, 66, 67, 70, 72, 74, 76, 77, 81, 84, 85].forEach((pos) => {
 				s.addSourcemapLocation(pos);
 			});
 
@@ -505,22 +510,25 @@ describe('MagicString.Bundle', () => {
 
 			b.addSource({
 				content: s,
-				filename: 'input.js'
+				filename: 'input.js',
 			});
 
-			assert.equal(b.toString(), `
+			assert.equal(
+				b.toString(),
+				`
 var template = (function () {
 	return {
 		onrender () {
 			console.log( 42 );
 		}
 	}
-}());`.trim());
+}());`.trim(),
+			);
 
 			const map = b.generateMap({
 				file: 'output.js',
 				source: 'input.js',
-				includeContent: true
+				includeContent: true,
 			});
 
 			const smc = new SourceMapConsumer(map);
@@ -530,14 +538,14 @@ var template = (function () {
 				source: 'input.js',
 				name: null,
 				line: 6,
-				column: 16
+				column: 16,
 			});
 		});
 	});
 
 	describe('indent', () => {
 		it('should indent a bundle', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({ content: new MagicString('abcdef') });
 			b.addSource({ content: new MagicString('ghijkl') });
@@ -547,7 +555,7 @@ var template = (function () {
 		});
 
 		it('should ignore non-indented sources when guessing indentation', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({ content: new MagicString('abcdef') });
 			b.addSource({ content: new MagicString('ghijkl') });
@@ -558,11 +566,11 @@ var template = (function () {
 		});
 
 		it('should respect indent exclusion ranges', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({
 				content: new MagicString('abc\ndef\nghi\njkl'),
-				indentExclusionRanges: [7, 15]
+				indentExclusionRanges: [7, 15],
 			});
 
 			b.indent('  ');
@@ -573,7 +581,7 @@ var template = (function () {
 		});
 
 		it('does not indent sources with no preceding newline, i.e. append()', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource(new MagicString('abcdef'));
 			b.addSource(new MagicString('ghijkl'));
@@ -583,7 +591,7 @@ var template = (function () {
 		});
 
 		it('should noop with an empty string', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource(new MagicString('abcdef'));
 			b.addSource(new MagicString('ghijkl'));
@@ -593,14 +601,14 @@ var template = (function () {
 		});
 
 		it('indents prepended content', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			b.prepend('a\nb').indent();
 
 			assert.equal(b.toString(), '\ta\n\tb');
 		});
 
 		it('indents content immediately following intro with trailing newline', () => {
-			const b = new MagicString.Bundle({ separator: '\n\n' });
+			const b = new Bundle({ separator: '\n\n' });
 
 			const s = new MagicString('2');
 			b.addSource({ content: s });
@@ -611,19 +619,19 @@ var template = (function () {
 		});
 
 		it('should return this', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			assert.strictEqual(b.indent(), b);
 		});
 
 		it('should return this on noop', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			assert.strictEqual(b.indent(''), b);
 		});
 	});
 
 	describe('prepend', () => {
 		it('should append content', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({ content: new MagicString('*') });
 
@@ -632,21 +640,21 @@ var template = (function () {
 		});
 
 		it('should return this', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			assert.strictEqual(b.prepend('x'), b);
 		});
 	});
 
 	describe('trim', () => {
 		it('should trim bundle', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({
-				content: new MagicString('   abcdef   ')
+				content: new MagicString('   abcdef   '),
 			});
 
 			b.addSource({
-				content: new MagicString('   ghijkl   ')
+				content: new MagicString('   ghijkl   '),
 			});
 
 			b.trim();
@@ -654,14 +662,14 @@ var template = (function () {
 		});
 
 		it('should handle funky edge cases', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource({
-				content: new MagicString('   abcdef   ')
+				content: new MagicString('   abcdef   '),
 			});
 
 			b.addSource({
-				content: new MagicString('   x   ')
+				content: new MagicString('   x   '),
 			});
 
 			b.prepend('\n>>>\n').append('   ');
@@ -671,14 +679,14 @@ var template = (function () {
 		});
 
 		it('should return this', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 			assert.strictEqual(b.trim(), b);
 		});
 	});
 
 	describe('toString', () => {
 		it('should separate with a newline by default', () => {
-			const b = new MagicString.Bundle();
+			const b = new Bundle();
 
 			b.addSource(new MagicString('abc'));
 			b.addSource(new MagicString('def'));
@@ -687,7 +695,7 @@ var template = (function () {
 		});
 
 		it('should accept separator option', () => {
-			const b = new MagicString.Bundle({ separator: '==' });
+			const b = new Bundle({ separator: '==' });
 
 			b.addSource(new MagicString('abc'));
 			b.addSource(new MagicString('def'));
@@ -696,7 +704,7 @@ var template = (function () {
 		});
 
 		it('should accept empty string separator option', () => {
-			const b = new MagicString.Bundle({ separator: '' });
+			const b = new Bundle({ separator: '' });
 
 			b.addSource(new MagicString('abc'));
 			b.addSource(new MagicString('def'));
@@ -713,17 +721,17 @@ var template = (function () {
 			const s2 = 'VWXYZ';
 			const ms2 = new MagicString(s2, { filename: 'second' });
 
-			const bundle = new MagicString.Bundle();
+			const bundle = new Bundle();
 			bundle.addSource(ms1);
 			bundle.addSource(ms2);
 
-			ms1.remove(2,4);   // ABE
+			ms1.remove(2, 4); // ABE
 			ms1.move(0, 1, 5); // BEA
 
-			ms2.remove(2,4);   // VWZ
+			ms2.remove(2, 4); // VWZ
 			ms2.move(0, 1, 5); // WZV
 
-			const map = bundle.generateMap({file: 'result', hires: true, includeContent: true});
+			const map = bundle.generateMap({ file: 'result', hires: true, includeContent: true });
 			const smc = new SourceMapConsumer(map);
 
 			const result1 = ms1.toString();
@@ -752,7 +760,10 @@ var template = (function () {
 				assert.strictEqual(s2[loc.column], result2[i]);
 			}
 
-			assert.strictEqual(map.toString(), '{"version":3,"file":"result","sources":["first","second"],"sourcesContent":["ABCDE","VWXYZ"],"names":[],"mappings":"AAAC,CAAG,CAAJ;ACAC,CAAG,CAAJ"}');
+			assert.strictEqual(
+				map.toString(),
+				'{"version":3,"file":"result","sources":["first","second"],"sourcesContent":["ABCDE","VWXYZ"],"names":[],"mappings":"AAAC,CAAG,CAAJ;ACAC,CAAG,CAAJ"}',
+			);
 		});
 	});
 });

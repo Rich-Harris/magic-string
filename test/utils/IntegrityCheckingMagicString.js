@@ -1,5 +1,5 @@
-const MagicString = require('../../');
-const assert = require('assert');
+import MagicString from '../../src';
+import { assert } from 'vitest';
 
 class IntegrityCheckingMagicString extends MagicString {
 	checkIntegrity() {
@@ -44,4 +44,4 @@ for (const key in MagicString.prototype) {
 	}
 }
 
-module.exports = IntegrityCheckingMagicString;
+export default IntegrityCheckingMagicString;
