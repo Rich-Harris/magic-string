@@ -73,7 +73,23 @@ const s = new MagicString(someCode, {
 	],
 	// mark source as ignore in DevTools, see below #Bundling
 	ignoreList: false,
+	// adjust the incoming position - see below
+	offset: 0,
 });
+```
+
+## Properties
+
+### s.offset
+
+Sets the offset property to adjust the incoming position for the following APIs: `slice`, `update`, `overwrite`, `appendLeft`, `prependLeft`, `appendRight`, `prependRight`, `move`, `reset`, and `remove`.
+
+Example usage:
+
+```ts
+const s = new MagicString('hello world', { offset: 0 });
+s.offset = 6;
+s.slice() === 'world';
 ```
 
 ## Methods
@@ -242,19 +258,6 @@ Replaces the characters from `start` to `end` with `content`. The same restricti
 The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and an `overwrite` property which defaults to `false` and determines whether anything that was appended/prepended to the range will be overwritten along with the original content.
 
 `s.update(start, end, content)` is equivalent to `s.overwrite(start, end, content, { contentOnly: true })`.
-
-### s.offset
-
-Sets the offset property to adjust the incoming position for the following APIs: `slice`, `update`, `overwrite`, `appendLeft`, `prependLeft`, `appendRight`, `prependRight`, `move`, `reset`, and `remove`.
-
-Example usage:
-
-```ts
-const s = new MagicString('hello world', { offset: 6 });
-// or update the offset property directly
-s.offset = 6;
-s.slice() === 'world';
-```
 
 ## Bundling
 
