@@ -1,3 +1,12 @@
+## [0.30.17](https://github.com/rich-harris/magic-string/compare/v0.30.16...v0.30.17) (2024-12-16)
+
+
+### Bug Fixes
+
+* remove problematic `type: module` ([092697b](https://github.com/rich-harris/magic-string/commit/092697b3be479a19ab5e763f872e612743075d4a))
+
+
+
 ## [0.30.16](https://github.com/rich-harris/magic-string/compare/v0.30.15...v0.30.16) (2024-12-16)
 
 
