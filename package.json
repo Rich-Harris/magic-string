@@ -10,7 +10,6 @@
 		"templating",
 		"transpilation"
 	],
-	"type": "module",
 	"repository": "https://github.com/rich-harris/magic-string",
 	"license": "MIT",
 	"author": "Rich Harris",
