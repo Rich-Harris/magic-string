@@ -1,3 +1,17 @@
+## [0.30.16](https://github.com/rich-harris/magic-string/compare/v0.30.15...v0.30.16) (2024-12-16)
+
+
+### Bug Fixes
+
+* missing mapping after a line break with `hires: 'boundary'` ([#298](https://github.com/rich-harris/magic-string/issues/298)) ([24cb8ea](https://github.com/rich-harris/magic-string/commit/24cb8ea50dfe913ea01f6de04d727b27a70f5db7))
+
+
+### Features
+
+* introduce offset ([#297](https://github.com/rich-harris/magic-string/issues/297)) ([29f260e](https://github.com/rich-harris/magic-string/commit/29f260e1902fee9ec17a86ec4ab641b089344131))
+
+
+
 ## [0.30.15](https://github.com/rich-harris/magic-string/compare/v0.30.14...v0.30.15) (2024-12-10)
 
 
