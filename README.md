@@ -73,7 +73,23 @@ const s = new MagicString(someCode, {
 	],
 	// mark source as ignore in DevTools, see below #Bundling
 	ignoreList: false,
+	// adjust the incoming position - see below
+	offset: 0,
 });
+```
+
+## Properties
+
+### s.offset
+
+Sets the offset property to adjust the incoming position for the following APIs: `slice`, `update`, `overwrite`, `appendLeft`, `prependLeft`, `appendRight`, `prependRight`, `move`, `reset`, and `remove`.
+
+Example usage:
+
+```ts
+const s = new MagicString('hello world', { offset: 0 });
+s.offset = 6;
+s.slice() === 'world';
 ```
 
 ## Methods

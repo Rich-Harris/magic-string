@@ -35,6 +35,7 @@ export default class MagicString {
 			storedNames: { writable: true, value: {} },
 			indentStr: { writable: true, value: undefined },
 			ignoreList: { writable: true, value: options.ignoreList },
+			offset: { writable: true, value: options.offset || 0 },
 		});
 
 		if (DEBUG) {
@@ -57,6 +58,8 @@ export default class MagicString {
 	}
 
 	appendLeft(index, content) {
+		index = index + this.offset;
+
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
 		if (DEBUG) this.stats.time('appendLeft');
@@ -76,6 +79,8 @@ export default class MagicString {
 	}
 
 	appendRight(index, content) {
+		index = index + this.offset;
+
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
 		if (DEBUG) this.stats.time('appendRight');
@@ -95,7 +100,7 @@ export default class MagicString {
 	}
 
 	clone() {
-		const cloned = new MagicString(this.original, { filename: this.filename });
+		const cloned = new MagicString(this.original, { filename: this.filename, offset: this.offset });
 
 		let originalChunk = this.firstChunk;
 		let clonedChunk = (cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone());
@@ -312,6 +317,10 @@ export default class MagicString {
 	}
 
 	move(start, end, index) {
+		start = start + this.offset;
+		end = end + this.offset;
+		index = index + this.offset;
+
 		if (index >= start && index <= end) throw new Error('Cannot move a selection inside itself');
 
 		if (DEBUG) this.stats.time('move');
@@ -358,6 +367,9 @@ export default class MagicString {
 	}
 
 	update(start, end, content, options) {
+		start = start + this.offset;
+		end = end + this.offset;
+
 		if (typeof content !== 'string') throw new TypeError('replacement content must be a string');
 
 		if (this.original.length !== 0) {
@@ -433,6 +445,8 @@ export default class MagicString {
 	}
 
 	prependLeft(index, content) {
+		index = index + this.offset;
+
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
 		if (DEBUG) this.stats.time('insertRight');
@@ -452,6 +466,8 @@ export default class MagicString {
 	}
 
 	prependRight(index, content) {
+		index = index + this.offset;
+
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
 		if (DEBUG) this.stats.time('insertRight');
@@ -471,6 +487,9 @@ export default class MagicString {
 	}
 
 	remove(start, end) {
+		start = start + this.offset;
+		end = end + this.offset;
+
 		if (this.original.length !== 0) {
 			while (start < 0) start += this.original.length;
 			while (end < 0) end += this.original.length;
@@ -501,6 +520,9 @@ export default class MagicString {
 	}
 
 	reset(start, end) {
+		start = start + this.offset;
+		end = end + this.offset;
+
 		if (this.original.length !== 0) {
 			while (start < 0) start += this.original.length;
 			while (end < 0) end += this.original.length;
@@ -569,7 +591,10 @@ export default class MagicString {
 		return this.intro + lineStr;
 	}
 
-	slice(start = 0, end = this.original.length) {
+	slice(start = 0, end = this.original.length - this.offset) {
+		start = start + this.offset;
+		end = end + this.offset;
+
 		if (this.original.length !== 0) {
 			while (start < 0) start += this.original.length;
 			while (end < 0) end += this.original.length;
