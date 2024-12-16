@@ -487,6 +487,37 @@ describe('MagicString', () => {
 			assert.equal(loc.column, 33);
 		});
 
+		it('generates segments per word boundary with hires "boundary" in the next line', () => {
+			const s = new MagicString('// foo\nconsole.log("bar")');
+
+			// rename bar to hello
+			s.overwrite(20, 23, 'hello');
+
+			const map = s.generateMap({
+				file: 'output.js',
+				source: 'input.js',
+				includeContent: true,
+				hires: 'boundary',
+			});
+
+			assert.equal(
+				map.mappings,
+				'AAAA,CAAC,CAAC,CAAC;AACH,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC',
+			);
+
+			const smc = new SourceMapConsumer(map);
+			let loc;
+
+			loc = smc.originalPositionFor({ line: 2, column: 2 });
+			console.log(loc.source)
+			assert.equal(loc.line, 2);
+			assert.equal(loc.column, 0);
+
+			loc = smc.originalPositionFor({ line: 2, column: 12 });
+			assert.equal(loc.line, 2);
+			assert.equal(loc.column, 12);
+		});
+
 		it('generates a correct source map with update using a content containing a new line', () => {
 			const s = new MagicString('foobar');
 			s.update(3, 4, '\nbb');
