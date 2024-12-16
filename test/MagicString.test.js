@@ -509,7 +509,6 @@ describe('MagicString', () => {
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 2, column: 2 });
-			console.log(loc.source)
 			assert.equal(loc.line, 2);
 			assert.equal(loc.column, 0);
 
