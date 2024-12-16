@@ -61,6 +61,7 @@ export default class Mappings {
 				this.raw[this.generatedCodeLine] = this.rawSegments = [];
 				this.generatedCodeColumn = 0;
 				first = true;
+				charInHiresBoundary = false;
 			} else {
 				if (this.hires || first || sourcemapLocations.has(originalCharIndex)) {
 					const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
