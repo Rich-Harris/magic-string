@@ -259,6 +259,19 @@ describe('MagicString', () => {
 			assert.equal(originLoc.column, 0);
 		});
 
+		it('should generate a correct sourcemap including correct lines', () => {
+			const s = new MagicString(
+				'var answer = 42;\nconsole.log("the answer is %s", answer);'
+			);
+			s.append('\n\n\n\n}).call(global);');
+			assert.equal(
+				// output lines
+				s.toString().split('\n').length,
+				// sourcemap lines
+				s.generateDecodedMap().mappings.length
+			);
+		});
+
 		it('should generate a sourcemap using specified locations', () => {
 			const s = new MagicString('abcdefghijkl');
 
