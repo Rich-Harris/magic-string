@@ -660,12 +660,18 @@ export default class MagicString {
 		if (DEBUG) this.stats.time('_split');
 
 		let chunk = this.lastSearchedChunk;
+		let previousChunk = chunk;
 		const searchForward = index > chunk.end;
 
 		while (chunk) {
 			if (chunk.contains(index)) return this._splitChunk(chunk, index);
 
 			chunk = searchForward ? this.byStart[chunk.end] : this.byEnd[chunk.start];
+			
+			// Prevent infinite loop (e.g. via empty chunks, where start === end)
+			if (chunk === previousChunk) return;
+
+			previousChunk = chunk;
 		}
 	}
 
