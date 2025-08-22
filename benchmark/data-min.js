@@ -13,7 +13,7 @@ class p {
 }
 class g {
 	constructor(t, e, n) {
-		(this.start = t),
+		((this.start = t),
 			(this.end = e),
 			(this.original = n),
 			(this.intro = ''),
@@ -24,7 +24,7 @@ class g {
 			Object.defineProperties(this, {
 				previous: { writable: !0, value: null },
 				next: { writable: !0, value: null },
-			});
+			}));
 	}
 	appendLeft(t) {
 		this.outro += t;
@@ -48,11 +48,11 @@ class g {
 	}
 	eachNext(t) {
 		let e = this;
-		for (; e; ) t(e), (e = e.next);
+		for (; e; ) (t(e), (e = e.next));
 	}
 	eachPrevious(t) {
 		let e = this;
-		for (; e; ) t(e), (e = e.previous);
+		for (; e; ) (t(e), (e = e.previous));
 	}
 	edit(t, e, n) {
 		return (
@@ -94,7 +94,7 @@ class g {
 		if (((this.outro = this.outro.replace(t, '')), this.outro.length)) return !0;
 		const e = this.content.replace(t, '');
 		if (e.length)
-			return e !== this.content && this.split(this.start + e.length).edit('', void 0, !0), !0;
+			return (e !== this.content && this.split(this.start + e.length).edit('', void 0, !0), !0);
 		if ((this.edit('', void 0, !0), (this.intro = this.intro.replace(t, '')), this.intro.length))
 			return !0;
 	}
@@ -102,7 +102,10 @@ class g {
 		if (((this.intro = this.intro.replace(t, '')), this.intro.length)) return !0;
 		const e = this.content.replace(t, '');
 		if (e.length)
-			return e !== this.content && (this.split(this.end - e.length), this.edit('', void 0, !0)), !0;
+			return (
+				e !== this.content && (this.split(this.end - e.length), this.edit('', void 0, !0)),
+				!0
+			);
 		if ((this.edit('', void 0, !0), (this.outro = this.outro.replace(t, '')), this.outro.length))
 			return !0;
 	}
@@ -115,12 +118,12 @@ typeof window < 'u' && typeof window.btoa == 'function'
 	: typeof Buffer == 'function' && (w = (l) => Buffer.from(l, 'utf-8').toString('base64'));
 class b {
 	constructor(t) {
-		(this.version = 3),
+		((this.version = 3),
 			(this.file = t.file),
 			(this.sources = t.sources),
 			(this.sourcesContent = t.sourcesContent),
 			(this.names = t.names),
-			(this.mappings = k(t.mappings));
+			(this.mappings = k(t.mappings)));
 	}
 	toString() {
 		return JSON.stringify(this);
@@ -145,7 +148,7 @@ function L(l) {
 function E(l, t) {
 	const e = l.split(/[/\\]/),
 		n = t.split(/[/\\]/);
-	for (e.pop(); e[0] === n[0]; ) e.shift(), n.shift();
+	for (e.pop(); e[0] === n[0]; ) (e.shift(), n.shift());
 	if (e.length) {
 		let i = e.length;
 		for (; i--; ) e[i] = '..';
@@ -160,7 +163,7 @@ function C(l) {
 	const t = l.split(`
 `),
 		e = [];
-	for (let n = 0, i = 0; n < t.length; n++) e.push(i), (i += t[n].length + 1);
+	for (let n = 0, i = 0; n < t.length; n++) (e.push(i), (i += t[n].length + 1));
 	return function (i) {
 		let r = 0,
 			s = e.length;
@@ -175,25 +178,25 @@ function C(l) {
 }
 class y {
 	constructor(t) {
-		(this.hires = t),
+		((this.hires = t),
 			(this.generatedCodeLine = 0),
 			(this.generatedCodeColumn = 0),
 			(this.raw = []),
 			(this.rawSegments = this.raw[this.generatedCodeLine] = []),
-			(this.pending = null);
+			(this.pending = null));
 	}
 	addEdit(t, e, n, i) {
 		if (e.length) {
 			const r = [this.generatedCodeColumn, t, n.line, n.column];
-			i >= 0 && r.push(i), this.rawSegments.push(r);
+			(i >= 0 && r.push(i), this.rawSegments.push(r));
 		} else this.pending && this.rawSegments.push(this.pending);
-		this.advance(e), (this.pending = null);
+		(this.advance(e), (this.pending = null));
 	}
 	addUneditedChunk(t, e, n, i, r) {
 		let s = e.start,
 			h = !0;
 		for (; s < e.end; )
-			(this.hires || h || r.has(s)) &&
+			((this.hires || h || r.has(s)) &&
 				this.rawSegments.push([this.generatedCodeColumn, t, i.line, i.column]),
 				n[s] ===
 				`
@@ -205,7 +208,7 @@ class y {
 						(this.generatedCodeColumn = 0),
 						(h = !0))
 					: ((i.column += 1), (this.generatedCodeColumn += 1), (h = !1)),
-				(s += 1);
+				(s += 1));
 		this.pending = null;
 	}
 	advance(t) {
@@ -214,7 +217,7 @@ class y {
 `);
 		if (e.length > 1) {
 			for (let n = 0; n < e.length - 1; n++)
-				this.generatedCodeLine++, (this.raw[this.generatedCodeLine] = this.rawSegments = []);
+				(this.generatedCodeLine++, (this.raw[this.generatedCodeLine] = this.rawSegments = []));
 			this.generatedCodeColumn = 0;
 		}
 		this.generatedCodeColumn += e[e.length - 1].length;
@@ -226,7 +229,7 @@ const d = `
 class f {
 	constructor(t, e = {}) {
 		const n = new g(0, t.length, t);
-		Object.defineProperties(this, {
+		(Object.defineProperties(this, {
 			original: { writable: !0, value: t },
 			outro: { writable: !0, value: '' },
 			intro: { writable: !0, value: '' },
@@ -242,36 +245,36 @@ class f {
 			indentStr: { writable: !0, value: L(t) },
 		}),
 			(this.byStart[0] = n),
-			(this.byEnd[t.length] = n);
+			(this.byEnd[t.length] = n));
 	}
 	addSourcemapLocation(t) {
 		this.sourcemapLocations.add(t);
 	}
 	append(t) {
 		if (typeof t != 'string') throw new TypeError('outro content must be a string');
-		return (this.outro += t), this;
+		return ((this.outro += t), this);
 	}
 	appendLeft(t, e) {
 		if (typeof e != 'string') throw new TypeError('inserted content must be a string');
 		this._split(t);
 		const n = this.byEnd[t];
-		return n ? n.appendLeft(e) : (this.intro += e), this;
+		return (n ? n.appendLeft(e) : (this.intro += e), this);
 	}
 	appendRight(t, e) {
 		if (typeof e != 'string') throw new TypeError('inserted content must be a string');
 		this._split(t);
 		const n = this.byStart[t];
-		return n ? n.appendRight(e) : (this.outro += e), this;
+		return (n ? n.appendRight(e) : (this.outro += e), this);
 	}
 	clone() {
 		const t = new f(this.original, { filename: this.filename });
 		let e = this.firstChunk,
 			n = (t.firstChunk = t.lastSearchedChunk = e.clone());
 		for (; e; ) {
-			(t.byStart[n.start] = n), (t.byEnd[n.end] = n);
+			((t.byStart[n.start] = n), (t.byEnd[n.end] = n));
 			const i = e.next,
 				r = i && i.clone();
-			r && ((n.next = r), (r.previous = n), (n = r)), (e = i);
+			(r && ((n.next = r), (r.previous = n), (n = r)), (e = i));
 		}
 		return (
 			(t.lastChunk = n),
@@ -292,11 +295,11 @@ class f {
 			this.intro && i.advance(this.intro),
 			this.firstChunk.eachNext((s) => {
 				const h = r(s.start);
-				s.intro.length && i.advance(s.intro),
+				(s.intro.length && i.advance(s.intro),
 					s.edited
 						? i.addEdit(e, s.content, h, s.storeName ? n.indexOf(s.original) : -1)
 						: i.addUneditedChunk(e, s, this.original, h, this.sourcemapLocations),
-					s.outro.length && i.advance(s.outro);
+					s.outro.length && i.advance(s.outro));
 			}),
 			{
 				file: t.file ? t.file.split(/[/\\]/).pop() : null,
@@ -354,9 +357,9 @@ class f {
 					}
 					h += 1;
 				}
-			(h = o.end), (o = o.next);
+			((h = o.end), (o = o.next));
 		}
-		return (this.outro = this.outro.replace(n, s)), this;
+		return ((this.outro = this.outro.replace(n, s)), this);
 	}
 	insert() {
 		throw new Error(
@@ -385,7 +388,7 @@ class f {
 	}
 	move(t, e, n) {
 		if (n >= t && n <= e) throw new Error('Cannot move a selection inside itself');
-		this._split(t), this._split(e), this._split(n);
+		(this._split(t), this._split(e), this._split(n));
 		const i = this.byStart[t],
 			r = this.byEnd[e],
 			s = i.previous,
@@ -416,7 +419,7 @@ class f {
 			throw new Error(
 				'Cannot overwrite a zero-length range \u2013 use appendLeft or prependRight instead',
 			);
-		this._split(t),
+		(this._split(t),
 			this._split(e),
 			i === !0 &&
 				(c.storeName ||
@@ -424,7 +427,7 @@ class f {
 						'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string',
 					),
 					(c.storeName = !0)),
-				(i = { storeName: !0 }));
+				(i = { storeName: !0 })));
 		const r = i !== void 0 ? i.storeName : !1,
 			s = i !== void 0 ? i.contentOnly : !1;
 		if (r) {
@@ -438,30 +441,30 @@ class f {
 			for (; a !== o; ) {
 				if (a.next !== this.byStart[a.end])
 					throw new Error('Cannot overwrite across a split point');
-				(a = a.next), a.edit('', !1);
+				((a = a.next), a.edit('', !1));
 			}
 			h.edit(n, r, s);
 		} else {
 			const a = new g(t, e, '').edit(n, r);
-			(o.next = a), (a.previous = o);
+			((o.next = a), (a.previous = o));
 		}
 		return this;
 	}
 	prepend(t) {
 		if (typeof t != 'string') throw new TypeError('outro content must be a string');
-		return (this.intro = t + this.intro), this;
+		return ((this.intro = t + this.intro), this);
 	}
 	prependLeft(t, e) {
 		if (typeof e != 'string') throw new TypeError('inserted content must be a string');
 		this._split(t);
 		const n = this.byEnd[t];
-		return n ? n.prependLeft(e) : (this.intro = e + this.intro), this;
+		return (n ? n.prependLeft(e) : (this.intro = e + this.intro), this);
 	}
 	prependRight(t, e) {
 		if (typeof e != 'string') throw new TypeError('inserted content must be a string');
 		this._split(t);
 		const n = this.byStart[t];
-		return n ? n.prependRight(e) : (this.outro = e + this.outro), this;
+		return (n ? n.prependRight(e) : (this.outro = e + this.outro), this);
 	}
 	remove(t, e) {
 		for (; t < 0; ) t += this.original.length;
@@ -469,10 +472,10 @@ class f {
 		if (t === e) return this;
 		if (t < 0 || e > this.original.length) throw new Error('Character is out of bounds');
 		if (t > e) throw new Error('end must be greater than start');
-		this._split(t), this._split(e);
+		(this._split(t), this._split(e));
 		let n = this.byStart[t];
 		for (; n; )
-			(n.intro = ''), (n.outro = ''), n.edit(''), (n = e > n.end ? this.byStart[n.end] : null);
+			((n.intro = ''), (n.outro = ''), n.edit(''), (n = e > n.end ? this.byStart[n.end] : null));
 		return this;
 	}
 	lastChar() {
@@ -505,7 +508,8 @@ class f {
 			}
 		} while ((n = n.previous));
 		return (
-			(t = this.intro.lastIndexOf(d)), t !== -1 ? this.intro.substr(t + 1) + e : this.intro + e
+			(t = this.intro.lastIndexOf(d)),
+			t !== -1 ? this.intro.substr(t + 1) + e : this.intro + e
 		);
 	}
 	slice(t = 0, e = this.original.length) {
@@ -535,7 +539,7 @@ class f {
 	}
 	snip(t, e) {
 		const n = this.clone();
-		return n.remove(0, t), n.remove(e, n.original.length), n;
+		return (n.remove(0, t), n.remove(e, n.original.length), n);
 	}
 	_split(t) {
 		if (this.byStart[t] || this.byEnd[t]) return;
@@ -566,7 +570,7 @@ class f {
 	toString() {
 		let t = this.intro,
 			e = this.firstChunk;
-		for (; e; ) (t += e.toString()), (e = e.next);
+		for (; e; ) ((t += e.toString()), (e = e.next));
 		return t + this.outro;
 	}
 	isEmpty() {
@@ -615,7 +619,7 @@ class f {
 		return !1;
 	}
 	trimEnd(t) {
-		return this.trimEndAborted(t), this;
+		return (this.trimEndAborted(t), this);
 	}
 	trimStartAborted(t) {
 		const e = new RegExp('^' + (t || '\\s') + '+');
@@ -638,7 +642,7 @@ class f {
 		return !1;
 	}
 	trimStart(t) {
-		return this.trimStartAborted(t), this;
+		return (this.trimStartAborted(t), this);
 	}
 	hasChanged() {
 		return this.original !== this.toString();
@@ -671,7 +675,7 @@ class f {
 const v = Object.prototype.hasOwnProperty;
 class S {
 	constructor(t = {}) {
-		(this.intro = t.intro || ''),
+		((this.intro = t.intro || ''),
 			(this.separator =
 				t.separator !== void 0
 					? t.separator
@@ -679,7 +683,7 @@ class S {
 `),
 			(this.sources = []),
 			(this.uniqueSources = []),
-			(this.uniqueSourceIndexByFilename = {});
+			(this.uniqueSourceIndexByFilename = {}));
 	}
 	addSource(t) {
 		if (t instanceof f)
@@ -696,17 +700,17 @@ class S {
 			t.filename)
 		)
 			if (!v.call(this.uniqueSourceIndexByFilename, t.filename))
-				(this.uniqueSourceIndexByFilename[t.filename] = this.uniqueSources.length),
-					this.uniqueSources.push({ filename: t.filename, content: t.content.original });
+				((this.uniqueSourceIndexByFilename[t.filename] = this.uniqueSources.length),
+					this.uniqueSources.push({ filename: t.filename, content: t.content.original }));
 			else {
 				const e = this.uniqueSources[this.uniqueSourceIndexByFilename[t.filename]];
 				if (t.content.original !== e.content)
 					throw new Error(`Illegal source: same filename (${t.filename}), different contents`);
 			}
-		return this.sources.push(t), this;
+		return (this.sources.push(t), this);
 	}
 	append(t, e) {
-		return this.addSource({ content: new f(t), separator: (e && e.separator) || '' }), this;
+		return (this.addSource({ content: new f(t), separator: (e && e.separator) || '' }), this);
 	}
 	clone() {
 		const t = new S({ intro: this.intro, separator: this.separator });
@@ -732,18 +736,18 @@ class S {
 				const s = i.filename ? this.uniqueSourceIndexByFilename[i.filename] : -1,
 					h = i.content,
 					o = C(h.original);
-				h.intro && n.advance(h.intro),
+				(h.intro && n.advance(h.intro),
 					h.firstChunk.eachNext((a) => {
 						const u = o(a.start);
-						a.intro.length && n.advance(a.intro),
+						(a.intro.length && n.advance(a.intro),
 							i.filename
 								? a.edited
 									? n.addEdit(s, a.content, u, a.storeName ? e.indexOf(a.original) : -1)
 									: n.addUneditedChunk(s, a, h.original, u, h.sourcemapLocations)
 								: n.advance(a.content),
-							a.outro.length && n.advance(a.outro);
+							a.outro.length && n.advance(a.outro));
 					}),
-					h.outro && n.advance(h.outro);
+					h.outro && n.advance(h.outro));
 			}),
 			{
 				file: t.file ? t.file.split(/[/\\]/).pop() : null,
@@ -778,11 +782,11 @@ class S {
 			this.sources.forEach((n, i) => {
 				const r = n.separator !== void 0 ? n.separator : this.separator,
 					s = e || (i > 0 && /\r?\n$/.test(r));
-				n.content.indent(t, { exclude: n.indentExclusionRanges, indentStart: s }),
+				(n.content.indent(t, { exclude: n.indentExclusionRanges, indentStart: s }),
 					(e =
 						n.content.lastChar() ===
 						`
-`);
+`));
 			}),
 			this.intro &&
 				(this.intro = t + this.intro.replace(/^[^\n]/gm, (n, i) => (i > 0 ? t + n : n))),
@@ -790,7 +794,7 @@ class S {
 		);
 	}
 	prepend(t) {
-		return (this.intro = t + this.intro), this;
+		return ((this.intro = t + this.intro), this);
 	}
 	toString() {
 		const t = this.sources

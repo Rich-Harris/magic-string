@@ -1,6 +1,7 @@
 {
 	"name": "magic-string",
 	"version": "0.30.17",
+	"type": "commonjs",
 	"packageManager": "pnpm@10.15.0",
 	"description": "Modify strings, generate sourcemaps",
 	"keywords": [
@@ -10,7 +11,10 @@
 		"templating",
 		"transpilation"
 	],
-	"repository": "https://github.com/rich-harris/magic-string",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/rich-harris/magic-string.git"
+	},
 	"license": "MIT",
 	"author": "Rich Harris",
 	"main": "./dist/magic-string.cjs.js",

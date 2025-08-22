@@ -520,10 +520,7 @@ describe('MagicString', () => {
 				hires: 'boundary',
 			});
 
-			assert.equal(
-				map.mappings,
-				'AAAA,CAAC,CAAC,CAAC;AACH,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC',
-			);
+			assert.equal(map.mappings, 'AAAA,CAAC,CAAC,CAAC;AACH,OAAO,CAAC,GAAG,CAAC,CAAC,KAAG,CAAC');
 
 			const smc = new SourceMapConsumer(map);
 			let loc;
