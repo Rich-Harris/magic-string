@@ -1,3 +1,12 @@
+## [0.30.18](https://github.com/rich-harris/magic-string/compare/v0.30.17...v0.30.18) (2025-08-22)
+
+
+### Bug Fixes
+
+* prevent infinite loop on empty input ([#302](https://github.com/rich-harris/magic-string/issues/302)) ([0fd6253](https://github.com/rich-harris/magic-string/commit/0fd6253e3ef1912ae81ccc35d85ab32275715d5b))
+
+
+
 ## [0.30.17](https://github.com/rich-harris/magic-string/compare/v0.30.16...v0.30.17) (2024-12-16)
 
 
