@@ -98,6 +98,26 @@ describe('MagicString', () => {
 
 			assert.equal(s.toString(), 'x4213');
 		});
+
+		it('should append/prepend at end of string when index is out of upper bound', () => {
+			const s = new MagicString('x');
+			s.prependLeft(6, 'A');
+			s.appendLeft(6, 'B');
+			s.prependRight(6, 'C');
+			s.appendRight(6, 'D');
+
+			assert.equal(s.toString(), 'ABxCD');
+		});
+
+		it('should append/prepend on empty string when index is out of upper bound', () => {
+			const s = new MagicString('');
+			s.prependLeft(6, 'A');
+			s.appendLeft(6, 'B');
+			s.prependRight(6, 'C');
+			s.appendRight(6, 'D');
+
+			assert.equal(s.toString(), 'ABCD');
+		});
 	});
 
 	describe('appendLeft', () => {
