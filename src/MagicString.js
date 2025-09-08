@@ -861,7 +861,7 @@ export default class MagicString {
 
 		if (index !== -1) {
 			if (typeof replacement === 'function') {
-				replacement = replacement(string);
+				replacement = replacement(string, index, original);
 			}
 			if (string !== replacement) {
 				this.overwrite(index, index + string.length, replacement);
@@ -888,10 +888,11 @@ export default class MagicString {
 			index = original.indexOf(string, index + stringLength)
 		) {
 			const previous = original.slice(index, index + stringLength);
+			let _replacement = replacement;
 			if (typeof replacement === 'function') {
-				replacement = replacement(previous);
+				_replacement = replacement(previous, index, original);
 			}
-			if (previous !== replacement) this.overwrite(index, index + stringLength, replacement);
+			if (previous !== _replacement) this.overwrite(index, index + stringLength, _replacement);
 		}
 
 		return this;

@@ -1807,10 +1807,17 @@ describe('MagicString', () => {
 		it('works with string replace and function replacer', () => {
 			const code = '1 2 1 2';
 			const s = new MagicString(code);
+			let index = -1, _str = '';
 
-			s.replace('2', (match) =>  match + '-3');
+			s.replace('2', (match, i, str) =>  {
+				index = i;
+				_str = str;
+				return match + '-3';
+			});
 
 			assert.strictEqual(s.toString(), '1 2-3 1 2');
+			assert.strictEqual(index, 2);
+			assert.strictEqual(_str, code);
 		});
 
 		it('Should not treat string as regexp', () => {
@@ -1891,10 +1898,18 @@ describe('MagicString', () => {
 		it('works with string replace and function replacer', () => {
 			const code = '1 2 1 2';
 			const s = new MagicString(code);
+			const indexs = [];
+			const _strs = [];
 
-			s.replaceAll('2', (match) =>  match + '-3');
+			s.replaceAll('2', (match, i, str) =>  {
+				indexs.push(i);
+				_strs.push(str);
+				return match + '-3';
+			});
 
 			assert.strictEqual(s.toString(), '1 2-3 1 2-3');
+			assert.deepStrictEqual(indexs, [2, 6]);
+			assert.deepStrictEqual(_strs, [code, code]);
 		});
 
 		it('Should not treat string as regexp', () => {
