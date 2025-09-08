@@ -168,6 +168,10 @@ export default class MagicString {
 			if (chunk.outro.length) mappings.advance(chunk.outro);
 		});
 
+		if (this.outro) {
+			mappings.advance(this.outro);
+		}
+
 		return {
 			file: options.file ? options.file.split(/[/\\]/).pop() : undefined,
 			sources: [
