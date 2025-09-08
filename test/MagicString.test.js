@@ -1807,7 +1807,8 @@ describe('MagicString', () => {
 		it('works with string replace and function replacer', () => {
 			const code = '1 2 1 2';
 			const s = new MagicString(code);
-			let index = -1, _str = '';
+			let index = -1;
+			let _str = '';
 
 			s.replace('2', (match, i, str) =>  {
 				index = i;
