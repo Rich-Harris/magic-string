@@ -1,3 +1,17 @@
+## [0.30.19](https://github.com/rich-harris/magic-string/compare/v0.30.18...v0.30.19) (2025-09-08)
+
+
+### Bug Fixes
+
+* this.outro need to be mapped ([#300](https://github.com/rich-harris/magic-string/issues/300)) ([8852c8d](https://github.com/rich-harris/magic-string/commit/8852c8da0fe14ace0efcd2a80902813fd96625f4))
+
+
+### Features
+
+* `replace(All)` support replacement for functions when the first parameter is a string ([#304](https://github.com/rich-harris/magic-string/issues/304)) ([fd1d887](https://github.com/rich-harris/magic-string/commit/fd1d88720b5831791438085b1743b6e499eb6806))
+
+
+
 ## [0.30.18](https://github.com/rich-harris/magic-string/compare/v0.30.17...v0.30.18) (2025-08-22)
 
 
