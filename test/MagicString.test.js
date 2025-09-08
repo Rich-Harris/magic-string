@@ -1804,6 +1804,23 @@ describe('MagicString', () => {
 			assert.strictEqual(s.toString(), '1 3 1 2');
 		});
 
+		it('works with string replace and function replacer', () => {
+			const code = '1 2 1 2';
+			const s = new MagicString(code);
+			let index = -1;
+			let _str = '';
+
+			s.replace('2', (match, i, str) =>  {
+				index = i;
+				_str = str;
+				return match + '-3';
+			});
+
+			assert.strictEqual(s.toString(), '1 2-3 1 2');
+			assert.strictEqual(index, 2);
+			assert.strictEqual(_str, code);
+		});
+
 		it('Should not treat string as regexp', () => {
 			assert.strictEqual(new MagicString('1234').replace('.', '*').toString(), '1234');
 		});
@@ -1878,6 +1895,22 @@ describe('MagicString', () => {
 	describe('replaceAll', () => {
 		it('works with string replace', () => {
 			assert.strictEqual(new MagicString('1212').replaceAll('2', '3').toString(), '1313');
+		});
+		it('works with string replace and function replacer', () => {
+			const code = '1 2 1 2';
+			const s = new MagicString(code);
+			const indexs = [];
+			const _strs = [];
+
+			s.replaceAll('2', (match, i, str) =>  {
+				indexs.push(i);
+				_strs.push(str);
+				return match + '-3';
+			});
+
+			assert.strictEqual(s.toString(), '1 2-3 1 2-3');
+			assert.deepStrictEqual(indexs, [2, 6]);
+			assert.deepStrictEqual(_strs, [code, code]);
 		});
 
 		it('Should not treat string as regexp', () => {
