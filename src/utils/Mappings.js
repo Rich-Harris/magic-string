@@ -7,6 +7,8 @@ export default class Mappings {
 		this.generatedCodeColumn = 0;
 		this.raw = [];
 		this.rawSegments = this.raw[this.generatedCodeLine] = [];
+		this.rawRangeMappings = [];
+		this.rawRangeMappingsIndices = this.rawRangeMappings[this.generatedCodeLine] = [];
 		this.pending = null;
 	}
 
@@ -26,6 +28,7 @@ export default class Mappings {
 
 				this.generatedCodeLine += 1;
 				this.raw[this.generatedCodeLine] = this.rawSegments = [];
+				this.rawRangeMappings[this.generatedCodeLine] = [];
 				this.generatedCodeColumn = 0;
 
 				previousContentLineEnd = contentLineEnd;
@@ -54,11 +57,15 @@ export default class Mappings {
 		let charInHiresBoundary = false;
 
 		while (originalCharIndex < chunk.end) {
+			if (this.hires === "experimental-range" && originalCharIndex + 1 >= chunk.end) {
+				this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column]);
+			}
 			if (original[originalCharIndex] === '\n') {
 				loc.line += 1;
 				loc.column = 0;
 				this.generatedCodeLine += 1;
 				this.raw[this.generatedCodeLine] = this.rawSegments = [];
+				this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = [];
 				this.generatedCodeColumn = 0;
 				first = true;
 				charInHiresBoundary = false;
@@ -78,6 +85,11 @@ export default class Mappings {
 							// for non-word char, end the boundary by pushing a segment
 							this.rawSegments.push(segment);
 							charInHiresBoundary = false;
+						}
+					} else if (this.hires === "experimental-range") {
+						if (originalCharIndex === chunk.start) {
+							this.rawRangeMappingsIndices.push(this.rawSegments.length);
+							this.rawSegments.push(segment);
 						}
 					} else {
 						this.rawSegments.push(segment);
@@ -104,6 +116,7 @@ export default class Mappings {
 			for (let i = 0; i < lines.length - 1; i++) {
 				this.generatedCodeLine++;
 				this.raw[this.generatedCodeLine] = this.rawSegments = [];
+				this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = [];
 			}
 			this.generatedCodeColumn = 0;
 		}

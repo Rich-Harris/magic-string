@@ -1,4 +1,4 @@
-import { encode } from '@jridgewell/sourcemap-codec';
+import { encode, encodeRangeMappings } from '@jridgewell/sourcemap-codec';
 
 function getBtoa() {
 	if (typeof globalThis !== 'undefined' && typeof globalThis.btoa === 'function') {
@@ -27,6 +27,18 @@ export default class SourceMap {
 		}
 		if (typeof properties.debugId !== 'undefined') {
 			this.debugId = properties.debugId;
+		}
+		if (typeof properties.rangeMappings !== 'undefined') {
+			let shouldOutputRangeMapping = false;
+			for (const line of properties.rangeMappings) {
+				if (line.length !== 0) {
+					shouldOutputRangeMapping = true;
+					break;
+				}
+			}
+			if (shouldOutputRangeMapping) {
+				this.rangeMappings = encodeRangeMappings(properties.rangeMappings);
+			}
 		}
 	}
 
