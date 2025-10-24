@@ -1,6 +1,6 @@
 {
 	"name": "magic-string",
-	"version": "0.30.20",
+	"version": "0.30.21",
 	"type": "commonjs",
 	"packageManager": "pnpm@10.19.0",
 	"description": "Modify strings, generate sourcemaps",
