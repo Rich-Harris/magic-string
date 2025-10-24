@@ -1,3 +1,7 @@
+## [0.30.20](https://github.com/rich-harris/magic-string/compare/v0.30.19...v0.30.20) (2025-10-24)
+
+
+
 ## [0.30.19](https://github.com/rich-harris/magic-string/compare/v0.30.18...v0.30.19) (2025-09-08)
 
 
