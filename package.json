@@ -42,7 +42,7 @@
 		"lint:fix": "eslint src test --fix",
 		"prepare": "npm run build",
 		"prepublishOnly": "npm run lint && rm -rf dist && npm test",
-		"release": "bumpp -x \"npm run changelog\" --all --commit --tag --push && npm publish",
+		"release": "bumpp -x \"npm run changelog\" --all",
 		"pretest": "npm run build",
 		"test": "vitest run",
 		"test:dev": "vitest",
