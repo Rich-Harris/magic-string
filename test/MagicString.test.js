@@ -874,6 +874,15 @@ describe('MagicString', () => {
 			assert.throws(() => s.move(3, 6, 6), /Cannot move a selection inside itself/);
 		});
 
+		it('does nothing when moving a zero-length range', () => {
+			const s = new MagicString('abcdefghijkl');
+
+			assert.doesNotThrow(() => s.move(0, 0, 6));
+			assert.doesNotThrow(() => s.move(5, 5, 0));
+
+			assert.equal(s.toString(), 'abcdefghijkl');
+		});
+
 		it('allows edits of moved content', () => {
 			const s1 = new MagicString('abcdefghijkl');
 

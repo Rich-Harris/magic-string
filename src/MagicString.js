@@ -325,6 +325,8 @@ export default class MagicString {
 		end = end + this.offset;
 		index = index + this.offset;
 
+		if (start === end) return this;
+
 		if (index >= start && index <= end) throw new Error('Cannot move a selection inside itself');
 
 		if (DEBUG) this.stats.time('move');
