@@ -1,3 +1,3 @@
-var answer = 'yes';
-console.log( answer );
-//# sourceMappingURL=app.js.map
+const answer = 'yes'
+console.log(answer)
+// # sourceMappingURL=app.js.map

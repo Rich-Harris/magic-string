@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { encode } from 'sourcemap-codec';
 class BitSet {
 	constructor(arg) {

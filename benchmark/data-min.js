@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { encode as k } from 'sourcemap-codec';
 class p {
 	constructor(t) {

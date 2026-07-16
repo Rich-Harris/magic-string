@@ -1,5 +1,5 @@
-const toString = Object.prototype.toString;
+const toString = Object.prototype.toString
 
 export default function isObject(thing: unknown): thing is Record<string, any> {
-	return toString.call(thing) === '[object Object]';
+  return toString.call(thing) === '[object Object]'
 }
