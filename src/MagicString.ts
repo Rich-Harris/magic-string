@@ -38,6 +38,8 @@ export type ReplacementFunction = (substring: string, ...args: any[]) => string
 declare const DEBUG: boolean
 
 const n = '\n'
+const NEWLINE_CHAR = '\n'.charCodeAt(0)
+const CR_CHAR = '\r'.charCodeAt(0)
 
 const warned = {
   insertLeft: false,
@@ -365,6 +367,19 @@ export default class MagicString {
     let charIndex = 0
     let chunk = this.firstChunk
 
+    const indentAt = (index: number) => {
+      shouldIndentNextCharacter = false
+
+      if (index === chunk!.start) {
+        chunk!.prependRight(resolvedIndentStr)
+      }
+      else {
+        this._splitChunk(chunk!, index)
+        chunk = chunk!.next
+        chunk!.prependRight(resolvedIndentStr)
+      }
+    }
+
     while (chunk) {
       const end = chunk.end
 
@@ -377,30 +392,46 @@ export default class MagicString {
           }
         }
       }
-      else {
+      else if (options.exclude) {
         charIndex = chunk.start
 
         while (charIndex < end) {
           if (!isExcluded[charIndex]) {
-            const char = this.original[charIndex]
+            const char = this.original.charCodeAt(charIndex)
 
-            if (char === '\n') {
+            if (char === NEWLINE_CHAR) {
               shouldIndentNextCharacter = true
             }
-            else if (char !== '\r' && shouldIndentNextCharacter) {
-              shouldIndentNextCharacter = false
-
-              if (charIndex === chunk.start) {
-                chunk.prependRight(resolvedIndentStr)
-              }
-              else {
-                this._splitChunk(chunk, charIndex)
-                chunk = chunk.next
-                chunk.prependRight(resolvedIndentStr)
-              }
+            else if (char !== CR_CHAR && shouldIndentNextCharacter) {
+              indentAt(charIndex)
             }
           }
 
+          charIndex += 1
+        }
+      }
+      else {
+        charIndex = chunk.start
+
+        while (charIndex < end) {
+          if (!shouldIndentNextCharacter) {
+            const nextLine = this.original.indexOf(n, charIndex)
+            if (nextLine === -1 || nextLine >= end)
+              break
+
+            shouldIndentNextCharacter = true
+            charIndex = nextLine + 1
+            continue
+          }
+
+          const char = this.original.charCodeAt(charIndex)
+
+          if (char === NEWLINE_CHAR || char === CR_CHAR) {
+            charIndex += 1
+            continue
+          }
+
+          indentAt(charIndex)
           charIndex += 1
         }
       }
