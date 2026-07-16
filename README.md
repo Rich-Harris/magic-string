@@ -25,57 +25,57 @@ magic-string works in both node.js and browser environments. For node, install w
 npm i magic-string
 ```
 
-To use in browser, grab the [magic-string.umd.js](https://unpkg.com/magic-string/dist/magic-string.umd.js) file and add it to your page:
+magic-string is ESM-only. In browsers, import it from an ESM CDN:
 
 ```html
-<script src="magic-string.umd.js"></script>
+<script type="module">
+	import MagicString from 'https://unpkg.com/magic-string/dist/index.mjs';
+</script>
 ```
-
-(It also works with various module systems, if you prefer that sort of thing - it has a dependency on [vlq](https://github.com/Rich-Harris/vlq).)
 
 ## Usage
 
 These examples assume you're in node.js, or something similar:
 
 ```js
-import MagicString from 'magic-string';
-import fs from 'fs';
+import fs from 'node:fs'
+import MagicString from 'magic-string'
 
-const s = new MagicString('problems = 99');
+const s = new MagicString('problems = 99')
 
-s.update(0, 8, 'answer');
-s.toString(); // 'answer = 99'
+s.update(0, 8, 'answer')
+s.toString() // 'answer = 99'
 
-s.update(11, 13, '42'); // character indices always refer to the original string
-s.toString(); // 'answer = 42'
+s.update(11, 13, '42') // character indices always refer to the original string
+s.toString() // 'answer = 42'
 
-s.prepend('var ').append(';'); // most methods are chainable
-s.toString(); // 'var answer = 42;'
+s.prepend('var ').append(';') // most methods are chainable
+s.toString() // 'var answer = 42;'
 
 const map = s.generateMap({
-	source: 'source.js',
-	file: 'converted.js.map',
-	includeContent: true,
-}); // generates a v3 sourcemap
+  source: 'source.js',
+  file: 'converted.js.map',
+  includeContent: true,
+}) // generates a v3 sourcemap
 
-fs.writeFileSync('converted.js', s.toString());
-fs.writeFileSync('converted.js.map', map.toString());
+fs.writeFileSync('converted.js', s.toString())
+fs.writeFileSync('converted.js.map', map.toString())
 ```
 
 You can pass an options argument:
 
 ```js
 const s = new MagicString(someCode, {
-	// these options will be used if you later call `bundle.addSource( s )` - see below
-	filename: 'foo.js',
-	indentExclusionRanges: [
-		/*...*/
-	],
-	// mark source as ignore in DevTools, see below #Bundling
-	ignoreList: false,
-	// adjust the incoming position - see below
-	offset: 0,
-});
+  // these options will be used if you later call `bundle.addSource( s )` - see below
+  filename: 'foo.js',
+  indentExclusionRanges: [
+    /* ... */
+  ],
+  // mark source as ignore in DevTools, see below #Bundling
+  ignoreList: false,
+  // adjust the incoming position - see below
+  offset: 0,
+})
 ```
 
 ## Properties
@@ -87,9 +87,9 @@ Sets the offset property to adjust the incoming position for the following APIs:
 Example usage:
 
 ```ts
-const s = new MagicString('hello world', { offset: 0 });
-s.offset = 6;
-s.slice() === 'world';
+const s = new MagicString('hello world', { offset: 0 })
+s.offset = 6
+s.slice() === 'world'
 ```
 
 ## Methods
@@ -133,7 +133,7 @@ The returned sourcemap has two (non-enumerable) methods attached for convenience
 - `toUrl` - returns a DataURI containing the sourcemap. Useful for doing this sort of thing:
 
 ```js
-code += '\n//# sourceMappingURL=' + map.toUrl();
+code += `\n//# sourceMappingURL=${map.toUrl()}`
 ```
 
 ### s.hasChanged()
@@ -195,14 +195,14 @@ Same as `s.appendRight(...)`, except that the inserted content will go _before_ 
 String replacement with RegExp or string. The `substitution` parameter supports strings and functions. Returns `this`.
 
 ```ts
-import MagicString from 'magic-string';
+import MagicString from 'magic-string'
 
-const s = new MagicString(source);
+const s = new MagicString(source)
 
-s.replace('foo', 'bar');
-s.replace('foo', (str, index, s) => str + '-' + index);
-s.replace(/foo/g, 'bar');
-s.replace(/(\w)(\d+)/g, (_, $1, $2) => $1.toUpperCase() + $2);
+s.replace('foo', 'bar')
+s.replace('foo', (str, index, s) => `${str}-${index}`)
+s.replace(/foo/g, 'bar')
+s.replace(/(\w)(\d+)/g, (_, $1, $2) => $1.toUpperCase() + $2)
 ```
 
 The differences from [`String.replace`](<(https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace)>):
@@ -262,40 +262,42 @@ The fourth argument is optional. It can have a `storeName` property — if `true
 
 ## Bundling
 
-To concatenate several sources, use `MagicString.Bundle`:
+To concatenate several sources, use `Bundle`:
 
 ```js
-const bundle = new MagicString.Bundle();
+import MagicString, { Bundle } from 'magic-string'
+
+const bundle = new Bundle()
 
 bundle.addSource({
-	filename: 'foo.js',
-	content: new MagicString('var answer = 42;'),
-});
+  filename: 'foo.js',
+  content: new MagicString('var answer = 42;'),
+})
 
 bundle.addSource({
-	filename: 'bar.js',
-	content: new MagicString('console.log( answer )'),
-});
+  filename: 'bar.js',
+  content: new MagicString('console.log( answer )'),
+})
 
 // Sources can be marked as ignore-listed, which provides a hint to debuggers
 // to not step into this code and also don't show the source files depending
 // on user preferences.
 bundle.addSource({
-	filename: 'some-3rdparty-library.js',
-	content: new MagicString('function myLib(){}'),
-	ignoreList: false, // <--
-});
+  filename: 'some-3rdparty-library.js',
+  content: new MagicString('function myLib(){}'),
+  ignoreList: false, // <--
+})
 
 // Advanced: a source can include an `indentExclusionRanges` property
 // alongside `filename` and `content`. This will be passed to `s.indent()`
 // - see documentation above
 
 bundle
-	.indent() // optionally, pass an indent string, otherwise it will be guessed
-	.prepend('(function () {\n')
-	.append('}());');
+  .indent() // optionally, pass an indent string, otherwise it will be guessed
+  .prepend('(function () {\n')
+  .append('}());')
 
-bundle.toString();
+bundle.toString()
 // (function () {
 //   var answer = 42;
 //   console.log( answer );
@@ -303,21 +305,21 @@ bundle.toString();
 
 // options are as per `s.generateMap()` above
 const map = bundle.generateMap({
-	file: 'bundle.js',
-	includeContent: true,
-	hires: true,
-});
+  file: 'bundle.js',
+  includeContent: true,
+  hires: true,
+})
 ```
 
 As an alternative syntax, if you a) don't have `filename` or `indentExclusionRanges` options, or b) passed those in when you used `new MagicString(...)`, you can simply pass the `MagicString` instance itself:
 
 ```js
-const bundle = new MagicString.Bundle();
+const bundle = new Bundle()
 const source = new MagicString(someCode, {
-	filename: 'foo.js',
-});
+  filename: 'foo.js',
+})
 
-bundle.addSource(source);
+bundle.addSource(source)
 ```
 
 ## License
