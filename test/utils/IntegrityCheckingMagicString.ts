@@ -1,5 +1,5 @@
-import MagicString from '../../src';
 import { assert } from 'vitest';
+import MagicString from '../../src/index.ts';
 
 class IntegrityCheckingMagicString extends MagicString {
 	checkIntegrity() {
@@ -25,14 +25,13 @@ class IntegrityCheckingMagicString extends MagicString {
 }
 
 for (const key in MagicString.prototype) {
-	// eslint-disable-next-line no-prototype-builtins
-	if (!MagicString.prototype.hasOwnProperty(key)) {
+	if (!Object.hasOwn(MagicString.prototype, key)) {
 		continue;
 	}
 	const func = MagicString.prototype[key];
 	if (typeof func === 'function') {
-		IntegrityCheckingMagicString.prototype[key] = function () {
-			const result = func.apply(this, arguments);
+		IntegrityCheckingMagicString.prototype[key] = function (...args) {
+			const result = func.apply(this, args);
 			try {
 				this.checkIntegrity();
 			} catch (e) {

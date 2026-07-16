@@ -1,4 +1,9 @@
-export default function getLocator(source) {
+export interface SourceLocation {
+	line: number;
+	column: number;
+}
+
+export default function getLocator(source: string): (index: number) => SourceLocation {
 	const originalLines = source.split('\n');
 	const lineOffsets = [];
 
@@ -7,7 +12,7 @@ export default function getLocator(source) {
 		pos += originalLines[i].length + 1;
 	}
 
-	return function locate(index) {
+	return function locate(index: number): SourceLocation {
 		let i = 0;
 		let j = lineOffsets.length;
 		while (i < j) {

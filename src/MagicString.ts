@@ -1,12 +1,41 @@
-import BitSet from './BitSet.js';
-import Chunk from './Chunk.js';
-import SourceMap from './SourceMap.js';
-import guessIndent from './utils/guessIndent.js';
-import getRelativePath from './utils/getRelativePath.js';
-import isObject from './utils/isObject.js';
-import getLocator from './utils/getLocator.js';
-import Mappings from './utils/Mappings.js';
-import Stats from './utils/Stats.js';
+import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts';
+import BitSet from './BitSet.ts';
+import Chunk from './Chunk.ts';
+import SourceMap from './SourceMap.ts';
+import getLocator from './utils/getLocator.ts';
+import getRelativePath from './utils/getRelativePath.ts';
+import guessIndent from './utils/guessIndent.ts';
+import isObject from './utils/isObject.ts';
+import Mappings from './utils/Mappings.ts';
+import Stats from './utils/Stats.ts';
+
+export type ExclusionRange = [number, number];
+
+export interface MagicStringOptions {
+	filename?: string;
+	ignoreList?: boolean;
+	indentExclusionRanges?: ExclusionRange | ExclusionRange[];
+	offset?: number;
+}
+
+export interface IndentOptions {
+	exclude?: ExclusionRange | ExclusionRange[];
+	indentStart?: boolean;
+}
+
+export interface OverwriteOptions {
+	storeName?: boolean;
+	contentOnly?: boolean;
+}
+
+export interface UpdateOptions {
+	storeName?: boolean;
+	overwrite?: boolean;
+}
+
+export type ReplacementFunction = (substring: string, ...args: any[]) => string;
+
+declare const DEBUG: boolean;
 
 const n = '\n';
 
@@ -17,7 +46,37 @@ const warned = {
 };
 
 export default class MagicString {
-	constructor(string, options = {}) {
+	declare original: string;
+	/** @internal */
+	declare outro: string;
+	/** @internal */
+	declare intro: string;
+	/** @internal */
+	declare filename: string | undefined;
+	declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges'];
+	/** @internal */
+	declare ignoreList: boolean | undefined;
+	declare offset: number;
+	/** @internal */
+	declare firstChunk: Chunk;
+	/** @internal */
+	declare lastChunk: Chunk;
+	/** @internal */
+	declare lastSearchedChunk: Chunk;
+	/** @internal */
+	declare byStart: Record<number, Chunk>;
+	/** @internal */
+	declare byEnd: Record<number, Chunk>;
+	/** @internal */
+	declare sourcemapLocations: BitSet;
+	/** @internal */
+	declare storedNames: Record<string, true>;
+	/** @internal */
+	declare indentStr: string | null | undefined;
+	/** @internal */
+	declare stats: Stats;
+
+	constructor(string: string, options: MagicStringOptions = {}) {
 		const chunk = new Chunk(0, string.length, string);
 
 		Object.defineProperties(this, {
@@ -46,18 +105,29 @@ export default class MagicString {
 		this.byEnd[string.length] = chunk;
 	}
 
-	addSourcemapLocation(char) {
+	/**
+	 * Adds the specified character index (with respect to the original string) to sourcemap mappings, if `hires` is false.
+	 */
+	addSourcemapLocation(char: number): void {
 		this.sourcemapLocations.add(char);
 	}
 
-	append(content) {
+	/**
+	 * Appends the specified content to the end of the string.
+	 */
+	append(content: string): this {
 		if (typeof content !== 'string') throw new TypeError('outro content must be a string');
 
 		this.outro += content;
 		return this;
 	}
 
-	appendLeft(index, content) {
+	/**
+	 * Appends the specified content at the index in the original string.
+	 * If a range *ending* with index is subsequently moved, the insert will be moved with it.
+	 * See also `s.prependLeft(...)`.
+	 */
+	appendLeft(index: number, content: string): this {
 		index = index + this.offset;
 
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -78,7 +148,12 @@ export default class MagicString {
 		return this;
 	}
 
-	appendRight(index, content) {
+	/**
+	 * Appends the specified content at the index in the original string.
+	 * If a range *starting* with index is subsequently moved, the insert will be moved with it.
+	 * See also `s.prependRight(...)`.
+	 */
+	appendRight(index: number, content: string): this {
 		index = index + this.offset;
 
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -99,7 +174,10 @@ export default class MagicString {
 		return this;
 	}
 
-	clone() {
+	/**
+	 * Does what you'd expect.
+	 */
+	clone(): this {
 		const cloned = new MagicString(this.original, { filename: this.filename, offset: this.offset });
 
 		let originalChunk = this.firstChunk;
@@ -125,7 +203,8 @@ export default class MagicString {
 		cloned.lastChunk = clonedChunk;
 
 		if (this.indentExclusionRanges) {
-			cloned.indentExclusionRanges = this.indentExclusionRanges.slice();
+			cloned.indentExclusionRanges = this.indentExclusionRanges.slice() as
+				ExclusionRange | ExclusionRange[];
 		}
 
 		cloned.sourcemapLocations = new BitSet(this.sourcemapLocations);
@@ -133,10 +212,14 @@ export default class MagicString {
 		cloned.intro = this.intro;
 		cloned.outro = this.outro;
 
-		return cloned;
+		return cloned as this;
 	}
 
-	generateDecodedMap(options) {
+	/**
+	 * Generates a sourcemap object with raw mappings in array form, rather than encoded as a string.
+	 * Useful if you need to manipulate the sourcemap further, but most of the time you will use `generateMap` instead.
+	 */
+	generateDecodedMap(options?: SourceMapOptions): DecodedSourceMap {
 		options = options || {};
 
 		const sourceIndex = 0;
@@ -184,27 +267,45 @@ export default class MagicString {
 		};
 	}
 
-	generateMap(options) {
+	/**
+	 * Generates a version 3 sourcemap.
+	 */
+	generateMap(options?: SourceMapOptions): SourceMap {
 		return new SourceMap(this.generateDecodedMap(options));
 	}
 
-	_ensureindentStr() {
+	/** @internal */
+	_ensureindentStr(): void {
 		if (this.indentStr === undefined) {
 			this.indentStr = guessIndent(this.original);
 		}
 	}
 
-	_getRawIndentString() {
+	/** @internal */
+	_getRawIndentString(): string | null | undefined {
 		this._ensureindentStr();
 		return this.indentStr;
 	}
 
-	getIndentString() {
+	getIndentString(): string {
 		this._ensureindentStr();
 		return this.indentStr === null ? '\t' : this.indentStr;
 	}
 
-	indent(indentStr, options) {
+	/**
+	 * Prefixes each line of the string with prefix.
+	 * If prefix is not supplied, the indentation will be guessed from the original content, falling back to a single tab character.
+	 */
+	indent(options?: IndentOptions): this;
+	/**
+	 * Prefixes each line of the string with prefix.
+	 * If prefix is not supplied, the indentation will be guessed from the original content, falling back to a single tab character.
+	 *
+	 * The options argument can have an exclude property, which is an array of [start, end] character ranges.
+	 * These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
+	 */
+	indent(indentStr?: string, options?: IndentOptions): this;
+	indent(indentStr?: string | IndentOptions, options?: IndentOptions): this {
 		const pattern = /^[^\r\n]/gm;
 
 		if (isObject(indentStr)) {
@@ -218,15 +319,18 @@ export default class MagicString {
 		}
 
 		if (indentStr === '') return this; // noop
+		const resolvedIndentStr = indentStr as string;
 
 		options = options || {};
 
 		// Process exclusion ranges
-		const isExcluded = {};
+		const isExcluded: Record<number, boolean> = {};
 
 		if (options.exclude) {
 			const exclusions =
-				typeof options.exclude[0] === 'number' ? [options.exclude] : options.exclude;
+				typeof options.exclude[0] === 'number'
+					? [options.exclude as ExclusionRange]
+					: (options.exclude as ExclusionRange[]);
 			exclusions.forEach((exclusion) => {
 				for (let i = exclusion[0]; i < exclusion[1]; i += 1) {
 					isExcluded[i] = true;
@@ -235,8 +339,8 @@ export default class MagicString {
 		}
 
 		let shouldIndentNextCharacter = options.indentStart !== false;
-		const replacer = (match) => {
-			if (shouldIndentNextCharacter) return `${indentStr}${match}`;
+		const replacer = (match: string) => {
+			if (shouldIndentNextCharacter) return `${resolvedIndentStr}${match}`;
 			shouldIndentNextCharacter = true;
 			return match;
 		};
@@ -270,11 +374,11 @@ export default class MagicString {
 							shouldIndentNextCharacter = false;
 
 							if (charIndex === chunk.start) {
-								chunk.prependRight(indentStr);
+								chunk.prependRight(resolvedIndentStr);
 							} else {
 								this._splitChunk(chunk, charIndex);
 								chunk = chunk.next;
-								chunk.prependRight(indentStr);
+								chunk.prependRight(resolvedIndentStr);
 							}
 						}
 					}
@@ -292,13 +396,15 @@ export default class MagicString {
 		return this;
 	}
 
-	insert() {
+	/** @internal */
+	insert(): never {
 		throw new Error(
 			'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)',
 		);
 	}
 
-	insertLeft(index, content) {
+	/** @internal */
+	insertLeft(index: number, content: string): this {
 		if (!warned.insertLeft) {
 			console.warn(
 				'magicString.insertLeft(...) is deprecated. Use magicString.appendLeft(...) instead',
@@ -309,7 +415,8 @@ export default class MagicString {
 		return this.appendLeft(index, content);
 	}
 
-	insertRight(index, content) {
+	/** @internal */
+	insertRight(index: number, content: string): this {
 		if (!warned.insertRight) {
 			console.warn(
 				'magicString.insertRight(...) is deprecated. Use magicString.prependRight(...) instead',
@@ -320,7 +427,10 @@ export default class MagicString {
 		return this.prependRight(index, content);
 	}
 
-	move(start, end, index) {
+	/**
+	 * Moves the characters from `start` and `end` to `index`.
+	 */
+	move(start: number, end: number, index: number): this {
 		start = start + this.offset;
 		end = end + this.offset;
 		index = index + this.offset;
@@ -365,12 +475,37 @@ export default class MagicString {
 		return this;
 	}
 
-	overwrite(start, end, content, options) {
-		options = options || {};
-		return this.update(start, end, content, { ...options, overwrite: !options.contentOnly });
+	/**
+	 * Replaces the characters from `start` to `end` with `content`, along with the appended/prepended content in
+	 * that range. The same restrictions as `s.remove()` apply.
+	 *
+	 * The fourth argument is optional. It can have a storeName property - if true, the original name will be stored
+	 * for later inclusion in a sourcemap's names array - and a contentOnly property which determines whether only
+	 * the content is overwritten, or anything that was appended/prepended to the range as well.
+	 *
+	 * It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
+	 */
+	overwrite(
+		start: number,
+		end: number,
+		content: string,
+		options?: boolean | OverwriteOptions,
+	): this {
+		const optionObject = typeof options === 'object' && options ? options : {};
+		return this.update(start, end, content, {
+			...optionObject,
+			overwrite: !optionObject.contentOnly,
+		});
 	}
 
-	update(start, end, content, options) {
+	/**
+	 * Replaces the characters from `start` to `end` with `content`. The same restrictions as `s.remove()` apply.
+	 *
+	 * The fourth argument is optional. It can have a storeName property - if true, the original name will be stored
+	 * for later inclusion in a sourcemap's names array - and an overwrite property which determines whether only
+	 * the content is overwritten, or anything that was appended/prepended to the range as well.
+	 */
+	update(start: number, end: number, content: string, options?: boolean | UpdateOptions): this {
 		start = start + this.offset;
 		end = end + this.offset;
 
@@ -382,10 +517,11 @@ export default class MagicString {
 		}
 
 		if (end > this.original.length) throw new Error('end is out of bounds');
-		if (start === end)
+		if (start === end) {
 			throw new Error(
 				'Cannot overwrite a zero-length range – use appendLeft or prependRight instead',
 			);
+		}
 
 		if (DEBUG) this.stats.time('overwrite');
 
@@ -402,8 +538,9 @@ export default class MagicString {
 
 			options = { storeName: true };
 		}
-		const storeName = options !== undefined ? options.storeName : false;
-		const overwrite = options !== undefined ? options.overwrite : false;
+		const optionObject = typeof options === 'object' && options ? options : {};
+		const storeName = optionObject.storeName || false;
+		const overwrite = optionObject.overwrite || false;
 
 		if (storeName) {
 			const original = this.original.slice(start, end);
@@ -441,14 +578,20 @@ export default class MagicString {
 		return this;
 	}
 
-	prepend(content) {
+	/**
+	 * Prepends the string with the specified content.
+	 */
+	prepend(content: string): this {
 		if (typeof content !== 'string') throw new TypeError('outro content must be a string');
 
 		this.intro = content + this.intro;
 		return this;
 	}
 
-	prependLeft(index, content) {
+	/**
+	 * Same as `s.appendLeft(...)`, except that the inserted content will go *before* any previous appends or prepends at index
+	 */
+	prependLeft(index: number, content: string): this {
 		index = index + this.offset;
 
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -469,7 +612,10 @@ export default class MagicString {
 		return this;
 	}
 
-	prependRight(index, content) {
+	/**
+	 * Same as `s.appendRight(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
+	 */
+	prependRight(index: number, content: string): this {
 		index = index + this.offset;
 
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
@@ -490,7 +636,11 @@ export default class MagicString {
 		return this;
 	}
 
-	remove(start, end) {
+	/**
+	 * Removes the characters from `start` to `end` (of the original string, **not** the generated string).
+	 * Removing the same content twice, or making removals that partially overlap, will cause an error.
+	 */
+	remove(start: number, end: number): this {
 		start = start + this.offset;
 		end = end + this.offset;
 
@@ -523,7 +673,10 @@ export default class MagicString {
 		return this;
 	}
 
-	reset(start, end) {
+	/**
+	 * Reset the modified characters from `start` to `end` (of the original string, **not** the generated string).
+	 */
+	reset(start: number, end: number): this {
 		start = start + this.offset;
 		end = end + this.offset;
 
@@ -554,24 +707,25 @@ export default class MagicString {
 		return this;
 	}
 
-	lastChar() {
+	lastChar(): string {
 		if (this.outro.length) return this.outro[this.outro.length - 1];
-		let chunk = this.lastChunk;
-		do {
+		let chunk: Chunk | null = this.lastChunk;
+		while (chunk) {
 			if (chunk.outro.length) return chunk.outro[chunk.outro.length - 1];
 			if (chunk.content.length) return chunk.content[chunk.content.length - 1];
 			if (chunk.intro.length) return chunk.intro[chunk.intro.length - 1];
-		} while ((chunk = chunk.previous));
+			chunk = chunk.previous;
+		}
 		if (this.intro.length) return this.intro[this.intro.length - 1];
 		return '';
 	}
 
-	lastLine() {
+	lastLine(): string {
 		let lineIndex = this.outro.lastIndexOf(n);
 		if (lineIndex !== -1) return this.outro.substr(lineIndex + 1);
 		let lineStr = this.outro;
-		let chunk = this.lastChunk;
-		do {
+		let chunk: Chunk | null = this.lastChunk;
+		while (chunk) {
 			if (chunk.outro.length > 0) {
 				lineIndex = chunk.outro.lastIndexOf(n);
 				if (lineIndex !== -1) return chunk.outro.substr(lineIndex + 1) + lineStr;
@@ -589,13 +743,18 @@ export default class MagicString {
 				if (lineIndex !== -1) return chunk.intro.substr(lineIndex + 1) + lineStr;
 				lineStr = chunk.intro + lineStr;
 			}
-		} while ((chunk = chunk.previous));
+			chunk = chunk.previous;
+		}
 		lineIndex = this.intro.lastIndexOf(n);
 		if (lineIndex !== -1) return this.intro.substr(lineIndex + 1) + lineStr;
 		return this.intro + lineStr;
 	}
 
-	slice(start = 0, end = this.original.length - this.offset) {
+	/**
+	 * Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string.
+	 * Throws error if the indices are for characters that were already removed.
+	 */
+	slice(start: number = 0, end: number = this.original.length - this.offset): string {
 		start = start + this.offset;
 		end = end + this.offset;
 
@@ -650,7 +809,10 @@ export default class MagicString {
 	}
 
 	// TODO deprecate this? not really very useful
-	snip(start, end) {
+	/**
+	 * Returns a clone of `s`, with all content before the `start` and `end` characters of the original string removed.
+	 */
+	snip(start: number, end: number): this {
 		const clone = this.clone();
 		clone.remove(0, start);
 		clone.remove(end, clone.original.length);
@@ -658,7 +820,8 @@ export default class MagicString {
 		return clone;
 	}
 
-	_split(index) {
+	/** @internal */
+	_split(index: number): boolean | void {
 		if (this.byStart[index] || this.byEnd[index]) return;
 
 		if (DEBUG) this.stats.time('_split');
@@ -679,7 +842,8 @@ export default class MagicString {
 		}
 	}
 
-	_splitChunk(chunk, index) {
+	/** @internal */
+	_splitChunk(chunk: Chunk, index: number): true {
 		if (chunk.edited && chunk.content.length) {
 			// zero-length edited chunks are a special case (overlapping replacements)
 			const loc = getLocator(this.original)(index);
@@ -701,7 +865,10 @@ export default class MagicString {
 		return true;
 	}
 
-	toString() {
+	/**
+	 * Returns the generated string.
+	 */
+	toString(): string {
 		let str = this.intro;
 
 		let chunk = this.firstChunk;
@@ -713,38 +880,51 @@ export default class MagicString {
 		return str + this.outro;
 	}
 
-	isEmpty() {
-		let chunk = this.firstChunk;
-		do {
+	/**
+	 * Returns true if the resulting source is empty (disregarding white space).
+	 */
+	isEmpty(): boolean {
+		let chunk: Chunk | null = this.firstChunk;
+		while (chunk) {
 			if (
 				(chunk.intro.length && chunk.intro.trim()) ||
 				(chunk.content.length && chunk.content.trim()) ||
 				(chunk.outro.length && chunk.outro.trim())
-			)
+			) {
 				return false;
-		} while ((chunk = chunk.next));
+			}
+			chunk = chunk.next;
+		}
 		return true;
 	}
 
-	length() {
-		let chunk = this.firstChunk;
+	length(): number {
+		let chunk: Chunk | null = this.firstChunk;
 		let length = 0;
-		do {
+		while (chunk) {
 			length += chunk.intro.length + chunk.content.length + chunk.outro.length;
-		} while ((chunk = chunk.next));
+			chunk = chunk.next;
+		}
 		return length;
 	}
 
-	trimLines() {
+	/**
+	 * Removes empty lines from the start and end.
+	 */
+	trimLines(): this {
 		return this.trim('[\\r\\n]');
 	}
 
-	trim(charType) {
+	/**
+	 * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start and end.
+	 */
+	trim(charType?: string): this {
 		return this.trimStart(charType).trimEnd(charType);
 	}
 
-	trimEndAborted(charType) {
-		const rx = new RegExp((charType || '\\s') + '+$');
+	/** @internal */
+	trimEndAborted(charType?: string): boolean {
+		const rx = new RegExp(`${charType || '\\s'}+$`);
 
 		this.outro = this.outro.replace(rx, '');
 		if (this.outro.length) return true;
@@ -773,12 +953,17 @@ export default class MagicString {
 		return false;
 	}
 
-	trimEnd(charType) {
+	/**
+	 * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the end.
+	 */
+	trimEnd(charType?: string): this {
 		this.trimEndAborted(charType);
 		return this;
 	}
-	trimStartAborted(charType) {
-		const rx = new RegExp('^' + (charType || '\\s') + '+');
+
+	/** @internal */
+	trimStartAborted(charType?: string): boolean {
+		const rx = new RegExp(`^${charType || '\\s'}+`);
 
 		this.intro = this.intro.replace(rx, '');
 		if (this.intro.length) return true;
@@ -805,19 +990,26 @@ export default class MagicString {
 		return false;
 	}
 
-	trimStart(charType) {
+	/**
+	 * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start.
+	 */
+	trimStart(charType?: string): this {
 		this.trimStartAborted(charType);
 		return this;
 	}
 
-	hasChanged() {
+	/**
+	 * Indicates if the string has been changed.
+	 */
+	hasChanged(): boolean {
 		return this.original !== this.toString();
 	}
 
-	_replaceRegexp(searchValue, replacement) {
-		function getReplacement(match, str) {
+	/** @internal */
+	_replaceRegexp(searchValue: RegExp, replacement: string | ReplacementFunction): this {
+		function getReplacement(match: RegExpMatchArray, str: string): string {
 			if (typeof replacement === 'string') {
-				return replacement.replace(/\$(\$|&|\d+)/g, (_, i) => {
+				return replacement.replace(/\$(\$|&|\d+)/g, (_: string, i: string) => {
 					// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
 					if (i === '$') return '$';
 					if (i === '&') return match[0];
@@ -826,13 +1018,15 @@ export default class MagicString {
 					return `$${i}`;
 				});
 			} else {
-				return replacement(...match, match.index, str, match.groups);
+				return replacement(match[0], ...match.slice(1), match.index, str, match.groups);
 			}
 		}
-		function matchAll(re, str) {
-			let match;
+		function matchAll(re: RegExp, str: string): RegExpExecArray[] {
 			const matches = [];
-			while ((match = re.exec(str))) {
+			while (true) {
+				const match = re.exec(str);
+				if (!match) break;
+
 				matches.push(match);
 			}
 			return matches;
@@ -859,7 +1053,8 @@ export default class MagicString {
 		return this;
 	}
 
-	_replaceString(string, replacement) {
+	/** @internal */
+	_replaceString(string: string, replacement: string | ReplacementFunction): this {
 		const { original } = this;
 		const index = original.indexOf(string);
 
@@ -875,7 +1070,10 @@ export default class MagicString {
 		return this;
 	}
 
-	replace(searchValue, replacement) {
+	/**
+	 * String replacement with RegExp or string.
+	 */
+	replace(searchValue: string | RegExp, replacement: string | ReplacementFunction): this {
 		if (typeof searchValue === 'string') {
 			return this._replaceString(searchValue, replacement);
 		}
@@ -883,7 +1081,8 @@ export default class MagicString {
 		return this._replaceRegexp(searchValue, replacement);
 	}
 
-	_replaceAllString(string, replacement) {
+	/** @internal */
+	_replaceAllString(string: string, replacement: string | ReplacementFunction): this {
 		const { original } = this;
 		const stringLength = string.length;
 		for (
@@ -892,17 +1091,18 @@ export default class MagicString {
 			index = original.indexOf(string, index + stringLength)
 		) {
 			const previous = original.slice(index, index + stringLength);
-			let _replacement = replacement;
-			if (typeof replacement === 'function') {
-				_replacement = replacement(previous, index, original);
-			}
+			const _replacement =
+				typeof replacement === 'function' ? replacement(previous, index, original) : replacement;
 			if (previous !== _replacement) this.overwrite(index, index + stringLength, _replacement);
 		}
 
 		return this;
 	}
 
-	replaceAll(searchValue, replacement) {
+	/**
+	 * Same as `s.replace`, but replace all matched strings instead of just one.
+	 */
+	replaceAll(searchValue: string | RegExp, replacement: string | ReplacementFunction): this {
 		if (typeof searchValue === 'string') {
 			return this._replaceAllString(searchValue, replacement);
 		}

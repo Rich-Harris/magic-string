@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["ES2023", "DOM"],
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"types": ["node"],
+		"allowImportingTsExtensions": true,
+		"strict": false,
+		"declaration": true,
+		"noEmit": true,
+		"stripInternal": true,
+		"isolatedDeclarations": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/**/*.ts"]
+}

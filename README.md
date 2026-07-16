@@ -25,21 +25,21 @@ magic-string works in both node.js and browser environments. For node, install w
 npm i magic-string
 ```
 
-To use in browser, grab the [magic-string.umd.js](https://unpkg.com/magic-string/dist/magic-string.umd.js) file and add it to your page:
+magic-string is ESM-only. In browsers, import it from an ESM CDN:
 
 ```html
-<script src="magic-string.umd.js"></script>
+<script type="module">
+	import MagicString from 'https://unpkg.com/magic-string/dist/index.mjs';
+</script>
 ```
-
-(It also works with various module systems, if you prefer that sort of thing - it has a dependency on [vlq](https://github.com/Rich-Harris/vlq).)
 
 ## Usage
 
 These examples assume you're in node.js, or something similar:
 
 ```js
+import fs from 'node:fs';
 import MagicString from 'magic-string';
-import fs from 'fs';
 
 const s = new MagicString('problems = 99');
 
@@ -68,9 +68,7 @@ You can pass an options argument:
 const s = new MagicString(someCode, {
 	// these options will be used if you later call `bundle.addSource( s )` - see below
 	filename: 'foo.js',
-	indentExclusionRanges: [
-		/*...*/
-	],
+	indentExclusionRanges: [/* ... */],
 	// mark source as ignore in DevTools, see below #Bundling
 	ignoreList: false,
 	// adjust the incoming position - see below
@@ -133,7 +131,7 @@ The returned sourcemap has two (non-enumerable) methods attached for convenience
 - `toUrl` - returns a DataURI containing the sourcemap. Useful for doing this sort of thing:
 
 ```js
-code += '\n//# sourceMappingURL=' + map.toUrl();
+code += `\n//# sourceMappingURL=${map.toUrl()}`;
 ```
 
 ### s.hasChanged()
@@ -200,7 +198,7 @@ import MagicString from 'magic-string';
 const s = new MagicString(source);
 
 s.replace('foo', 'bar');
-s.replace('foo', (str, index, s) => str + '-' + index);
+s.replace('foo', (str, index, s) => `${str}-${index}`);
 s.replace(/foo/g, 'bar');
 s.replace(/(\w)(\d+)/g, (_, $1, $2) => $1.toUpperCase() + $2);
 ```
@@ -262,10 +260,12 @@ The fourth argument is optional. It can have a `storeName` property — if `true
 
 ## Bundling
 
-To concatenate several sources, use `MagicString.Bundle`:
+To concatenate several sources, use `Bundle`:
 
 ```js
-const bundle = new MagicString.Bundle();
+import MagicString, { Bundle } from 'magic-string';
+
+const bundle = new Bundle();
 
 bundle.addSource({
 	filename: 'foo.js',
@@ -312,7 +312,7 @@ const map = bundle.generateMap({
 As an alternative syntax, if you a) don't have `filename` or `indentExclusionRanges` options, or b) passed those in when you used `new MagicString(...)`, you can simply pass the `MagicString` instance itself:
 
 ```js
-const bundle = new MagicString.Bundle();
+const bundle = new Bundle();
 const source = new MagicString(someCode, {
 	filename: 'foo.js',
 });

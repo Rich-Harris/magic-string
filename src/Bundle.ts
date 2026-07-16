@@ -1,14 +1,50 @@
-import MagicString from './MagicString.js';
-import SourceMap from './SourceMap.js';
-import getRelativePath from './utils/getRelativePath.js';
-import isObject from './utils/isObject.js';
-import getLocator from './utils/getLocator.js';
-import Mappings from './utils/Mappings.js';
+import type { ExclusionRange } from './MagicString.ts';
+import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts';
+import MagicString from './MagicString.ts';
+import SourceMap from './SourceMap.ts';
+import getLocator from './utils/getLocator.ts';
+import getRelativePath from './utils/getRelativePath.ts';
+import isObject from './utils/isObject.ts';
+import Mappings from './utils/Mappings.ts';
 
 const hasOwnProp = Object.prototype.hasOwnProperty;
 
+export interface BundleOptions {
+	intro?: string;
+	separator?: string;
+}
+
+interface BundleSourceDescription {
+	filename?: string;
+	content: MagicString;
+	ignoreList?: boolean;
+	indentExclusionRanges?: ExclusionRange | ExclusionRange[];
+	separator?: string;
+}
+
+interface UniqueSource {
+	filename: string;
+	content: string;
+}
+
+export interface DecodedSourceMapOrMissingContent extends Omit<DecodedSourceMap, 'sourcesContent'> {
+	sourcesContent: Array<string | null>;
+}
+
 export default class Bundle {
-	constructor(options = {}) {
+	/** @internal */
+	declare intro: string;
+	/** @internal */
+	declare separator: string;
+	/** @internal */
+	declare sources: BundleSourceDescription[];
+	/** @internal */
+	declare uniqueSources: UniqueSource[];
+	/** @internal */
+	declare uniqueSourceIndexByFilename: Record<string, number>;
+	declare indentExclusionRanges: ExclusionRange | ExclusionRange[] | undefined;
+
+	constructor(options: BundleOptions = {}) {
 		this.intro = options.intro || '';
 		this.separator = options.separator !== undefined ? options.separator : '\n';
 		this.sources = [];
@@ -16,7 +52,17 @@ export default class Bundle {
 		this.uniqueSourceIndexByFilename = {};
 	}
 
-	addSource(source) {
+	/**
+	 * Adds the specified source to the bundle, which can either be a `MagicString` object directly,
+	 * or an options object that holds a magic string `content` property and optionally provides
+	 * a `filename` for the source within the bundle, as well as an optional `ignoreList` hint
+	 * (which defaults to `false`). The `filename` is used when constructing the source map for the
+	 * bundle, to identify this `source` in the source map's `sources` field. The `ignoreList` hint
+	 * is used to populate the `x_google_ignoreList` extension field in the source map, which is a
+	 * mechanism for tools to signal to debuggers that certain sources should be ignored by default
+	 * (depending on user preferences).
+	 */
+	addSource(source: MagicString | BundleSourceDescription): this {
 		if (source instanceof MagicString) {
 			return this.addSource({
 				content: source,
@@ -56,7 +102,7 @@ export default class Bundle {
 		return this;
 	}
 
-	append(str, options) {
+	append(str: string, options?: BundleOptions): this {
 		this.addSource({
 			content: new MagicString(str),
 			separator: (options && options.separator) || '',
@@ -65,7 +111,7 @@ export default class Bundle {
 		return this;
 	}
 
-	clone() {
+	clone(): this {
 		const bundle = new Bundle({
 			intro: this.intro,
 			separator: this.separator,
@@ -79,15 +125,15 @@ export default class Bundle {
 			});
 		});
 
-		return bundle;
+		return bundle as this;
 	}
 
-	generateDecodedMap(options = {}) {
+	generateDecodedMap(options: SourceMapOptions = {}): DecodedSourceMapOrMissingContent {
 		const names = [];
-		let x_google_ignoreList = undefined;
+		let x_google_ignoreList;
 		this.sources.forEach((source) => {
 			Object.keys(source.content.storedNames).forEach((name) => {
-				if (!~names.indexOf(name)) names.push(name);
+				if (!names.includes(name)) names.push(name);
 			});
 		});
 
@@ -165,11 +211,15 @@ export default class Bundle {
 		};
 	}
 
-	generateMap(options) {
-		return new SourceMap(this.generateDecodedMap(options));
+	generateMap(
+		options?: SourceMapOptions,
+	): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> } {
+		return new SourceMap(this.generateDecodedMap(options)) as Omit<SourceMap, 'sourcesContent'> & {
+			sourcesContent: Array<string | null>;
+		};
 	}
 
-	getIndentString() {
+	getIndentString(): string {
 		const indentStringCounts = {};
 
 		this.sources.forEach((source) => {
@@ -188,7 +238,7 @@ export default class Bundle {
 		);
 	}
 
-	indent(indentStr) {
+	indent(indentStr?: string): this {
 		if (!arguments.length) {
 			indentStr = this.getIndentString();
 		}
@@ -203,7 +253,7 @@ export default class Bundle {
 
 			source.content.indent(indentStr, {
 				exclude: source.indentExclusionRanges,
-				indentStart, //: trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+				indentStart, // : trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
 			});
 
 			trailingNewline = source.content.lastChar() === '\n';
@@ -220,12 +270,12 @@ export default class Bundle {
 		return this;
 	}
 
-	prepend(str) {
+	prepend(str: string): this {
 		this.intro = str + this.intro;
 		return this;
 	}
 
-	toString() {
+	toString(): string {
 		const body = this.sources
 			.map((source, i) => {
 				const separator = source.separator !== undefined ? source.separator : this.separator;
@@ -238,29 +288,29 @@ export default class Bundle {
 		return this.intro + body;
 	}
 
-	isEmpty() {
+	isEmpty(): boolean {
 		if (this.intro.length && this.intro.trim()) return false;
 		if (this.sources.some((source) => !source.content.isEmpty())) return false;
 		return true;
 	}
 
-	length() {
+	length(): number {
 		return this.sources.reduce(
 			(length, source) => length + source.content.length(),
 			this.intro.length,
 		);
 	}
 
-	trimLines() {
+	trimLines(): this {
 		return this.trim('[\\r\\n]');
 	}
 
-	trim(charType) {
+	trim(charType?: string): this {
 		return this.trimStart(charType).trimEnd(charType);
 	}
 
-	trimStart(charType) {
-		const rx = new RegExp('^' + (charType || '\\s') + '+');
+	trimStart(charType?: string): this {
+		const rx = new RegExp(`^${charType || '\\s'}+`);
 		this.intro = this.intro.replace(rx, '');
 
 		if (!this.intro) {
@@ -278,8 +328,8 @@ export default class Bundle {
 		return this;
 	}
 
-	trimEnd(charType) {
-		const rx = new RegExp((charType || '\\s') + '+$');
+	trimEnd(charType?: string): this {
+		const rx = new RegExp(`${charType || '\\s'}+$`);
 
 		let source;
 		let i = this.sources.length - 1;

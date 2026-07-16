@@ -1,5 +1,18 @@
+declare const DEBUG: boolean;
+
 export default class Chunk {
-	constructor(start, end, content) {
+	declare start: number;
+	declare end: number;
+	declare original: string;
+	declare intro: string;
+	declare outro: string;
+	declare content: string;
+	declare storeName: boolean | undefined;
+	declare edited: boolean;
+	declare previous: Chunk | null;
+	declare next: Chunk | null;
+
+	constructor(start: number, end: number, content: string) {
 		this.start = start;
 		this.end = end;
 		this.original = content;
@@ -23,15 +36,15 @@ export default class Chunk {
 		}
 	}
 
-	appendLeft(content) {
+	appendLeft(content: string): void {
 		this.outro += content;
 	}
 
-	appendRight(content) {
+	appendRight(content: string): void {
 		this.intro = this.intro + content;
 	}
 
-	clone() {
+	clone(): Chunk {
 		const chunk = new Chunk(this.start, this.end, this.original);
 
 		chunk.intro = this.intro;
@@ -43,27 +56,31 @@ export default class Chunk {
 		return chunk;
 	}
 
-	contains(index) {
+	contains(index: number): boolean {
 		return this.start < index && index < this.end;
 	}
 
-	eachNext(fn) {
-		let chunk = this;
+	eachNext(fn: (chunk: Chunk) => void): void {
+		fn(this);
+
+		let chunk = this.next;
 		while (chunk) {
 			fn(chunk);
 			chunk = chunk.next;
 		}
 	}
 
-	eachPrevious(fn) {
-		let chunk = this;
+	eachPrevious(fn: (chunk: Chunk) => void): void {
+		fn(this);
+
+		let chunk = this.previous;
 		while (chunk) {
 			fn(chunk);
 			chunk = chunk.previous;
 		}
 	}
 
-	edit(content, storeName, contentOnly) {
+	edit(content: string, storeName?: boolean, contentOnly?: boolean): this {
 		this.content = content;
 		if (!contentOnly) {
 			this.intro = '';
@@ -76,15 +93,15 @@ export default class Chunk {
 		return this;
 	}
 
-	prependLeft(content) {
+	prependLeft(content: string): void {
 		this.outro = content + this.outro;
 	}
 
-	prependRight(content) {
+	prependRight(content: string): void {
 		this.intro = content + this.intro;
 	}
 
-	reset() {
+	reset(): void {
 		this.intro = '';
 		this.outro = '';
 		if (this.edited) {
@@ -94,7 +111,7 @@ export default class Chunk {
 		}
 	}
 
-	split(index) {
+	split(index: number): Chunk {
 		const sliceIndex = index - this.start;
 
 		const originalBefore = this.original.slice(0, sliceIndex);
@@ -131,11 +148,11 @@ export default class Chunk {
 		return newChunk;
 	}
 
-	toString() {
+	toString(): string {
 		return this.intro + this.content + this.outro;
 	}
 
-	trimEnd(rx) {
+	trimEnd(rx: RegExp): boolean | undefined {
 		this.outro = this.outro.replace(rx, '');
 		if (this.outro.length) return true;
 
@@ -158,7 +175,7 @@ export default class Chunk {
 		}
 	}
 
-	trimStart(rx) {
+	trimStart(rx: RegExp): boolean | undefined {
 		this.intro = this.intro.replace(rx, '');
 		if (this.intro.length) return true;
 

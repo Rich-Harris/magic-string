@@ -1,7 +1,19 @@
+import type BitSet from '../BitSet.ts';
+import type Chunk from '../Chunk.ts';
+import type { SourceMapOptions, SourceMapSegment } from '../SourceMap.ts';
+import type { SourceLocation } from './getLocator.ts';
+
 const wordRegex = /\w/;
 
 export default class Mappings {
-	constructor(hires) {
+	declare hires: SourceMapOptions['hires'];
+	declare generatedCodeLine: number;
+	declare generatedCodeColumn: number;
+	declare raw: SourceMapSegment[][];
+	declare rawSegments: SourceMapSegment[];
+	declare pending: SourceMapSegment | null;
+
+	constructor(hires: SourceMapOptions['hires']) {
 		this.hires = hires;
 		this.generatedCodeLine = 0;
 		this.generatedCodeColumn = 0;
@@ -10,7 +22,7 @@ export default class Mappings {
 		this.pending = null;
 	}
 
-	addEdit(sourceIndex, content, loc, nameIndex) {
+	addEdit(sourceIndex: number, content: string, loc: SourceLocation, nameIndex: number): void {
 		if (content.length) {
 			const contentLengthMinusOne = content.length - 1;
 			let contentLineEnd = content.indexOf('\n', 0);
@@ -18,7 +30,12 @@ export default class Mappings {
 			// Loop through each line in the content and add a segment, but stop if the last line is empty,
 			// else code afterwards would fill one line too many
 			while (contentLineEnd >= 0 && contentLengthMinusOne > contentLineEnd) {
-				const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
+				const segment: SourceMapSegment = [
+					this.generatedCodeColumn,
+					sourceIndex,
+					loc.line,
+					loc.column,
+				];
 				if (nameIndex >= 0) {
 					segment.push(nameIndex);
 				}
@@ -32,7 +49,12 @@ export default class Mappings {
 				contentLineEnd = content.indexOf('\n', contentLineEnd + 1);
 			}
 
-			const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
+			const segment: SourceMapSegment = [
+				this.generatedCodeColumn,
+				sourceIndex,
+				loc.line,
+				loc.column,
+			];
 			if (nameIndex >= 0) {
 				segment.push(nameIndex);
 			}
@@ -47,7 +69,13 @@ export default class Mappings {
 		this.pending = null;
 	}
 
-	addUneditedChunk(sourceIndex, chunk, original, loc, sourcemapLocations) {
+	addUneditedChunk(
+		sourceIndex: number,
+		chunk: Chunk,
+		original: string,
+		loc: SourceLocation,
+		sourcemapLocations: BitSet,
+	): void {
 		let originalCharIndex = chunk.start;
 		let first = true;
 		// when iterating each char, check if it's in a word boundary
@@ -64,7 +92,12 @@ export default class Mappings {
 				charInHiresBoundary = false;
 			} else {
 				if (this.hires || first || sourcemapLocations.has(originalCharIndex)) {
-					const segment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column];
+					const segment: SourceMapSegment = [
+						this.generatedCodeColumn,
+						sourceIndex,
+						loc.line,
+						loc.column,
+					];
 
 					if (this.hires === 'boundary') {
 						// in hires "boundary", group segments per word boundary than per char
@@ -95,7 +128,7 @@ export default class Mappings {
 		this.pending = null;
 	}
 
-	advance(str) {
+	advance(str: string): void {
 		if (!str) return;
 
 		const lines = str.split('\n');

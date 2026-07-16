@@ -1,13 +1,15 @@
 export default class BitSet {
-	constructor(arg) {
+	declare bits: number[];
+
+	constructor(arg?: BitSet) {
 		this.bits = arg instanceof BitSet ? arg.bits.slice() : [];
 	}
 
-	add(n) {
+	add(n: number): void {
 		this.bits[n >> 5] |= 1 << (n & 31);
 	}
 
-	has(n) {
+	has(n: number): boolean {
 		return !!(this.bits[n >> 5] & (1 << (n & 31)));
 	}
 }

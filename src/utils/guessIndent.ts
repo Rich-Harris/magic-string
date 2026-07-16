@@ -1,4 +1,4 @@
-export default function guessIndent(code) {
+export default function guessIndent(code: string): string | null {
 	const lines = code.split('\n');
 
 	const tabbed = lines.filter((line) => /^\t+/.test(line));
@@ -17,9 +17,9 @@ export default function guessIndent(code) {
 
 	// Otherwise, we need to guess the multiple
 	const min = spaced.reduce((previous, current) => {
-		const numSpaces = /^ +/.exec(current)[0].length;
+		const numSpaces = /^ +/.exec(current)![0].length;
 		return Math.min(numSpaces, previous);
 	}, Infinity);
 
-	return new Array(min + 1).join(' ');
+	return ' '.repeat(min);
 }

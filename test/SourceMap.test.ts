@@ -1,8 +1,9 @@
+import type { SourceMapSegment } from 'magic-string';
+import assert from 'node:assert';
+import { SourceMap } from 'magic-string';
 import { describe, it } from 'vitest';
-import assert from 'assert';
-import { SourceMap } from '../';
 
-describe('MagicString.SourceMap', () => {
+describe('magicString.SourceMap', () => {
 	describe('options', () => {
 		it('preserves ignore list information', () => {
 			const map = new SourceMap({
@@ -10,7 +11,7 @@ describe('MagicString.SourceMap', () => {
 				sources: ['foo.js'],
 				sourcesContent: ['42'],
 				names: [],
-				mappings: [[0, 0]],
+				mappings: [[0, 0]] as unknown as SourceMapSegment[][],
 				x_google_ignoreList: [0],
 			});
 
@@ -25,7 +26,7 @@ describe('MagicString.SourceMap', () => {
 				sources: ['foo.js'],
 				sourcesContent: ['42'],
 				names: [],
-				mappings: [[0, 0]],
+				mappings: [[0, 0]] as unknown as SourceMapSegment[][],
 				x_google_ignoreList: [0],
 			});
 

@@ -1,6 +1,6 @@
+import fs from 'node:fs/promises';
 import Benchmark from 'benchmark';
-import MagicString from '../dist/magic-string.es.mjs';
-import fs from 'fs/promises';
+import MagicString from '../dist/index.mjs';
 
 Benchmark.support.decompilation = false;
 

@@ -1,9 +1,10 @@
-import { describe, it } from 'vitest';
-import assert from 'assert';
-import MagicString, { Bundle } from '../';
+import type { RawSourceMap } from 'source-map-js';
+import assert from 'node:assert';
+import MagicString, { Bundle } from 'magic-string';
 import { SourceMapConsumer } from 'source-map-js';
+import { describe, it } from 'vitest';
 
-describe('Bundle', () => {
+describe('bundle', () => {
 	describe('addSource', () => {
 		it('should return this', () => {
 			const b = new Bundle();
@@ -123,7 +124,7 @@ describe('Bundle', () => {
 			assert.deepEqual(map.sources, ['foo.js', 'bar.js']);
 			assert.deepEqual(map.sourcesContent, ['var answer = 42;', 'console.log( answer );']);
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
@@ -174,7 +175,7 @@ describe('Bundle', () => {
 				'{"version":3,"file":"bundle.js","sources":["path/to/foo.js","path/to/bar.js"],"sourcesContent":["var answer = 42;","console.log( answer );"],"names":[],"mappings":"AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;ACAf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC"}',
 			);
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
@@ -218,7 +219,7 @@ describe('Bundle', () => {
 				hires: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 2, column: 1 });
@@ -281,7 +282,7 @@ describe('Bundle', () => {
 			assert.equal(map.sources.length, 2);
 			assert.equal(map.sourcesContent.length, 2);
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 0 });
@@ -323,7 +324,7 @@ describe('Bundle', () => {
 				includeContent: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
@@ -350,7 +351,7 @@ describe('Bundle', () => {
 				includeContent: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
@@ -402,7 +403,7 @@ describe('Bundle', () => {
 				includeContent: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
@@ -428,7 +429,7 @@ describe('Bundle', () => {
 				includeContent: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			let loc;
 
 			loc = smc.originalPositionFor({ line: 1, column: 9 });
@@ -468,7 +469,7 @@ describe('Bundle', () => {
 				includeContent: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			const loc = smc.originalPositionFor({ line: 1, column: 21 });
 
 			assert.deepEqual(loc, {
@@ -486,19 +487,23 @@ describe('Bundle', () => {
 			});
 
 			const s = new MagicString(
-				`
-<div></div>
-
-<script>
-	export default {
-		onrender () {
-			console.log( 42 );
-		}
-	}
-</script>`.trim(),
+				[
+					'<div></div>',
+					'',
+					'<script>',
+					'\texport default {',
+					'\t\tonrender () {',
+					'\t\t\tconsole.log( 42 );',
+					'\t\t}',
+					'\t}',
+					'</script>',
+				].join('\n'),
 			);
 
-			[21, 23, 38, 42, 50, 51, 54, 59, 66, 67, 70, 72, 74, 76, 77, 81, 84, 85].forEach((pos) => {
+			const sourcemapLocations = [
+				21, 23, 38, 42, 50, 51, 54, 59, 66, 67, 70, 72, 74, 76, 77, 81, 84, 85,
+			];
+			sourcemapLocations.forEach((pos) => {
 				s.addSourcemapLocation(pos);
 			});
 
@@ -515,14 +520,15 @@ describe('Bundle', () => {
 
 			assert.equal(
 				b.toString(),
-				`
-var template = (function () {
-	return {
-		onrender () {
-			console.log( 42 );
-		}
-	}
-}());`.trim(),
+				[
+					'var template = (function () {',
+					'\treturn {',
+					'\t\tonrender () {',
+					'\t\t\tconsole.log( 42 );',
+					'\t\t}',
+					'\t}',
+					'}());',
+				].join('\n'),
 			);
 
 			const map = b.generateMap({
@@ -531,7 +537,7 @@ var template = (function () {
 				includeContent: true,
 			});
 
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 			const loc = smc.originalPositionFor({ line: 4, column: 16 });
 
 			assert.deepEqual(loc, {
@@ -732,7 +738,7 @@ var template = (function () {
 			ms2.move(0, 1, 5); // WZV
 
 			const map = bundle.generateMap({ file: 'result', hires: true, includeContent: true });
-			const smc = new SourceMapConsumer(map);
+			const smc = new SourceMapConsumer(map as unknown as RawSourceMap);
 
 			const result1 = ms1.toString();
 			assert.strictEqual(result1, 'BEA');
