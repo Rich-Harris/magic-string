@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "magic-string": ["./src/index.ts"]
+    },
+    "declaration": false,
+    "stripInternal": false,
+    "isolatedDeclarations": false
+  },
+  "include": ["test/**/*.ts", "vitest.config.ts"]
+}
