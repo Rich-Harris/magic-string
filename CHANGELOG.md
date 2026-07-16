@@ -1,3 +1,13 @@
+# [1.0.0](https://github.com/Rich-Harris/magic-string/compare/v0.30.21...v1.0.0) (2026-07-16)
+
+### Bug Fixes
+
+* avoid crash when moving a zero-length range ([#307](https://github.com/Rich-Harris/magic-string/issues/307)) ([56fe8cb](https://github.com/Rich-Harris/magic-string/commit/56fe8cb61e6b64a778e5eb7d0334c57aacb0c4c8))
+
+### Performance Improvements
+
+* add fast path for non-exclusion indent ([#308](https://github.com/Rich-Harris/magic-string/issues/308)) ([992baba](https://github.com/Rich-Harris/magic-string/commit/992baba37ac10bb5e35ad00fb516a272b8757a91))
+
 ## [0.30.21](https://github.com/Rich-Harris/magic-string/compare/v0.30.20...v0.30.21) (2025-10-24)
 
 
