@@ -164,10 +164,13 @@ export default class Chunk {
 
     if (trimmed.length) {
       if (trimmed !== this.content) {
-        this.split(this.start + trimmed.length).edit('', undefined, true)
         if (this.edited) {
-          // save the change, if it has been edited
+          // the content of an edited chunk no longer lines up with its range in the
+          // original string, so there is no index to split at - trim it in place
           this.edit(trimmed, this.storeName, true)
+        }
+        else {
+          this.split(this.start + trimmed.length).edit('', undefined, true)
         }
       }
       return true
@@ -190,12 +193,15 @@ export default class Chunk {
 
     if (trimmed.length) {
       if (trimmed !== this.content) {
-        const newChunk = this.split(this.end - trimmed.length)
         if (this.edited) {
-          // save the change, if it has been edited
-          newChunk.edit(trimmed, this.storeName, true)
+          // the content of an edited chunk no longer lines up with its range in the
+          // original string, so there is no index to split at - trim it in place
+          this.edit(trimmed, this.storeName, true)
         }
-        this.edit('', undefined, true)
+        else {
+          this.split(this.end - trimmed.length)
+          this.edit('', undefined, true)
+        }
       }
       return true
     }

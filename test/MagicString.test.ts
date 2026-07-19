@@ -1675,6 +1675,31 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcd')
     })
 
+    it('should trim a replacement that is longer than the range it replaces', () => {
+      const s = new MagicString('ab')
+      s.overwrite(0, 1, '   xyz')
+      s.trimStart()
+
+      assert.equal(s.toString(), 'xyzb')
+
+      for (const line of s.generateDecodedMap({ source: 'in.js' }).mappings) {
+        for (const segment of line) {
+          if (segment.length > 1) {
+            assert.ok(segment[1]! >= 0 && segment[2]! >= 0 && segment[3]! >= 0, `segment ${JSON.stringify(segment)} points outside the original`)
+          }
+        }
+      }
+    })
+
+    it('should trim the end of a replacement that is longer than the range it replaces', () => {
+      const s = new MagicString('ab')
+      s.overwrite(1, 2, 'xyz   ')
+      s.trimEnd()
+
+      assert.equal(s.toString(), 'axyz')
+      assert.equal(s.slice(0, 2), 'axyz')
+    })
+
     it('should trim original content before replaced content', () => {
       const s = new MagicString('abc   def')
 
