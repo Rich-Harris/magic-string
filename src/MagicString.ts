@@ -66,9 +66,9 @@ export default class MagicString {
   /** @internal */
   declare lastSearchedChunk: Chunk
   /** @internal */
-  declare byStart: Record<number, Chunk>
+  declare byStart: Map<number, Chunk>
   /** @internal */
-  declare byEnd: Record<number, Chunk>
+  declare byEnd: Map<number, Chunk>
   /** @internal */
   declare sourcemapLocations: BitSet
   /** @internal */
@@ -103,8 +103,8 @@ export default class MagicString {
       Object.defineProperty(this, 'stats', { value: new Stats() })
     }
 
-    this.byStart[0] = chunk
-    this.byEnd[string.length] = chunk
+    this.byStart = new Map<number, Chunk>([[0, chunk]])
+    this.byEnd = new Map<number, Chunk>([[string.length, chunk]])
   }
 
   /**
@@ -141,7 +141,7 @@ export default class MagicString {
 
     this._split(index)
 
-    const chunk = this.byEnd[index]
+    const chunk = this.byEnd.get(index)
 
     if (chunk) {
       chunk.appendLeft(content)
@@ -171,7 +171,7 @@ export default class MagicString {
 
     this._split(index)
 
-    const chunk = this.byStart[index]
+    const chunk = this.byStart.get(index)
 
     if (chunk) {
       chunk.appendRight(content)
@@ -195,8 +195,8 @@ export default class MagicString {
     let clonedChunk = (cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone())
 
     while (originalChunk) {
-      cloned.byStart[clonedChunk.start] = clonedChunk
-      cloned.byEnd[clonedChunk.end] = clonedChunk
+      cloned.byStart.set(clonedChunk.start, clonedChunk)
+      cloned.byEnd.set(clonedChunk.end, clonedChunk)
 
       const nextOriginalChunk = originalChunk.next
       const nextClonedChunk = nextOriginalChunk && nextOriginalChunk.clone()
@@ -497,13 +497,13 @@ export default class MagicString {
     this._split(end)
     this._split(index)
 
-    const first = this.byStart[start]
-    const last = this.byEnd[end]
+    const first = this.byStart.get(start)
+    const last = this.byEnd.get(end)
 
     const oldLeft = first.previous
     const oldRight = last.next
 
-    const newRight = this.byStart[index]
+    const newRight = this.byStart.get(index)
     if (!newRight && last === this.lastChunk)
       return this
     const newLeft = newRight ? newRight.previous : this.lastChunk
@@ -617,13 +617,13 @@ export default class MagicString {
       })
     }
 
-    const first = this.byStart[start]
-    const last = this.byEnd[end]
+    const first = this.byStart.get(start)
+    const last = this.byEnd.get(end)
 
     if (first) {
       let chunk = first
       while (chunk !== last) {
-        if (chunk.next !== this.byStart[chunk.end]) {
+        if (chunk.next !== this.byStart.get(chunk.end)) {
           throw new Error('Cannot overwrite across a split point')
         }
         chunk = chunk.next
@@ -671,7 +671,7 @@ export default class MagicString {
 
     this._split(index)
 
-    const chunk = this.byEnd[index]
+    const chunk = this.byEnd.get(index)
 
     if (chunk) {
       chunk.prependLeft(content)
@@ -699,7 +699,7 @@ export default class MagicString {
 
     this._split(index)
 
-    const chunk = this.byStart[index]
+    const chunk = this.byStart.get(index)
 
     if (chunk) {
       chunk.prependRight(content)
@@ -740,14 +740,14 @@ export default class MagicString {
     this._split(start)
     this._split(end)
 
-    let chunk = this.byStart[start]
+    let chunk = this.byStart.get(start)
 
     while (chunk) {
       chunk.intro = ''
       chunk.outro = ''
       chunk.edit('')
 
-      chunk = end > chunk.end ? this.byStart[chunk.end] : null
+      chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
     }
 
     if (DEBUG)
@@ -781,12 +781,12 @@ export default class MagicString {
     this._split(start)
     this._split(end)
 
-    let chunk = this.byStart[start]
+    let chunk = this.byStart.get(start)
 
     while (chunk) {
       chunk.reset()
 
-      chunk = end > chunk.end ? this.byStart[chunk.end] : null
+      chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
     }
 
     if (DEBUG)
@@ -919,7 +919,7 @@ export default class MagicString {
 
   /** @internal */
   _split(index: number): boolean | void {
-    if (this.byStart[index] || this.byEnd[index])
+    if (this.byStart.get(index) || this.byEnd.get(index))
       return
 
     if (DEBUG)
@@ -933,7 +933,7 @@ export default class MagicString {
       if (chunk.contains(index))
         return this._splitChunk(chunk, index)
 
-      chunk = searchForward ? this.byStart[chunk.end] : this.byEnd[chunk.start]
+      chunk = searchForward ? this.byStart.get(chunk.end) : this.byEnd.get(chunk.start)
 
       // Prevent infinite loop (e.g. via empty chunks, where start === end)
       if (chunk === previousChunk)
@@ -955,9 +955,9 @@ export default class MagicString {
 
     const newChunk = chunk.split(index)
 
-    this.byEnd[index] = chunk
-    this.byStart[index] = newChunk
-    this.byEnd[newChunk.end] = newChunk
+    this.byEnd.set(index, chunk)
+    this.byStart.set(index, newChunk)
+    this.byEnd.set(newChunk.end, newChunk)
 
     if (chunk === this.lastChunk)
       this.lastChunk = newChunk
@@ -1045,9 +1045,9 @@ export default class MagicString {
           this.lastChunk = chunk.next
         }
 
-        this.byEnd[chunk.end] = chunk
-        this.byStart[chunk.next.start] = chunk.next
-        this.byEnd[chunk.next.end] = chunk.next
+        this.byEnd.set(chunk.end, chunk)
+        this.byStart.set(chunk.next.start, chunk.next)
+        this.byEnd.set(chunk.next.end, chunk.next)
       }
 
       if (aborted)
@@ -1085,9 +1085,9 @@ export default class MagicString {
         if (chunk === this.lastChunk)
           this.lastChunk = chunk.next
 
-        this.byEnd[chunk.end] = chunk
-        this.byStart[chunk.next.start] = chunk.next
-        this.byEnd[chunk.next.end] = chunk.next
+        this.byEnd.set(chunk.end, chunk)
+        this.byStart.set(chunk.next.start, chunk.next)
+        this.byEnd.set(chunk.next.end, chunk.next)
       }
 
       if (aborted)
