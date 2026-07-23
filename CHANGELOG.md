@@ -1,3 +1,13 @@
+# [1.1.0](https://github.com/Rich-Harris/magic-string/compare/v1.0.0...v1.1.0) (2026-07-23)
+
+### Bug Fixes
+
+* trim replacements longer than the range they replace ([#312](https://github.com/Rich-Harris/magic-string/issues/312)) ([ec1a139](https://github.com/Rich-Harris/magic-string/commit/ec1a13955a4d7623175256520a3eb276ed365af8))
+
+### Performance Improvements
+
+* use a `Map` for tracking chunks ([#313](https://github.com/Rich-Harris/magic-string/issues/313)) ([25d7461](https://github.com/Rich-Harris/magic-string/commit/25d746120d84bd778c100ab75fa658160eb0865d))
+
 # [1.0.0](https://github.com/Rich-Harris/magic-string/compare/v0.30.21...v1.0.0) (2026-07-16)
 
 ### Bug Fixes
