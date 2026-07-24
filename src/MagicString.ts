@@ -88,8 +88,8 @@ export default class MagicString {
       firstChunk: { writable: true, value: chunk },
       lastChunk: { writable: true, value: chunk },
       lastSearchedChunk: { writable: true, value: chunk },
-      byStart: { writable: true, value: {} },
-      byEnd: { writable: true, value: {} },
+      byStart: { writable: true, value: new Map<number, Chunk>([[0, chunk]]) },
+      byEnd: { writable: true, value: new Map<number, Chunk>([[string.length, chunk]]) },
       filename: { writable: true, value: options.filename },
       indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
       sourcemapLocations: { writable: true, value: new BitSet() },
@@ -102,9 +102,6 @@ export default class MagicString {
     if (DEBUG) {
       Object.defineProperty(this, 'stats', { value: new Stats() })
     }
-
-    this.byStart = new Map<number, Chunk>([[0, chunk]])
-    this.byEnd = new Map<number, Chunk>([[string.length, chunk]])
   }
 
   /**
