@@ -4,11 +4,37 @@ import MagicString from '../dist/index.mjs'
 
 Benchmark.support.decompilation = false
 
-console.log(`node ${process.version}\n`)
+const results = []
+const total = 8
+const isTTY = process.stdout.isTTY
+let current = 0
+
+function run(name, options) {
+  current++
+  const progress = `[${current}/${total}] ${name}`
+  if (isTTY) {
+    process.stdout.write(`\r\x1b[2K${progress}`)
+  }
+  else {
+    console.log(progress)
+  }
+  return new Promise((resolve, reject) => {
+    new Benchmark(name, options)
+      .on('complete', (event) => {
+        const { hz, stats } = event.target
+        results.push({ name, hz, rme: stats.rme, samples: stats.sample.length })
+        resolve()
+      })
+      .on('error', (event) => {
+        reject(event.target.error)
+      })
+      .run()
+  })
+}
 
 function runWithInstance(name, inputs, func, setup) {
   const ss = []
-  new Benchmark(name, {
+  return run(name, {
     setup: () => {
       for (const [i, input] of inputs.entries()) {
         ss[i] = new MagicString(input)
@@ -23,13 +49,24 @@ function runWithInstance(name, inputs, func, setup) {
       }
     },
   })
-    .on('complete', (event) => {
-      console.log(String(event.target))
-    })
-    .on('error', (event) => {
-      console.error(event.target.error)
-    })
-    .run()
+}
+
+function printResults() {
+  if (isTTY) {
+    process.stdout.write('\r\x1b[2K')
+  }
+  console.log('')
+  const nameWidth = Math.max(...results.map(r => r.name.length), 4)
+  const header = `${'name'.padEnd(nameWidth)}  ${'hz'.padStart(20)}  ${'rme'.padStart(8)}  ${'samples'.padStart(7)}`
+  console.log(header)
+  console.log('-'.repeat(header.length))
+
+  for (const { name, hz, rme, samples } of results) {
+    const hzStr = hz.toLocaleString('en-US', { maximumFractionDigits: 2 })
+    console.log(
+      `${name.padEnd(nameWidth)}  ${hzStr.padStart(20)}  ${(`±${rme.toFixed(2)}%`).padStart(8)}  ${String(samples).padStart(7)}`,
+    )
+  }
 }
 
 async function bench() {
@@ -37,32 +74,27 @@ async function bench() {
     ['data.js', 'data-min.js'].map(file => fs.readFile(new URL(file, import.meta.url), 'utf-8')),
   )
 
-  new Benchmark('construct', {
+  console.log(`node ${process.version}`)
+
+  await run('construct', {
     fn: () => {
       for (const input of inputs) {
         new MagicString(input)
       }
     },
   })
-    .on('complete', (event) => {
-      console.log(String(event.target))
-    })
-    .on('error', (event) => {
-      console.error(event.target.error)
-    })
-    .run()
 
-  runWithInstance('append', inputs, (s) => {
+  await runWithInstance('append', inputs, (s) => {
     s.append(';"append";')
   })
-  runWithInstance('indent', inputs, (s) => {
+  await runWithInstance('indent', inputs, (s) => {
     s.indent()
   })
 
-  runWithInstance('generateMap (no edit)', inputs, (s) => {
+  await runWithInstance('generateMap (no edit)', inputs, (s) => {
     s.generateMap()
   })
-  runWithInstance(
+  await runWithInstance(
     'generateMap (edit)',
     inputs,
     (s) => {
@@ -73,10 +105,10 @@ async function bench() {
     },
   )
 
-  runWithInstance('generateDecodedMap (no edit)', inputs, (s) => {
+  await runWithInstance('generateDecodedMap (no edit)', inputs, (s) => {
     s.generateDecodedMap()
   })
-  runWithInstance(
+  await runWithInstance(
     'generateDecodedMap (edit)',
     inputs,
     (s) => {
@@ -88,11 +120,13 @@ async function bench() {
   )
 
   const size = 1000000
-  runWithInstance('overwrite', ['a'.repeat(size)], (s) => {
+  await runWithInstance('overwrite', ['a'.repeat(size)], (s) => {
     for (let i = 1; i < size; i += 2) {
       s.overwrite(i, i + 1, 'b')
     }
   })
+
+  printResults()
 }
 
 bench()
