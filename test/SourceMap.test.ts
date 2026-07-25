@@ -1,7 +1,6 @@
 import type { SourceMapSegment } from 'magic-string'
-import assert from 'node:assert'
 import { SourceMap } from 'magic-string'
-import { describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 describe('magicString.SourceMap', () => {
   describe('options', () => {

@@ -1,8 +1,17 @@
 import type { RawSourceMap } from 'source-map-js'
-import assert from 'node:assert'
+import type { ExclusionRange } from '../src/index.ts'
 import MagicString, { Bundle } from 'magic-string'
 import { SourceMapConsumer } from 'source-map-js'
-import { describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
+
+interface BundleInternals extends Bundle {
+  sources: Array<{
+    content: MagicString
+    filename?: string
+    ignoreList?: boolean
+    indentExclusionRanges?: ExclusionRange | ExclusionRange[]
+  }>
+}
 
 describe('bundle', () => {
   describe('addSource', () => {
@@ -14,8 +23,8 @@ describe('bundle', () => {
     })
 
     it('should accept MagicString instance as a single argument', () => {
-      const b = new Bundle()
-      const array = []
+      const b = new Bundle() as BundleInternals
+      const array: ExclusionRange[] = []
       const source = new MagicString('abcdefghijkl', {
         filename: 'foo.js',
         indentExclusionRanges: array,
@@ -28,7 +37,7 @@ describe('bundle', () => {
     })
 
     it('should accept ignore-list hint', () => {
-      const b = new Bundle()
+      const b = new Bundle() as BundleInternals
       const foo = new MagicString('foo', { filename: 'foo.js' })
       const bar = new MagicString('bar', { filename: 'bar.js' })
 
@@ -41,8 +50,8 @@ describe('bundle', () => {
     })
 
     it('respects MagicString init options with { content: source }', () => {
-      const b = new Bundle()
-      const array = []
+      const b = new Bundle() as BundleInternals
+      const array: ExclusionRange[] = []
       const source = new MagicString('abcdefghijkl', {
         filename: 'foo.js',
         ignoreList: false,
@@ -338,7 +347,7 @@ describe('bundle', () => {
       const b = new Bundle()
 
       const one = new MagicString('function one () {}', { filename: 'one.js' })
-      const two = new MagicString('function two () {}', { filename: null })
+      const two = new MagicString('function two () {}', { filename: undefined })
       const three = new MagicString('function three () {}', { filename: 'three.js' })
 
       b.addSource(one)
@@ -472,7 +481,7 @@ describe('bundle', () => {
       const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
       const loc = smc.originalPositionFor({ line: 1, column: 21 })
 
-      assert.deepEqual(loc, {
+      assert.deepEqual(loc as unknown as Record<string, unknown>, {
         source: 'input.js',
         name: null,
         line: 1,
@@ -538,7 +547,7 @@ describe('bundle', () => {
       const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
       const loc = smc.originalPositionFor({ line: 4, column: 16 })
 
-      assert.deepEqual(loc, {
+      assert.deepEqual(loc as unknown as Record<string, unknown>, {
         source: 'input.js',
         name: null,
         line: 6,

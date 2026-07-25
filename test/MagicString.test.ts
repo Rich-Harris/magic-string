@@ -1,8 +1,7 @@
 import type { RawSourceMap } from 'source-map-js'
 import type { ExclusionRange } from '../src/index.ts'
-import assert from 'node:assert'
 import { SourceMapConsumer } from 'source-map-js'
-import { describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 import MagicString from './utils/IntegrityCheckingMagicString.ts'
 
 describe('magicString', () => {
@@ -1364,7 +1363,7 @@ describe('magicString', () => {
 
     it('should throw error when using negative indices with empty string', () => {
       const s = new MagicString('')
-      assert.throws(() => s.remove(-2, -1), /Error: Character is out of bounds/)
+      assert.throws(() => s.remove(-2, -1), /Character is out of bounds/)
     })
   })
 
@@ -1922,7 +1921,7 @@ describe('magicString', () => {
 
     it('replace function offset', () => {
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_function_as_a_parameter
-      function replacer(match, p1, p2, p3, offset, string, groups) {
+      function replacer(match: string, p1: string, p2: string, p3: string, offset: number, string: string, groups: Record<string, string> | undefined) {
         // p1 is nondigits, p2 digits, and p3 non-alphanumerics
         return [match, p1, p2, p3, offset, string, groups].join(' - ')
       }
@@ -1936,19 +1935,19 @@ describe('magicString', () => {
 
     it('should ignore non-changed replacements', () => {
       const code = 'a12bc345#$*%'
-      const matched = []
+      const matched: string[] = []
 
       const s = new MagicString(code)
 
       assert.strictEqual(s.firstChunk, s.lastChunk)
 
-      s.replace(/(\d)/g, (match, $1) => {
+      s.replace(/(\d)/g, (match: string, $1: string) => {
         matched.push($1)
         return match
       })
 
       assert.strictEqual(s.toString(), code)
-      assert.deepStrictEqual(matched, ['1', '2', '3', '4', '5'])
+      assert.deepEqual(matched, ['1', '2', '3', '4', '5'])
 
       assert.strictEqual(s.firstChunk, s.lastChunk)
     })
@@ -1961,18 +1960,18 @@ describe('magicString', () => {
     it('works with string replace and function replacer', () => {
       const code = '1 2 1 2'
       const s = new MagicString(code)
-      const indexs = []
-      const _strs = []
+      const indexs: number[] = []
+      const _strs: string[] = []
 
-      s.replaceAll('2', (match, i, str) => {
+      s.replaceAll('2', (match: string, i: number, str: string) => {
         indexs.push(i)
         _strs.push(str)
         return `${match}-3`
       })
 
       assert.strictEqual(s.toString(), '1 2-3 1 2-3')
-      assert.deepStrictEqual(indexs, [2, 6])
-      assert.deepStrictEqual(_strs, [code, code])
+      assert.deepEqual(indexs, [2, 6])
+      assert.deepEqual(_strs, [code, code])
     })
 
     it('should not treat string as regexp', () => {
@@ -2009,10 +2008,11 @@ describe('magicString', () => {
     })
 
     it('rejects with non-global regexp', () => {
-      assert.throws(() => new MagicString('123').replaceAll(/./, ''), {
-        name: 'TypeError',
-        message: 'MagicString.prototype.replaceAll called with a non-global RegExp argument',
-      })
+      assert.throws(
+        () => new MagicString('123').replaceAll(/./, ''),
+        TypeError,
+        'MagicString.prototype.replaceAll called with a non-global RegExp argument',
+      )
     })
 
     it('with offset', () => {
