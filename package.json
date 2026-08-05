@@ -43,7 +43,7 @@
     "watch": "tsdown -w"
   },
   "dependencies": {
-    "@jridgewell/sourcemap-codec": "^1.5.5"
+    "@jridgewell/sourcemap-codec": "^1.6.0-beta.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.1.0",

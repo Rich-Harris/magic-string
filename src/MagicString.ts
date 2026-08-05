@@ -279,6 +279,7 @@ export default class MagicString {
       names,
       mappings: mappings.raw,
       x_google_ignoreList: this.ignoreList ? [sourceIndex] : undefined,
+      rangeMappings: mappings.rawRangeMappings,
     }
   }
 
