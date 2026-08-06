@@ -1,6 +1,5 @@
-import assert from 'node:assert'
 import MagicString, * as magicStringModule from 'magic-string'
-import { describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 describe('module exports', () => {
   it('only exposes ESM exports', () => {
