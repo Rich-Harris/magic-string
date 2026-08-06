@@ -47,7 +47,7 @@ export default class Mappings {
 
         this.generatedCodeLine += 1
         this.raw[this.generatedCodeLine] = this.rawSegments = []
-        this.rawRangeMappings[this.generatedCodeLine] = []
+        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
         this.generatedCodeColumn = 0
 
         previousContentLineEnd = contentLineEnd
