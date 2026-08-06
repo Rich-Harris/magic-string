@@ -686,6 +686,32 @@ describe('magicString', () => {
       assert.equal(loc.column, 17)
     })
 
+    it('records hires "experimental-range" mappings on the line the range actually starts on', () => {
+      const s = new MagicString('abcdef')
+
+      s.overwrite(0, 2, 'X\nY')
+      assert.equal(s.toString(), 'X\nYcdef')
+
+      const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
+
+      const map = s.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA;AAAA,CAAE,GAAG')
+      assert.equal(map.rangeMappings, ';B')
+    })
+
+    it('does not flag a range terminator when a replacement contains a new line', () => {
+      const s = new MagicString('abcdef')
+
+      s.appendLeft(2, 'ZZZ')
+      s.overwrite(2, 4, 'X\nY')
+      assert.equal(s.toString(), 'abZZZX\nYef')
+
+      const map = s.generateMap({ hires: 'experimental-range' })
+
+      assert.equal(map.mappings, 'AAAA,CAAC,IAAC;AAAA,CAAE,CAAC')
+      assert.equal(map.rangeMappings, 'A;B')
+    })
+
     it('generates a correct source map with update using a content containing a new line', () => {
       const s = new MagicString('foobar')
       s.update(3, 4, '\nbb')
