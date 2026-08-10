@@ -1164,6 +1164,22 @@ describe('magicString', () => {
       assert.throws(() => s.update(0, 1, []), TypeError)
     })
 
+    it('should throw when start is greater than end', () => {
+      const s = new MagicString('problems = 99')
+      assert.throws(() => s.update(9, 5, 'x'), /end must be greater than start \(start: 9, end: 5\)/)
+    })
+
+    it('should report the resolved indices when a negative start lands past end', () => {
+      const s = new MagicString('problems = 99')
+      // -1 resolves to 12, which is past `end`
+      assert.throws(() => s.update(-1, 5, 'x'), /end must be greater than start \(start: 12, end: 5\)/)
+    })
+
+    it('should throw error when using negative indices with empty string', () => {
+      const s = new MagicString('')
+      assert.throws(() => s.update(-2, -1, 'x'), /Character is out of bounds/)
+    })
+
     it('replaces interior inserts with overwrite option', () => {
       const s = new MagicString('abcdefghijkl')
 
@@ -1364,6 +1380,12 @@ describe('magicString', () => {
     it('should throw error when using negative indices with empty string', () => {
       const s = new MagicString('')
       assert.throws(() => s.remove(-2, -1), /Character is out of bounds/)
+    })
+
+    it('should report the resolved indices when a negative start lands past end', () => {
+      const s = new MagicString('problems = 99')
+      // -1 resolves to 12, which is past `end`
+      assert.throws(() => s.remove(-1, 5), /end must be greater than start \(start: 12, end: 5\)/)
     })
   })
 
