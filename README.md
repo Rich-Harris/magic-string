@@ -352,6 +352,59 @@ const source = new MagicString(someCode, {
 bundle.addSource(source)
 ```
 
+### new Bundle([ options ])
+
+The constructor takes an optional options object:
+
+- `intro` (default `''`) is placed at the start of the bundle, before the first source.
+- `separator` (default `'\n'`) is placed between sources.
+
+```js
+const bundle = new Bundle({
+  intro: '/* my-bundle.js */\n',
+  separator: '\n\n',
+})
+
+bundle.addSource(new MagicString('var answer = 42;'))
+bundle.addSource(new MagicString('console.log(answer);'))
+
+bundle.toString()
+// /* my-bundle.js */
+// var answer = 42;
+//
+// console.log(answer);
+```
+
+A source can override the bundle separator with its own `separator` property:
+
+```js
+const bundle = new Bundle({ separator: '\n\n' })
+
+bundle.addSource(new MagicString('var answer = 42;'))
+bundle.addSource({
+  content: new MagicString('console.log(answer);'),
+  separator: '\n',
+})
+
+bundle.toString()
+// var answer = 42;
+// console.log(answer);
+```
+
+`bundle.append( str[, options ])` takes the same options object but reads only `separator`, which defaults to `''` rather than to the bundle separator:
+
+```js
+const bundle = new Bundle({ separator: '\n\n' })
+
+bundle.addSource(new MagicString('a'))
+
+bundle.append('b')
+bundle.toString() // 'ab'
+
+bundle.append('c', { separator: '\n' })
+bundle.toString() // 'ab\nc'
+```
+
 ## License
 
 MIT
