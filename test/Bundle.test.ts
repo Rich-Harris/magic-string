@@ -642,6 +642,45 @@ describe('bundle', () => {
     })
   })
 
+  describe('length', () => {
+    it('should count the default separator between sources', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString('abc'))
+      b.addSource(new MagicString('def'))
+
+      assert.equal(b.toString(), 'abc\ndef')
+      assert.equal(b.length(), b.toString().length)
+    })
+
+    it('should count a custom separator', () => {
+      const b = new Bundle({ separator: '\n\n' })
+
+      b.addSource(new MagicString('a'))
+      b.addSource(new MagicString('b'))
+      b.addSource(new MagicString('c'))
+
+      assert.equal(b.length(), b.toString().length)
+    })
+
+    it('should count a per-source separator', () => {
+      const b = new Bundle({ separator: '\n\n' })
+
+      b.addSource(new MagicString('a'))
+      b.addSource({ content: new MagicString('b'), separator: '; ' })
+
+      assert.equal(b.length(), b.toString().length)
+    })
+
+    it('should count the intro', () => {
+      const b = new Bundle({ intro: '// intro\n' })
+
+      b.addSource(new MagicString('abc'))
+
+      assert.equal(b.length(), b.toString().length)
+    })
+  })
+
   describe('prepend', () => {
     it('should append content', () => {
       const b = new Bundle()
