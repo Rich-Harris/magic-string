@@ -554,12 +554,27 @@ describe('magicString', () => {
       // rename bar to hello
       s.overwrite(29, 32, 'hello')
 
-      const map = s.generateMap({
+      const options = {
         file: 'output.js',
         source: 'input.js',
         includeContent: true,
         hires: 'experimental-range',
-      })
+      } as const
+
+      const decoded = s.generateDecodedMap(options)
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+          [28, 0, 0, 28],
+          [29, 0, 0, 29],
+          [34, 0, 0, 32],
+          [37, 0, 0, 35],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0, 3]])
+
+      const map = s.generateMap(options)
 
       assert.equal(
         map.mappings,
@@ -603,12 +618,30 @@ describe('magicString', () => {
       s.overwrite(9, 12, 'baz')
       s.overwrite(29, 32, 'hello')
 
-      const map = s.generateMap({
+      const options = {
         file: 'output.js',
         source: 'input.js',
         includeContent: true,
         hires: 'experimental-range',
-      })
+      } as const
+
+      const decoded = s.generateDecodedMap(options)
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0], 
+          [8, 0, 0, 8],
+          [9, 0, 0, 9],
+          [12, 0, 0, 12],
+          [28, 0, 0, 28],
+          [29, 0, 0, 29],
+          [34, 0, 0, 32],
+          [37, 0, 0, 35],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0, 3, 6]])
+
+      const map = s.generateMap(options)
 
       assert.equal(
         map.mappings,
@@ -651,12 +684,29 @@ describe('magicString', () => {
       // rename bar to hello
       s.overwrite(20, 23, 'hello')
 
-      const map = s.generateMap({
+      const options = {
         file: 'output.js',
         source: 'input.js',
         includeContent: true,
         hires: 'experimental-range',
-      })
+      } as const
+
+      const decoded = s.generateDecodedMap(options)
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+        ],
+        [
+          [12, 0, 1, 12],
+          [13, 0, 1, 13],
+          [18, 0, 1, 16],
+          [19, 0, 1, 17],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0], [2]])
+
+      const map = s.generateMap(options)
 
       assert.equal(map.mappings, 'AAAA;YACY,CAAC,KAAG,CAAC')
       assert.equal(map.rangeMappings, 'A;C')
@@ -694,6 +744,18 @@ describe('magicString', () => {
 
       const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
 
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+        ],
+        [
+          [0, 0, 0, 0],
+          [1, 0, 0, 2],
+          [4, 0, 0, 5],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[], [1]])
+
       const map = s.generateMap({ hires: 'experimental-range' })
       assert.equal(map.mappings, 'AAAA;AAAA,CAAE,GAAG')
       assert.equal(map.rangeMappings, ';B')
@@ -705,6 +767,22 @@ describe('magicString', () => {
       s.appendLeft(2, 'ZZZ')
       s.overwrite(2, 4, 'X\nY')
       assert.equal(s.toString(), 'abZZZX\nYef')
+
+      const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0], 
+          [1, 0, 0, 1],
+          [5, 0, 0, 2],
+        ],
+        [
+          [0, 0, 0, 2],
+          [1, 0, 0, 4],
+          [2, 0, 0, 5],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0], [1]])
 
       const map = s.generateMap({ hires: 'experimental-range' })
 
