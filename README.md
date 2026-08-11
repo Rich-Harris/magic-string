@@ -136,6 +136,10 @@ The returned sourcemap has two (non-enumerable) methods attached for convenience
 code += `\n//# sourceMappingURL=${map.toUrl()}`
 ```
 
+### s.getIndentString()
+
+Returns the indentation string guessed from the original content, falling back to a single tab character. This is the value `s.indent()` uses when no prefix is supplied.
+
 ### s.hasChanged()
 
 Indicates if the string has been changed.
@@ -158,13 +162,39 @@ The `options` argument can have an `exclude` property, which is an array of `[st
 
 Returns true if the resulting source is empty (disregarding white space).
 
+### s.lastChar()
+
+Returns the last character of the generated string, or `''` if it is empty.
+
+### s.lastLine()
+
+Returns everything after the last newline in the generated string, or the whole string if there is no newline.
+
+### s.length()
+
+Returns the length of the generated string, counting only content attached to the original characters. Content that sits outside the string body is not counted, so `s.length()` and `s.toString().length` can disagree:
+
+```js
+const s = new MagicString('abcde')
+
+s.appendLeft(2, '__')
+s.toString() // 'ab__cde'
+s.length() // 7
+
+s.prepend('>>')
+s.toString() // '>>ab__cde'
+s.length() // still 7
+```
+
+`s.prepend()` and `s.append()` always land outside the body, as do inserts made before the first character or after the last one.
+
 ### s.locate( index )
 
-**DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
+**REMOVED** in 0.13, deprecated since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
 ### s.locateOrigin( index )
 
-**DEPRECATED** since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
+**REMOVED** in 0.13, deprecated since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
 ### s.move( start, end, index )
 
