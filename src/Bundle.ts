@@ -148,7 +148,8 @@ export default class Bundle {
 
     this.sources.forEach((source, i) => {
       if (i > 0) {
-        mappings.advance(this.separator)
+        // mirrors toString(): a source can override the bundle separator
+        mappings.advance(source.separator !== undefined ? source.separator : this.separator)
       }
 
       const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename[source.filename] : -1

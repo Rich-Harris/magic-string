@@ -489,6 +489,45 @@ describe('bundle', () => {
       })
     })
 
+    it('should use a source\'s own separator', () => {
+      const b = new Bundle({ separator: '\n' })
+
+      b.addSource({ filename: 'a.js', content: new MagicString('AAA') })
+      b.addSource({
+        filename: 'b.js',
+        content: new MagicString('BBB'),
+        separator: '\n\n\n',
+      })
+
+      assert.equal(b.toString(), 'AAA\n\n\nBBB')
+
+      const map = b.generateMap({ file: 'out.js', includeContent: true })
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+      const loc = smc.originalPositionFor({ line: 4, column: 0 })
+
+      assert.equal(loc.source, 'b.js')
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 0)
+    })
+
+    it('should stay aligned after append', () => {
+      const b = new Bundle()
+
+      b.addSource({ filename: 'a.js', content: new MagicString('AAA') })
+      b.append('XXX')
+      b.addSource({ filename: 'b.js', content: new MagicString('BBB') })
+
+      assert.equal(b.toString(), 'AAAXXX\nBBB')
+
+      const map = b.generateMap({ file: 'out.js', includeContent: true })
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+      const loc = smc.originalPositionFor({ line: 2, column: 0 })
+
+      assert.equal(loc.source, 'b.js')
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 0)
+    })
+
     // TODO tidy this up. is a recreation of a bug in Svelte
     it('generates a correct sourcemap for a Svelte component', () => {
       const b = new Bundle({
