@@ -547,6 +547,248 @@ describe('magicString', () => {
       assert.equal(loc.column, 12)
     })
 
+    it('generates segments per chunk with hires "experimental-range"', () => {
+      const s = new MagicString('function foo(){ console.log("bar") }')
+
+      // rename bar to hello
+      s.overwrite(29, 32, 'hello')
+
+      const options = {
+        file: 'output.js',
+        source: 'input.js',
+        includeContent: true,
+        hires: 'experimental-range',
+      } as const
+
+      const decoded = s.generateDecodedMap(options)
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+          [28, 0, 0, 28],
+          [29, 0, 0, 29],
+          [34, 0, 0, 32],
+          [37, 0, 0, 35],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0, 3]])
+
+      const map = s.generateMap(options)
+
+      assert.equal(
+        map.mappings,
+        'AAAA,4BAA4B,CAAC,KAAG,GAAG',
+      )
+      assert.equal(
+        map.rangeMappings,
+        'AD',
+      )
+
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+      let loc
+
+      // FIXME: the consumer library doesn't support range mappings yet
+      // loc = smc.originalPositionFor({ line: 1, column: 15 })
+      // assert.equal(loc.line, 1)
+      // assert.equal(loc.column, 15)
+
+      loc = smc.originalPositionFor({ line: 1, column: 28 })
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 28)
+
+      loc = smc.originalPositionFor({ line: 1, column: 29 })
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 29)
+
+      loc = smc.originalPositionFor({ line: 1, column: 34 })
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 32)
+
+      // FIXME: see above
+      // loc = smc.originalPositionFor({ line: 1, column: 35 })
+      // assert.equal(loc.line, 1)
+      // assert.equal(loc.column, 33)
+    })
+
+    it('generates segments per chunk with hires "experimental-range" (multiple ranges on a line)', () => {
+      const s = new MagicString('function foo(){ console.log("bar") }')
+
+      // rename foo to baz, bar to hello
+      s.overwrite(9, 12, 'baz')
+      s.overwrite(29, 32, 'hello')
+
+      const options = {
+        file: 'output.js',
+        source: 'input.js',
+        includeContent: true,
+        hires: 'experimental-range',
+      } as const
+
+      const decoded = s.generateDecodedMap(options)
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0], 
+          [8, 0, 0, 8],
+          [9, 0, 0, 9],
+          [12, 0, 0, 12],
+          [28, 0, 0, 28],
+          [29, 0, 0, 29],
+          [34, 0, 0, 32],
+          [37, 0, 0, 35],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0, 3, 6]])
+
+      const map = s.generateMap(options)
+
+      assert.equal(
+        map.mappings,
+        'AAAA,QAAQ,CAAC,GAAG,gBAAgB,CAAC,KAAG,GAAG',
+      )
+      assert.equal(
+        map.rangeMappings,
+        'ADD',
+      )
+
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+      let loc
+
+      // FIXME: the consumer library doesn't support range mappings yet
+      // loc = smc.originalPositionFor({ line: 1, column: 15 })
+      // assert.equal(loc.line, 1)
+      // assert.equal(loc.column, 15)
+
+      loc = smc.originalPositionFor({ line: 1, column: 28 })
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 28)
+
+      loc = smc.originalPositionFor({ line: 1, column: 29 })
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 29)
+
+      loc = smc.originalPositionFor({ line: 1, column: 34 })
+      assert.equal(loc.line, 1)
+      assert.equal(loc.column, 32)
+
+      // FIXME: see above
+      // loc = smc.originalPositionFor({ line: 1, column: 35 })
+      // assert.equal(loc.line, 1)
+      // assert.equal(loc.column, 33)
+    })
+
+    it('generates segments per chunk with hires "experimental-range" in the next line', () => {
+      const s = new MagicString('// foo\nconsole.log("bar")')
+
+      // rename bar to hello
+      s.overwrite(20, 23, 'hello')
+
+      const options = {
+        file: 'output.js',
+        source: 'input.js',
+        includeContent: true,
+        hires: 'experimental-range',
+      } as const
+
+      const decoded = s.generateDecodedMap(options)
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+        ],
+        [
+          [12, 0, 1, 12],
+          [13, 0, 1, 13],
+          [18, 0, 1, 16],
+          [19, 0, 1, 17],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0], [2]])
+
+      const map = s.generateMap(options)
+
+      assert.equal(map.mappings, 'AAAA;YACY,CAAC,KAAG,CAAC')
+      assert.equal(map.rangeMappings, 'A;C')
+
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+      let loc
+
+      // FIXME: the consumer library doesn't support range mappings yet
+      // loc = smc.originalPositionFor({ line: 1, column: 2 })
+      // assert.equal(loc.line, 1)
+      // assert.equal(loc.column, 2)
+
+      // loc = smc.originalPositionFor({ line: 2, column: 2 })
+      // assert.equal(loc.line, 2)
+      // assert.equal(loc.column, 2)
+
+      loc = smc.originalPositionFor({ line: 2, column: 12 })
+      assert.equal(loc.line, 2)
+      assert.equal(loc.column, 12)
+
+      loc = smc.originalPositionFor({ line: 2, column: 18 })
+      assert.equal(loc.line, 2)
+      assert.equal(loc.column, 16)
+
+      loc = smc.originalPositionFor({ line: 2, column: 19 })
+      assert.equal(loc.line, 2)
+      assert.equal(loc.column, 17)
+    })
+
+    it('records hires "experimental-range" mappings on the line the range actually starts on', () => {
+      const s = new MagicString('abcdef')
+
+      s.overwrite(0, 2, 'X\nY')
+      assert.equal(s.toString(), 'X\nYcdef')
+
+      const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+        ],
+        [
+          [0, 0, 0, 0],
+          [1, 0, 0, 2],
+          [4, 0, 0, 5],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[], [1]])
+
+      const map = s.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA;AAAA,CAAE,GAAG')
+      assert.equal(map.rangeMappings, ';B')
+    })
+
+    it('does not flag a range terminator when a replacement contains a new line', () => {
+      const s = new MagicString('abcdef')
+
+      s.appendLeft(2, 'ZZZ')
+      s.overwrite(2, 4, 'X\nY')
+      assert.equal(s.toString(), 'abZZZX\nYef')
+
+      const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0], 
+          [1, 0, 0, 1],
+          [5, 0, 0, 2],
+        ],
+        [
+          [0, 0, 0, 2],
+          [1, 0, 0, 4],
+          [2, 0, 0, 5],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0], [1]])
+
+      const map = s.generateMap({ hires: 'experimental-range' })
+
+      assert.equal(map.mappings, 'AAAA,CAAC,IAAC;AAAA,CAAE,CAAC')
+      assert.equal(map.rangeMappings, 'A;B')
+    })
+
     it('generates a correct source map with update using a content containing a new line', () => {
       const s = new MagicString('foobar')
       s.update(3, 4, '\nbb')

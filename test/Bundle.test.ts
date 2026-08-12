@@ -396,6 +396,109 @@ describe('bundle', () => {
       ])
     })
 
+    it('numbers hires "experimental-range" mappings across sources sharing a generated line', () => {
+      const b = new Bundle({ separator: ' + ' })
+
+      b.addSource(new MagicString('aaa', { filename: 'a.js' }))
+      b.addSource(new MagicString('bbb', { filename: 'b.js' }))
+      assert.equal(b.toString(), 'aaa + bbb')
+
+      const decoded = b.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [0, 0, 0, 0],
+          [2, 0, 0, 2], 
+          [6, 1, 0, 0],
+          [8, 1, 0, 2],
+        ],
+      ])
+
+      assert.deepEqual(decoded.rangeMappings, [[0, 2]])
+
+      const map = b.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA,EAAE,ICAF,EAAE')
+      assert.equal(map.rangeMappings, 'AC')
+    })
+
+    it('records hires "experimental-range" mappings per generated line', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString('aaa', { filename: 'a.js' }))
+      b.addSource(new MagicString('bbb', { filename: 'b.js' }))
+      assert.equal(b.toString(), 'aaa\nbbb')
+
+      const decoded = b.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [[0, 0, 0, 0], [2, 0, 0, 2]],
+        [[0, 1, 0, 0], [2, 1, 0, 2]],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0], [0]])
+
+      const map = b.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA,EAAE;ACAF,EAAE')
+      assert.equal(map.rangeMappings, 'A;A')
+    })
+
+    it('tracks generated lines across a source containing a new line and a new line separator', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString('aaa\nbbb', { filename: 'a.js' }))
+      b.addSource(new MagicString('ccc', { filename: 'b.js' }))
+      assert.equal(b.toString(), 'aaa\nbbb\nccc')
+
+      const decoded = b.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [[0, 0, 0, 0]],
+        [[2, 0, 1, 2]],
+        [[0, 1, 0, 0], [2, 1, 0, 2]],
+      ])
+
+      assert.deepEqual(decoded.rangeMappings, [[0], [], [0]])
+
+      const map = b.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA;EACE;ACDF,EAAE')
+      assert.equal(map.rangeMappings, 'A;;A')
+    })
+
+    it('does not record hires "experimental-range" mappings for sources without a filename', () => {
+      const b = new Bundle({ separator: '' })
+
+      b.addSource({ content: new MagicString('/*x*/') })
+      b.addSource(new MagicString('aaa', { filename: 'a.js' }))
+      assert.equal(b.toString(), '/*x*/aaa')
+
+      const decoded = b.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [
+          [5, 0, 0, 0], 
+          [7, 0, 0, 2],
+        ],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0]])
+
+      const map = b.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'KAAA,EAAE')
+      assert.equal(map.rangeMappings, 'A')
+    })
+
+    it('does not emit rangeMappings for other hires modes', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString('aaa', { filename: 'a.js' }))
+
+      assert.deepEqual(b.generateDecodedMap().rangeMappings, [[]])
+      assert.deepEqual(b.generateDecodedMap({ hires: true }).rangeMappings, [[]])
+      assert.deepEqual(b.generateDecodedMap({ hires: 'boundary' }).rangeMappings, [[]])
+
+      assert.equal(b.generateMap().rangeMappings, undefined)
+      assert.equal(b.generateMap({ hires: true }).rangeMappings, undefined)
+      assert.equal(b.generateMap({ hires: 'boundary' }).rangeMappings, undefined)
+    })
+
     it('handles prepended content', () => {
       const b = new Bundle()
 

@@ -1,4 +1,4 @@
-import { encode } from '@jridgewell/sourcemap-codec'
+import { encode, encodeRangeMappings } from '@jridgewell/sourcemap-codec'
 
 type Btoa = (str: string) => string
 
@@ -17,9 +17,11 @@ export interface SourceMapOptions {
    * line - but they're quicker to generate and less bulky.
    * You can also set `"boundary"` to generate a semi-hi-res mappings segmented per word boundary
    * instead of per character, suitable for string semantics that are separated by words.
+   * If you set `"experimental-range"` to generate hires mappings that use range mappings, a
+   * source map extension that can map all positions in a range. This feature is experimental.
    * If sourcemap locations have been specified with s.addSourceMapLocation(), they will be used here.
    */
-  hires?: boolean | 'boundary'
+  hires?: boolean | 'boundary' | 'experimental-range'
   /**
    * The filename where you plan to write the sourcemap.
    */
@@ -39,6 +41,8 @@ export type SourceMapSegment
     | [number, number, number, number]
     | [number, number, number, number, number]
 
+export type SourceMapRangeMappings = number[][]
+
 export interface DecodedSourceMap {
   file?: string
   sources: string[]
@@ -47,6 +51,7 @@ export interface DecodedSourceMap {
   mappings: SourceMapSegment[][]
   x_google_ignoreList?: number[]
   debugId?: string
+  rangeMappings?: SourceMapRangeMappings
 }
 
 function getBtoa(): Btoa {
@@ -76,6 +81,7 @@ export default class SourceMap {
   declare mappings: string
   declare x_google_ignoreList: number[] | undefined
   declare debugId: string | undefined
+  declare rangeMappings: string | undefined
 
   constructor(properties: DecodedSourceMap) {
     this.version = 3
@@ -89,6 +95,18 @@ export default class SourceMap {
     }
     if (typeof properties.debugId !== 'undefined') {
       this.debugId = properties.debugId
+    }
+    if (typeof properties.rangeMappings !== 'undefined') {
+      let shouldOutputRangeMapping = false
+      for (const line of properties.rangeMappings) {
+        if (line.length !== 0) {
+          shouldOutputRangeMapping = true
+          break
+        }
+      }
+      if (shouldOutputRangeMapping) {
+        this.rangeMappings = encodeRangeMappings(properties.rangeMappings)
+      }
     }
   }
 
