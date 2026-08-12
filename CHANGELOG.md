@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/Rich-Harris/magic-string/compare/v1.1.0...v1.1.1) (2026-08-12)
+
+### Bug Fixes
+
+* count separators in Bundle#length ([#322](https://github.com/Rich-Harris/magic-string/issues/322)) ([b66f1e5](https://github.com/Rich-Harris/magic-string/commit/b66f1e593ff72194e478a117fd96d84f15b58241)), closes [Bundle#length](https://github.com/Bundle/issues/length)
+* use a source's own separator in Bundle sourcemaps ([#323](https://github.com/Rich-Harris/magic-string/issues/323)) ([58b4118](https://github.com/Rich-Harris/magic-string/commit/58b41183d6079f4c0e5a4a2d5892d11ae84be674))
+* validate update() range and show indices in range errors ([#318](https://github.com/Rich-Harris/magic-string/issues/318)) ([7c0b663](https://github.com/Rich-Harris/magic-string/commit/7c0b6631972b053d5dede3dc7586f29d582d63f2))
+
 # [1.1.0](https://github.com/Rich-Harris/magic-string/compare/v1.0.0...v1.1.0) (2026-07-23)
 
 ### Bug Fixes
