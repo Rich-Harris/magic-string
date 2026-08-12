@@ -308,10 +308,12 @@ export default class Bundle {
   }
 
   length(): number {
-    return this.sources.reduce(
-      (length, source) => length + source.content.length(),
-      this.intro.length,
-    )
+    return this.sources.reduce((length, source, i) => {
+      // mirrors toString(): every source but the first is preceded by a separator
+      const separator = source.separator !== undefined ? source.separator : this.separator
+
+      return length + (i > 0 ? separator.length : 0) + source.content.length()
+    }, this.intro.length)
   }
 
   trimLines(): this {
