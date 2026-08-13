@@ -1,6 +1,7 @@
 import type { ExclusionRange } from './MagicString.ts'
 import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts'
 import MagicString from './MagicString.ts'
+import MagicStringError from './MagicStringError.ts'
 import SourceMap from './SourceMap.ts'
 import getLocator from './utils/getLocator.ts'
 import getRelativePath from './utils/getRelativePath.ts'
@@ -72,9 +73,7 @@ export default class Bundle {
     }
 
     if (!isObject(source) || !source.content) {
-      throw new Error(
-        'bundle.addSource() takes an object with a `content` property, which should be an instance of MagicString, and an optional `filename`',
-      )
+      throw new MagicStringError('addSource() requires a `content` property that is a MagicString')
     }
 
     ['filename', 'ignoreList', 'indentExclusionRanges', 'separator'].forEach((option) => {
@@ -95,7 +94,9 @@ export default class Bundle {
       else {
         const uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[source.filename]]
         if (source.content.original !== uniqueSource.content) {
-          throw new Error(`Illegal source: same filename (${source.filename}), different contents`)
+          throw new MagicStringError(
+            `duplicate filename "${source.filename}" with different content, use unique filenames`,
+          )
         }
       }
     }

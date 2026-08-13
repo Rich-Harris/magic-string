@@ -1,4 +1,5 @@
 import { encode } from '@jridgewell/sourcemap-codec'
+import MagicStringError from './MagicStringError.ts'
 
 type Btoa = (str: string) => string
 
@@ -61,7 +62,7 @@ function getBtoa(): Btoa {
   }
 
   return () => {
-    throw new Error('Unsupported environment: `window.btoa` or `Buffer` should be supported.')
+    throw new MagicStringError('unsupported environment: `btoa` or `Buffer` is required')
   }
 }
 

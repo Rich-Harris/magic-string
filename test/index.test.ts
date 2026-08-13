@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 describe('module exports', () => {
   it('only exposes ESM exports', () => {
-    assert.deepEqual(Object.keys(magicStringModule), ['Bundle', 'MagicString', 'default', 'SourceMap'])
+    assert.deepEqual(Object.keys(magicStringModule), ['Bundle', 'MagicString', 'default', 'MagicStringError', 'SourceMap'])
     assert.equal(Object.hasOwn(MagicString, 'Bundle'), false)
     assert.equal(Object.hasOwn(MagicString, 'SourceMap'), false)
     assert.equal(Object.hasOwn(MagicString, 'default'), false)
