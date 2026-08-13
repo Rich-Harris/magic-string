@@ -1,6 +1,7 @@
 import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts'
 import BitSet from './BitSet.ts'
 import Chunk from './Chunk.ts'
+import MagicStringError from './MagicStringError.ts'
 import SourceMap from './SourceMap.ts'
 import getLocator from './utils/getLocator.ts'
 import getRelativePath from './utils/getRelativePath.ts'
@@ -115,8 +116,9 @@ export default class MagicString {
    * Appends the specified content to the end of the string.
    */
   append(content: string): this {
-    if (typeof content !== 'string')
-      throw new TypeError('outro content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     this.outro += content
     return this
@@ -130,8 +132,9 @@ export default class MagicString {
   appendLeft(index: number, content: string): this {
     index = index + this.offset
 
-    if (typeof content !== 'string')
-      throw new TypeError('inserted content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     if (DEBUG)
       this.stats.time('appendLeft')
@@ -160,8 +163,9 @@ export default class MagicString {
   appendRight(index: number, content: string): this {
     index = index + this.offset
 
-    if (typeof content !== 'string')
-      throw new TypeError('inserted content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     if (DEBUG)
       this.stats.time('appendRight')
@@ -444,9 +448,7 @@ export default class MagicString {
 
   /** @internal */
   insert(): never {
-    throw new Error(
-      'magicString.insert(...) is deprecated. Use prependRight(...) or appendLeft(...)',
-    )
+    throw new MagicStringError('insert() is deprecated, use appendLeft() or prependRight()')
   }
 
   /** @internal */
@@ -484,8 +486,9 @@ export default class MagicString {
     if (start === end)
       return this
 
-    if (index >= start && index <= end)
-      throw new Error('Cannot move a selection inside itself')
+    if (index >= start && index <= end) {
+      throw new MagicStringError('cannot move a selection inside itself')
+    }
 
     if (DEBUG)
       this.stats.time('move')
@@ -569,25 +572,29 @@ export default class MagicString {
     start = start + this.offset
     end = end + this.offset
 
-    if (typeof content !== 'string')
-      throw new TypeError('replacement content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     if (this.original.length !== 0) {
       while (start < 0) start += this.original.length
       while (end < 0) end += this.original.length
     }
 
-    if (start < 0)
-      throw new Error('Character is out of bounds')
-    if (end > this.original.length)
-      throw new Error('end is out of bounds')
+    if (start < 0) {
+      throw new MagicStringError(`start ${start} is out of bounds`)
+    }
+    if (end > this.original.length) {
+      throw new MagicStringError(`end ${end} is out of bounds`)
+    }
     if (start === end) {
-      throw new Error(
-        'Cannot overwrite a zero-length range – use appendLeft or prependRight instead',
+      throw new MagicStringError(
+        `cannot overwrite a zero-length range at ${start}, use appendLeft() or prependRight()`,
       )
     }
-    if (start > end)
-      throw new Error(`end must be greater than start (start: ${start}, end: ${end})`)
+    if (start > end) {
+      throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
+    }
 
     if (DEBUG)
       this.stats.time('overwrite')
@@ -625,7 +632,7 @@ export default class MagicString {
       let chunk = first
       while (chunk !== last) {
         if (chunk.next !== this.byStart.get(chunk.end)) {
-          throw new Error('Cannot overwrite across a split point')
+          throw new MagicStringError('cannot overwrite across a split point')
         }
         chunk = chunk.next
         chunk.edit('', false)
@@ -651,8 +658,9 @@ export default class MagicString {
    * Prepends the string with the specified content.
    */
   prepend(content: string): this {
-    if (typeof content !== 'string')
-      throw new TypeError('outro content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     this.intro = content + this.intro
     return this
@@ -664,8 +672,9 @@ export default class MagicString {
   prependLeft(index: number, content: string): this {
     index = index + this.offset
 
-    if (typeof content !== 'string')
-      throw new TypeError('inserted content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     if (DEBUG)
       this.stats.time('insertRight')
@@ -692,8 +701,9 @@ export default class MagicString {
   prependRight(index: number, content: string): this {
     index = index + this.offset
 
-    if (typeof content !== 'string')
-      throw new TypeError('inserted content must be a string')
+    if (typeof content !== 'string') {
+      throw new MagicStringError(`content must be a string, got ${typeof content}`)
+    }
 
     if (DEBUG)
       this.stats.time('insertRight')
@@ -730,10 +740,12 @@ export default class MagicString {
     if (start === end)
       return this
 
-    if (start < 0 || end > this.original.length)
-      throw new Error('Character is out of bounds')
-    if (start > end)
-      throw new Error(`end must be greater than start (start: ${start}, end: ${end})`)
+    if (start < 0 || end > this.original.length) {
+      throw new MagicStringError(`range ${start}–${end} is out of bounds`)
+    }
+    if (start > end) {
+      throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
+    }
 
     if (DEBUG)
       this.stats.time('remove')
@@ -771,10 +783,12 @@ export default class MagicString {
     if (start === end)
       return this
 
-    if (start < 0 || end > this.original.length)
-      throw new Error('Character is out of bounds')
-    if (start > end)
-      throw new Error(`end must be greater than start (start: ${start}, end: ${end})`)
+    if (start < 0 || end > this.original.length) {
+      throw new MagicStringError(`range ${start}–${end} is out of bounds`)
+    }
+    if (start > end) {
+      throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
+    }
 
     if (DEBUG)
       this.stats.time('reset')
@@ -874,8 +888,9 @@ export default class MagicString {
       chunk = chunk.next
     }
 
-    if (chunk && chunk.edited && chunk.start !== start)
-      throw new Error(`Cannot use replaced character ${start} as slice start anchor.`)
+    if (chunk && chunk.edited && chunk.start !== start) {
+      throw new MagicStringError(`cannot use edited character ${start} as slice start anchor`)
+    }
 
     const startChunk = chunk
     while (chunk) {
@@ -884,8 +899,9 @@ export default class MagicString {
       }
 
       const containsEnd = chunk.start < end && chunk.end >= end
-      if (containsEnd && chunk.edited && chunk.end !== end)
-        throw new Error(`Cannot use replaced character ${end} as slice end anchor.`)
+      if (containsEnd && chunk.edited && chunk.end !== end) {
+        throw new MagicStringError(`cannot use edited character ${end} as slice end anchor`)
+      }
 
       const sliceStart = startChunk === chunk ? start - chunk.start : 0
       const sliceEnd = containsEnd ? chunk.content.length + end - chunk.end : chunk.content.length
@@ -949,8 +965,8 @@ export default class MagicString {
     if (chunk.edited && chunk.content.length) {
       // zero-length edited chunks are a special case (overlapping replacements)
       const loc = getLocator(this.original)(index)
-      throw new Error(
-        `Cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")`,
+      throw new MagicStringError(
+        `cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")`,
       )
     }
 
@@ -1224,9 +1240,7 @@ export default class MagicString {
     }
 
     if (!searchValue.global) {
-      throw new TypeError(
-        'MagicString.prototype.replaceAll called with a non-global RegExp argument',
-      )
+      throw new MagicStringError('replaceAll() requires a global RegExp')
     }
 
     return this._replaceRegexp(searchValue, replacement)

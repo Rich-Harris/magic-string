@@ -2,6 +2,7 @@ import type { RawSourceMap } from 'source-map-js'
 import type { ExclusionRange } from '../src/index.ts'
 import { SourceMapConsumer } from 'source-map-js'
 import { assert, describe, it } from 'vitest'
+import { MagicStringError } from '../src/index.ts'
 import MagicString from './utils/IntegrityCheckingMagicString.ts'
 
 describe('magicString', () => {
@@ -40,7 +41,7 @@ describe('magicString', () => {
     it('should throw when given non-string content', () => {
       const s = new MagicString('')
       // @ts-expect-error runtime validation is the subject of this test
-      assert.throws(() => s.append([]), TypeError)
+      assert.throws(() => s.append([]), MagicStringError)
     })
   })
 
@@ -868,11 +869,11 @@ describe('magicString', () => {
     it('refuses to move a selection to inside itself', () => {
       const s = new MagicString('abcdefghijkl')
 
-      assert.throws(() => s.move(3, 6, 3), /Cannot move a selection inside itself/)
+      assert.throws(() => s.move(3, 6, 3), /cannot move a selection inside itself/)
 
-      assert.throws(() => s.move(3, 6, 4), /Cannot move a selection inside itself/)
+      assert.throws(() => s.move(3, 6, 4), /cannot move a selection inside itself/)
 
-      assert.throws(() => s.move(3, 6, 6), /Cannot move a selection inside itself/)
+      assert.throws(() => s.move(3, 6, 6), /cannot move a selection inside itself/)
     })
 
     it('does nothing when moving a zero-length range', () => {
@@ -949,7 +950,7 @@ describe('magicString', () => {
 
       assert.throws(
         () => s.overwrite(8, 12, 'yy'),
-        /Cannot split a chunk that has already been edited/,
+        /cannot split a chunk that has already been edited/,
       )
 
       assert.equal(s.toString(), 'abcdefgxxl')
@@ -1012,14 +1013,14 @@ describe('magicString', () => {
       const s = new MagicString('x')
       assert.throws(
         () => s.overwrite(0, 0, 'anything'),
-        /Cannot overwrite a zero-length range – use appendLeft or prependRight instead/,
+        /cannot overwrite a zero-length range/,
       )
     })
 
     it('should throw when given non-string content', () => {
       const s = new MagicString('')
       // @ts-expect-error runtime validation is the subject of this test
-      assert.throws(() => s.overwrite(0, 1, []), TypeError)
+      assert.throws(() => s.overwrite(0, 1, []), MagicStringError)
     })
 
     it('replaces interior inserts', () => {
@@ -1048,14 +1049,14 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
 
       s.move(6, 9, 3)
-      assert.throws(() => s.overwrite(5, 7, 'XX'), /Cannot overwrite across a split point/)
+      assert.throws(() => s.overwrite(5, 7, 'XX'), /cannot overwrite across a split point/)
     })
 
     it('disallows overwriting fully surrounding content moved away', () => {
       const s = new MagicString('abcdefghijkl')
 
       s.move(6, 9, 3)
-      assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/)
+      assert.throws(() => s.overwrite(4, 11, 'XX'), /cannot overwrite across a split point/)
     })
 
     it('disallows overwriting fully surrounding content moved away even if there is another split', () => {
@@ -1063,7 +1064,7 @@ describe('magicString', () => {
 
       s.move(6, 9, 3)
       s.appendLeft(5, 'foo')
-      assert.throws(() => s.overwrite(4, 11, 'XX'), /Cannot overwrite across a split point/)
+      assert.throws(() => s.overwrite(4, 11, 'XX'), /cannot overwrite across a split point/)
     })
 
     it('allows later insertions at the end', () => {
@@ -1091,7 +1092,7 @@ describe('magicString', () => {
 
       assert.throws(
         () => s.update(8, 12, 'yy'),
-        /Cannot split a chunk that has already been edited/,
+        /cannot split a chunk that has already been edited/,
       )
 
       assert.equal(s.toString(), 'abcdefgxxl')
@@ -1154,14 +1155,14 @@ describe('magicString', () => {
       const s = new MagicString('x')
       assert.throws(
         () => s.update(0, 0, 'anything'),
-        /Cannot overwrite a zero-length range – use appendLeft or prependRight instead/,
+        /cannot overwrite a zero-length range/,
       )
     })
 
     it('should throw when given non-string content', () => {
       const s = new MagicString('')
       // @ts-expect-error runtime validation is the subject of this test
-      assert.throws(() => s.update(0, 1, []), TypeError)
+      assert.throws(() => s.update(0, 1, []), MagicStringError)
     })
 
     it('should throw when start is greater than end', () => {
@@ -1177,7 +1178,7 @@ describe('magicString', () => {
 
     it('should throw error when using negative indices with empty string', () => {
       const s = new MagicString('')
-      assert.throws(() => s.update(-2, -1, 'x'), /Character is out of bounds/)
+      assert.throws(() => s.update(-2, -1, 'x'), /out of bounds/)
     })
 
     it('replaces interior inserts with overwrite option', () => {
@@ -1207,14 +1208,14 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
 
       s.move(6, 9, 3)
-      assert.throws(() => s.update(5, 7, 'XX'), /Cannot overwrite across a split point/)
+      assert.throws(() => s.update(5, 7, 'XX'), /cannot overwrite across a split point/)
     })
 
     it('disallows overwriting fully surrounding content moved away', () => {
       const s = new MagicString('abcdefghijkl')
 
       s.move(6, 9, 3)
-      assert.throws(() => s.update(4, 11, 'XX'), /Cannot overwrite across a split point/)
+      assert.throws(() => s.update(4, 11, 'XX'), /cannot overwrite across a split point/)
     })
 
     it('disallows overwriting fully surrounding content moved away even if there is another split', () => {
@@ -1222,7 +1223,7 @@ describe('magicString', () => {
 
       s.move(6, 9, 3)
       s.appendLeft(5, 'foo')
-      assert.throws(() => s.update(4, 11, 'XX'), /Cannot overwrite across a split point/)
+      assert.throws(() => s.update(4, 11, 'XX'), /cannot overwrite across a split point/)
     })
 
     it('allows later insertions at the end with overwrite option', () => {
@@ -1352,7 +1353,7 @@ describe('magicString', () => {
 
       s.overwrite(5, 7, 'XX')
 
-      assert.throws(() => s.remove(4, 6), /Cannot split a chunk that has already been edited/)
+      assert.throws(() => s.remove(4, 6), /cannot split a chunk that has already been edited/)
     })
 
     it('should return this', () => {
@@ -1379,7 +1380,7 @@ describe('magicString', () => {
 
     it('should throw error when using negative indices with empty string', () => {
       const s = new MagicString('')
-      assert.throws(() => s.remove(-2, -1), /Character is out of bounds/)
+      assert.throws(() => s.remove(-2, -1), /out of bounds/)
     })
 
     it('should report the resolved indices when a negative start lands past end', () => {
@@ -1494,7 +1495,7 @@ describe('magicString', () => {
 
       s.overwrite(5, 7, 'XX')
 
-      assert.throws(() => s.reset(4, 6), /Cannot split a chunk that has already been edited/)
+      assert.throws(() => s.reset(4, 6), /cannot split a chunk that has already been edited/)
     })
 
     it('should return this', () => {
@@ -2032,8 +2033,8 @@ describe('magicString', () => {
     it('rejects with non-global regexp', () => {
       assert.throws(
         () => new MagicString('123').replaceAll(/./, ''),
-        TypeError,
-        'MagicString.prototype.replaceAll called with a non-global RegExp argument',
+        MagicStringError,
+        'replaceAll() requires a global RegExp',
       )
     })
 
