@@ -1,3 +1,9 @@
+# [1.2.0](https://github.com/Rich-Harris/magic-string/compare/v1.1.1...v1.2.0) (2026-08-13)
+
+### Features
+
+* introduce MagicStringError with concise, consistent messages ([#324](https://github.com/Rich-Harris/magic-string/issues/324)) ([57080e7](https://github.com/Rich-Harris/magic-string/commit/57080e71e8a6ebbf9daf7f03c2b1fde396120210))
+
 ## [1.1.1](https://github.com/Rich-Harris/magic-string/compare/v1.1.0...v1.1.1) (2026-08-12)
 
 ### Bug Fixes
