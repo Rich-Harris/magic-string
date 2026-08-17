@@ -876,6 +876,31 @@ describe('magicString', () => {
       assert.throws(() => s.move(3, 6, 6), /cannot move a selection inside itself/)
     })
 
+    it('refuses to move a range an earlier move has split', () => {
+      // The second move's range spans chunks the first move separated, so they
+      // are no longer a forward run in the list. Splicing them anyway used to
+      // point a chunk at itself, and toString() then looped forever.
+      const s = new MagicString('abcdef')
+      s.move(0, 2, 3)
+
+      assert.throws(() => s.move(1, 3, 0), /earlier move split that range/)
+
+      // The first move is still intact and the string is still printable.
+      assert.equal(s.toString(), 'cabdef')
+    })
+
+    it('carries the reordering over to a clone', () => {
+      // clone() copies the chunks in their current order, so the clone starts
+      // out reordered and needs the same check.
+      const s = new MagicString('abcdef')
+      s.move(0, 2, 3)
+
+      const cloned = s.clone()
+
+      assert.throws(() => cloned.move(1, 3, 0), /earlier move split that range/)
+      assert.equal(cloned.toString(), 'cabdef')
+    })
+
     it('does nothing when moving a zero-length range', () => {
       const s = new MagicString('abcdefghijkl')
 
