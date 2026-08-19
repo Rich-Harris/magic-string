@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/npm/v/magic-string.svg"
        alt="npm version">
 </a>
+<a href="https://inspect.software/software/Rich-Harris/magic-string"><img src="https://raw.githubusercontent.com/inspect-software/badges/main/v1/r/Rich-Harris/magic-string.svg" alt="inspect.software score badge for Rich-Harris/magic-string" /></a>
 <a href="https://github.com/Rich-Harris/magic-string/blob/master/LICENSE.md">
   <img src="https://img.shields.io/npm/l/magic-string.svg"
        alt="license">
