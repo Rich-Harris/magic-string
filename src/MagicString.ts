@@ -1153,7 +1153,36 @@ export default class MagicString {
    * Indicates if the string has been changed.
    */
   hasChanged(): boolean {
-    return this.original !== this.toString()
+    if (this.intro || this.outro)
+      return true
+
+    let originalIndex = 0
+    let chunk: Chunk | null = this.firstChunk
+
+    while (chunk) {
+      // Any intro/outro on a chunk means content was inserted
+      if (chunk.intro || chunk.outro)
+        return true
+
+      // Chunks must be in original order, otherwise content was moved
+      if (chunk.start !== originalIndex)
+        return true
+
+      // For edited chunks, check if content actually differs from original;
+      // compare lengths first so a slice is only allocated when they match
+      if (
+        chunk.edited
+        && (chunk.content.length !== chunk.end - chunk.start
+          || chunk.content !== this.original.slice(chunk.start, chunk.end))
+      ) {
+        return true
+      }
+
+      originalIndex = chunk.end
+      chunk = chunk.next
+    }
+
+    return originalIndex !== this.original.length
   }
 
   /** @internal */

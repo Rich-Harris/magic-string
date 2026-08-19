@@ -1891,6 +1891,54 @@ describe('magicString', () => {
 
       assert.ok(clone.hasChanged())
     })
+
+    it('should return false when edited content is identical to the original', () => {
+      const s = new MagicString('abcdef')
+
+      s.overwrite(0, 6, 'abcdef')
+      assert.ok(!s.hasChanged())
+
+      const t = new MagicString('abcdef')
+
+      t.update(2, 4, 'cd')
+      assert.ok(!t.hasChanged())
+    })
+
+    it('should return false after reset reverts the edits', () => {
+      const s = new MagicString('abcdef')
+
+      s.remove(1, 3)
+      assert.ok(s.hasChanged())
+
+      s.reset(1, 3)
+      assert.ok(!s.hasChanged())
+    })
+
+    it('should return true when content is only moved', () => {
+      const s = new MagicString('abcdef')
+
+      s.move(0, 2, 6)
+      assert.ok(s.hasChanged())
+    })
+
+    it('should return true when content is inserted without changing existing characters', () => {
+      const s = new MagicString('abcdef')
+
+      s.appendLeft(3, '/* comment */')
+      assert.ok(s.hasChanged())
+
+      const t = new MagicString('abcdef')
+
+      t.append(' // end')
+      assert.ok(t.hasChanged())
+    })
+
+    it('should return true when trailing content is removed (chain no longer spans the original)', () => {
+      const s = new MagicString('abcdef')
+
+      s.remove(3, 6)
+      assert.ok(s.hasChanged())
+    })
   })
 
   describe('replace', () => {
