@@ -5,7 +5,7 @@ import MagicString from '../dist/index.mjs'
 Benchmark.support.decompilation = false
 
 const results = []
-const total = 8
+const total = 10
 const isTTY = process.stdout.isTTY
 let current = 0
 
@@ -125,6 +125,20 @@ async function bench() {
       s.overwrite(i, i + 1, 'b')
     }
   })
+
+  await runWithInstance('hasChanged (no edit)', inputs, (s) => {
+    s.hasChanged()
+  })
+  await runWithInstance(
+    'hasChanged (edit)',
+    inputs,
+    (s) => {
+      s.hasChanged()
+    },
+    (s) => {
+      s.replace(/replacement/g, 'replacement\nReplacement')
+    },
+  )
 
   printResults()
 }
