@@ -1904,6 +1904,27 @@ describe('magicString', () => {
       assert.ok(!t.hasChanged())
     })
 
+    it('should return false when an edit spanning several chunks restores the original', () => {
+      // `appendLeft` splits the chunk at 3, so the overwrite that follows
+      // covers two chunks: the whole replacement lands on the first one and
+      // the second is emptied
+      const s = new MagicString('abcdefghij')
+
+      s.appendLeft(3, '')
+      s.overwrite(0, 5, 'abcde')
+      assert.equal(s.toString(), 'abcdefghij')
+      assert.ok(!s.hasChanged())
+
+      // the same thing without an explicit split: the second overwrite spans
+      // the chunk boundary left behind by the first
+      const t = new MagicString('abcdefghij')
+
+      t.overwrite(2, 6, 'cdef')
+      t.overwrite(2, 7, 'cdefg')
+      assert.equal(t.toString(), 'abcdefghij')
+      assert.ok(!t.hasChanged())
+    })
+
     it('should return false after reset reverts the edits', () => {
       const s = new MagicString('abcdef')
 

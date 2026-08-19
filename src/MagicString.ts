@@ -1156,7 +1156,12 @@ export default class MagicString {
     if (this.intro || this.outro)
       return true
 
-    let originalIndex = 0
+    // How much of `original` the chunks visited so far reproduce, which is not
+    // the same as how much of it they span: an overwrite covering several
+    // chunks stores the whole replacement on the first of them and empties the
+    // rest, so a chunk's content has to be compared against the original text
+    // at the offset it is emitted at rather than against its own start and end
+    let outputIndex = 0
     let chunk: Chunk | null = this.firstChunk
 
     while (chunk) {
@@ -1164,25 +1169,24 @@ export default class MagicString {
       if (chunk.intro || chunk.outro)
         return true
 
-      // Chunks must be in original order, otherwise content was moved
-      if (chunk.start !== originalIndex)
-        return true
+      if (!chunk.edited && chunk.start === outputIndex) {
+        // An untouched chunk still at its original offset reproduces the
+        // original exactly, so it needs no comparison
+        outputIndex = chunk.end
+      }
+      else {
+        // `startsWith` with an offset compares in place, where slicing the
+        // original first would allocate on every edited chunk
+        if (!this.original.startsWith(chunk.content, outputIndex))
+          return true
 
-      // For edited chunks, check if content actually differs from original;
-      // compare lengths first so a slice is only allocated when they match
-      if (
-        chunk.edited
-        && (chunk.content.length !== chunk.end - chunk.start
-          || chunk.content !== this.original.slice(chunk.start, chunk.end))
-      ) {
-        return true
+        outputIndex += chunk.content.length
       }
 
-      originalIndex = chunk.end
       chunk = chunk.next
     }
 
-    return originalIndex !== this.original.length
+    return outputIndex !== this.original.length
   }
 
   /** @internal */
