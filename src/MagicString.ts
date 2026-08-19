@@ -78,12 +78,7 @@ export default class MagicString {
   declare indentStr: string | null | undefined
   /** @internal */
   declare stats: Stats
-
-  /**
-   * Whether move() has reordered the chunk list. Only move() can, so until it
-   * has, any range is still a forward run and move()'s ordering check can be
-   * skipped.
-   */
+  /** @internal */
   declare hasMovedChunks: boolean
 
   constructor(string: string, options: MagicStringOptions = {}) {
@@ -232,9 +227,6 @@ export default class MagicString {
 
     cloned.intro = this.intro
     cloned.outro = this.outro
-
-    // The clone copies the chunks in their current order, so it inherits any
-    // reordering and needs move()'s ordering check for the same reason.
     cloned.hasMovedChunks = this.hasMovedChunks
 
     return cloned as this
