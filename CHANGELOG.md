@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/Rich-Harris/magic-string/compare/v1.2.0...v1.2.1) (2026-08-19)
+
+### Bug Fixes
+
+* count separators in Bundle#isEmpty ([#327](https://github.com/Rich-Harris/magic-string/issues/327)) ([0bc98c9](https://github.com/Rich-Harris/magic-string/commit/0bc98c91226dbca3d5991547614d4f1ab13254e0)), closes [Bundle#isEmpty](https://github.com/Bundle/issues/isEmpty)
+* throw instead of corrupting the chunk list on an overlapping move ([#326](https://github.com/Rich-Harris/magic-string/issues/326)) ([9a9207c](https://github.com/Rich-Harris/magic-string/commit/9a9207cdb81e8d07e103e714c8e34ad5b3f7639c))
+
 # [1.2.0](https://github.com/Rich-Harris/magic-string/compare/v1.1.1...v1.2.0) (2026-08-13)
 
 ### Features
