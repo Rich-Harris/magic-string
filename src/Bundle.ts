@@ -303,8 +303,14 @@ export default class Bundle {
   isEmpty(): boolean {
     if (this.intro.length && this.intro.trim())
       return false
-    if (this.sources.some(source => !source.content.isEmpty()))
+    if (this.sources.some((source, i) => {
+      // mirrors toString(): every source but the first is preceded by a separator
+      const separator = source.separator !== undefined ? source.separator : this.separator
+
+      return (i > 0 && separator.trim() !== '') || !source.content.isEmpty()
+    })) {
       return false
+    }
     return true
   }
 
