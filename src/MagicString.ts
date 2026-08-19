@@ -78,6 +78,8 @@ export default class MagicString {
   declare indentStr: string | null | undefined
   /** @internal */
   declare stats: Stats
+  /** @internal */
+  declare hasMovedChunks: boolean
 
   constructor(string: string, options: MagicStringOptions = {}) {
     const chunk = new Chunk(0, string.length, string)
@@ -98,6 +100,7 @@ export default class MagicString {
       indentStr: { writable: true, value: undefined },
       ignoreList: { writable: true, value: options.ignoreList },
       offset: { writable: true, value: options.offset || 0 },
+      hasMovedChunks: { writable: true, value: false },
     })
 
     if (DEBUG) {
@@ -224,6 +227,7 @@ export default class MagicString {
 
     cloned.intro = this.intro
     cloned.outro = this.outro
+    cloned.hasMovedChunks = this.hasMovedChunks
 
     return cloned as this
   }
@@ -500,6 +504,26 @@ export default class MagicString {
     const first = this.byStart.get(start)
     const last = this.byEnd.get(end)
 
+    // The splicing below assumes the chunks spanning [start, end) are still a
+    // forward run in the current list. An earlier move can have interleaved a
+    // chunk from outside the range, or put `last` before `first`, and then the
+    // pointer rewrites produce a cycle rather than an error, so toString() and
+    // generateMap() loop forever.
+    //
+    // Only move() reorders chunks, so this is skipped until one has run, which
+    // keeps the common single-move case free of the walk.
+    if (this.hasMovedChunks) {
+      let cursor = first
+      while (cursor !== last) {
+        cursor = cursor.next
+        if (!cursor || cursor.start < start || cursor.end > end) {
+          throw new MagicStringError(
+            `cannot move ${start} to ${end} because an earlier move split that range`,
+          )
+        }
+      }
+    }
+
     const oldLeft = first.previous
     const oldRight = last.next
 
@@ -532,6 +556,8 @@ export default class MagicString {
       this.firstChunk = first
     if (!newRight)
       this.lastChunk = last
+
+    this.hasMovedChunks = true
 
     if (DEBUG)
       this.stats.timeEnd('move')
