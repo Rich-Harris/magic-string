@@ -640,6 +640,26 @@ describe('bundle', () => {
       assert.equal(b.toString(), '  abcdef\n  ghijkl\n    mnopqr')
     })
 
+    it('should guess the most common indentation', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('    abc') })
+      b.addSource({ content: new MagicString('    def') })
+      b.addSource({ content: new MagicString('  ghi') })
+
+      assert.equal(b.getIndentString(), '    ')
+    })
+
+    it('should not let a single source outvote the rest', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('  abc') })
+      b.addSource({ content: new MagicString('  def') })
+      b.addSource({ content: new MagicString('      ghi') })
+
+      assert.equal(b.getIndentString(), '  ')
+    })
+
     it('should respect indent exclusion ranges', () => {
       const b = new Bundle()
 
