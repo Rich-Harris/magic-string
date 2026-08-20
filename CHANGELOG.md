@@ -1,3 +1,14 @@
+## [1.2.2](https://github.com/Rich-Harris/magic-string/compare/v1.2.1...v1.2.2) (2026-08-20)
+
+### Bug Fixes
+
+* `hasChanged` reports a change when an edit spans a chunk boundary ([#331](https://github.com/Rich-Harris/magic-string/issues/331)) ([811de46](https://github.com/Rich-Harris/magic-string/commit/811de465580f74f33a536b116301c9ea8d39a63c))
+* keep the ignore-list hint and stored names when cloning ([#329](https://github.com/Rich-Harris/magic-string/issues/329)) ([ddf02ca](https://github.com/Rich-Harris/magic-string/commit/ddf02ca11512b04f1b8e926da415db23b20adeb1))
+
+### Performance Improvements
+
+* optimize `hasChanged` ([#328](https://github.com/Rich-Harris/magic-string/issues/328)) ([e324bc4](https://github.com/Rich-Harris/magic-string/commit/e324bc4081ae3f753d4a6198c69330ffc1a73277))
+
 ## [1.2.1](https://github.com/Rich-Harris/magic-string/compare/v1.2.0...v1.2.1) (2026-08-19)
 
 ### Bug Fixes
