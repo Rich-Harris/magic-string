@@ -2102,6 +2102,27 @@ describe('magicString', () => {
 
       assert.strictEqual(s.firstChunk, s.lastChunk)
     })
+
+    it('should insert at a zero-length match instead of overwriting nothing', () => {
+      // an empty match spans no characters, so there is no range to overwrite -
+      // `String.prototype.replace` inserts at the matched position
+      assert.strictEqual(new MagicString('abc').replace(/x?/, 'Y').toString(), 'Yabc')
+      assert.strictEqual(new MagicString('abc').replace('', 'X').toString(), 'Xabc')
+    })
+
+    it('should terminate on a global regexp that matches the empty string', () => {
+      assert.strictEqual(new MagicString('bab').replace(/a*/g, 'X').toString(), 'XbXXbX')
+      assert.strictEqual(new MagicString('a b').replace(/\s*/g, '_').toString(), '_a__b_')
+      assert.strictEqual(new MagicString('axb').replace(/x?/g, 'Y').toString(), 'YaYYbY')
+    })
+
+    it('should start a global regexp from the beginning of the string', () => {
+      const re = /o/g
+      re.exec('foo') // leaves lastIndex at 2
+
+      assert.strictEqual(new MagicString('foo').replace(re, 'X').toString(), 'fXX')
+      assert.strictEqual(re.lastIndex, 0)
+    })
   })
 
   describe('replaceAll', () => {
@@ -2182,6 +2203,53 @@ describe('magicString', () => {
       const s1 = s.clone()
       assert.strictEqual(s1.slice(), 'ello world')
       assert.equal(s1.move(0, 1, 2).slice(0), 'elo world')
+    })
+
+    it('should insert at every zero-length match', () => {
+      assert.strictEqual(
+        new MagicString('a\nb\nc').replaceAll(/^/gm, '// ').toString(),
+        '// a\n// b\n// c',
+      )
+      assert.strictEqual(new MagicString('a\nb').replaceAll(/$/gm, ';').toString(), 'a;\nb;')
+      assert.strictEqual(new MagicString('ab cd').replaceAll(/\b/g, '|').toString(), '|ab| |cd|')
+      assert.strictEqual(new MagicString('abc').replaceAll(/x*/g, '-').toString(), '-a-b-c-')
+      assert.strictEqual(new MagicString('abc').replaceAll('', '-').toString(), '-a-b-c-')
+    })
+
+    it('should step over a whole code point for a unicode-aware regexp', () => {
+      // without the `u` flag the surrogate halves are matched between, as they are
+      // by `String.prototype.replaceAll`
+      const emoji = '\u{1F600}'
+
+      assert.strictEqual(
+        new MagicString(`a${emoji}b`).replaceAll(/x*/gu, '.').toString(),
+        `.a.${emoji}.b.`,
+      )
+      assert.strictEqual(
+        new MagicString(`a${emoji}b`).replaceAll(/x*/g, '.').toString(),
+        `.a.${emoji[0]}.${emoji[1]}.b.`,
+      )
+    })
+
+    it('should report the index of every empty-string match to a replacer', () => {
+      const indexes: number[] = []
+      const s = new MagicString('ab').replaceAll('', (_match, index) => {
+        indexes.push(index)
+        return `<${index}>`
+      })
+
+      assert.strictEqual(s.toString(), '<0>a<1>b<2>')
+      assert.deepEqual(indexes, [0, 1, 2])
+    })
+
+    it('should leave the original alone when an empty match is replaced by itself', () => {
+      const s = new MagicString('abc')
+
+      s.replaceAll(/x*/g, '')
+      s.replaceAll('', '')
+
+      assert.strictEqual(s.toString(), 'abc')
+      assert.strictEqual(s.hasChanged(), false)
     })
   })
 })

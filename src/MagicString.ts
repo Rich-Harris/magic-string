@@ -1214,35 +1214,40 @@ export default class MagicString {
         return replacement(match[0], ...match.slice(1), match.index, str, match.groups)
       }
     }
-    function matchAll(re: RegExp, str: string): RegExpExecArray[] {
-      const matches = []
-      while (true) {
-        const match = re.exec(str)
-        if (!match)
-          break
+    const replaceMatch = (match: RegExpMatchArray): void => {
+      if (match.index == null)
+        return
 
-        matches.push(match)
+      const replacement = getReplacement(match, this.original)
+      if (replacement === match[0])
+        return
+
+      if (match[0].length === 0) {
+        // a zero-length match spans no characters, so there is no range to
+        // overwrite - the replacement is an insertion at the matched position,
+        // which is what `String.prototype.replace` does for an empty match
+        this.appendRight(match.index, replacement)
       }
-      return matches
+      else {
+        this.overwrite(match.index, match.index + match[0].length, replacement)
+      }
     }
+
     if (searchValue.global) {
-      const matches = matchAll(searchValue, this.original)
-      matches.forEach((match) => {
-        if (match.index != null) {
-          const replacement = getReplacement(match, this.original)
-          if (replacement !== match[0]) {
-            this.overwrite(match.index, match.index + match[0].length, replacement)
-          }
-        }
-      })
+      // `String.prototype.replace` starts a global regexp from the beginning of
+      // the string, so reset `lastIndex` - a regexp that has already been used
+      // would otherwise resume from wherever it stopped and skip earlier matches.
+      // `matchAll` also steps over a zero-length match, where `exec` in a loop
+      // would keep rematching it at an unmoving `lastIndex` and never terminate.
+      searchValue.lastIndex = 0
+      for (const match of this.original.matchAll(searchValue)) {
+        replaceMatch(match)
+      }
     }
     else {
       const match = this.original.match(searchValue)
-      if (match && match.index != null) {
-        const replacement = getReplacement(match, this.original)
-        if (replacement !== match[0]) {
-          this.overwrite(match.index, match.index + match[0].length, replacement)
-        }
+      if (match) {
+        replaceMatch(match)
       }
     }
     return this
@@ -1258,7 +1263,15 @@ export default class MagicString {
         replacement = replacement(string, index, original)
       }
       if (string !== replacement) {
-        this.overwrite(index, index + string.length, replacement)
+        if (string.length === 0) {
+          // an empty search string matches the empty range at the start of the
+          // string, which has no characters to overwrite - the replacement is an
+          // insertion there, as it is for `String.prototype.replace`
+          this.appendRight(index, replacement)
+        }
+        else {
+          this.overwrite(index, index + string.length, replacement)
+        }
       }
     }
 
@@ -1280,6 +1293,21 @@ export default class MagicString {
   _replaceAllString(string: string, replacement: string | ReplacementFunction): this {
     const { original } = this
     const stringLength = string.length
+
+    // an empty search string matches the empty range before every character plus
+    // one at the end, and `indexOf` clamps its start index to the string length,
+    // so it can neither find those ranges nor ever report -1 - step through them
+    if (stringLength === 0) {
+      for (let index = 0; index <= original.length; index += 1) {
+        const _replacement
+          = typeof replacement === 'function' ? replacement('', index, original) : replacement
+        if (_replacement !== '')
+          this.appendRight(index, _replacement)
+      }
+
+      return this
+    }
+
     for (
       let index = original.indexOf(string);
       index !== -1;
