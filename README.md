@@ -239,6 +239,8 @@ The differences from [`String.replace`](<(https://developer.mozilla.org/en-US/do
 
 - It will always match against the **original string**
 - It mutates the magic string state (use `.clone()` to be immutable)
+- A zero-length match spans no characters, so there is nothing to overwrite - the
+  substitution is inserted at the matched position, as if by `s.appendRight(index, substitution)`
 
 ### s.replaceAll( regexpOrString, substitution )
 
