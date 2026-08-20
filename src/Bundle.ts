@@ -338,15 +338,23 @@ export default class Bundle {
     this.intro = this.intro.replace(rx, '')
 
     if (!this.intro) {
-      let source
-      let i = 0
+      for (let i = 0; i < this.sources.length; i += 1) {
+        const source = this.sources[i]
 
-      do {
-        source = this.sources[i++]
-        if (!source) {
+        if (i > 0) {
+          // mirrors toString(): every source but the first is preceded by a separator
+          const separator = source.separator !== undefined ? source.separator : this.separator
+          source.separator = separator.replace(rx, '')
+
+          if (source.separator) {
+            break
+          }
+        }
+
+        if (source.content.trimStartAborted(charType)) {
           break
         }
-      } while (!source.content.trimStartAborted(charType))
+      }
     }
 
     return this
@@ -355,16 +363,25 @@ export default class Bundle {
   trimEnd(charType?: string): this {
     const rx = new RegExp(`${charType || '\\s'}+$`)
 
-    let source
-    let i = this.sources.length - 1
+    for (let i = this.sources.length - 1; i >= 0; i -= 1) {
+      const source = this.sources[i]
 
-    do {
-      source = this.sources[i--]
-      if (!source) {
-        this.intro = this.intro.replace(rx, '')
-        break
+      if (source.content.trimEndAborted(charType)) {
+        return this
       }
-    } while (!source.content.trimEndAborted(charType))
+
+      if (i > 0) {
+        // mirrors toString(): every source but the first is preceded by a separator
+        const separator = source.separator !== undefined ? source.separator : this.separator
+        source.separator = separator.replace(rx, '')
+
+        if (source.separator) {
+          return this
+        }
+      }
+    }
+
+    this.intro = this.intro.replace(rx, '')
 
     return this
   }

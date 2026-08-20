@@ -837,6 +837,46 @@ describe('bundle', () => {
       const b = new Bundle()
       assert.strictEqual(b.trim(), b)
     })
+
+    it('should trim a whitespace separator', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('   ') })
+      b.addSource({ content: new MagicString('   abc') })
+
+      b.trimStart()
+      assert.equal(b.toString(), 'abc')
+    })
+
+    it('should trim a whitespace separator from the end', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('abc   ') })
+      b.addSource({ content: new MagicString('   ') })
+
+      b.trimEnd()
+      assert.equal(b.toString(), 'abc')
+    })
+
+    it('should empty a bundle of whitespace sources', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('  ') })
+      b.addSource({ content: new MagicString('  ') })
+
+      b.trim()
+      assert.equal(b.toString(), '')
+    })
+
+    it('should stop at a separator that is not whitespace', () => {
+      const b = new Bundle({ separator: ';' })
+
+      b.addSource({ content: new MagicString('   ') })
+      b.addSource({ content: new MagicString('   abc') })
+
+      b.trimStart()
+      assert.equal(b.toString(), ';   abc')
+    })
   })
 
   describe('toString', () => {
