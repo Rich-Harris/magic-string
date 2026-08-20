@@ -108,6 +108,29 @@ describe('bundle', () => {
       assert.equal(b.toString(), '>>>abXXef\nghijkl<<<')
       assert.equal(clone.toString(), '>>>abcdef\nghijkl<<<')
     })
+    it('should clone the ignore-list hint', () => {
+      const b = new Bundle() as BundleInternals
+
+      b.addSource({ content: new MagicString('foo', { filename: 'foo.js' }), ignoreList: true })
+
+      const clone = b.clone() as BundleInternals
+
+      assert.strictEqual(clone.sources[0].ignoreList, true)
+      assert.deepEqual(clone.generateMap({ includeContent: false }).x_google_ignoreList, [0])
+    })
+
+    it('should clone indentExclusionRanges', () => {
+      const b = new Bundle() as BundleInternals
+
+      b.addSource({
+        content: new MagicString('foo', { filename: 'foo.js' }),
+        indentExclusionRanges: [1, 2],
+      })
+
+      const clone = b.clone() as BundleInternals
+
+      assert.deepEqual(clone.sources[0].indentExclusionRanges, [1, 2])
+    })
   })
 
   describe('generateMap', () => {

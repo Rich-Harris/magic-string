@@ -124,6 +124,8 @@ export default class Bundle {
       bundle.addSource({
         filename: source.filename,
         content: source.content.clone(),
+        ignoreList: source.ignoreList,
+        indentExclusionRanges: source.indentExclusionRanges,
         separator: source.separator,
       })
     })

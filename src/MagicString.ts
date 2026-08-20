@@ -193,7 +193,11 @@ export default class MagicString {
    * Does what you'd expect.
    */
   clone(): this {
-    const cloned = new MagicString(this.original, { filename: this.filename, offset: this.offset })
+    const cloned = new MagicString(this.original, {
+      filename: this.filename,
+      ignoreList: this.ignoreList,
+      offset: this.offset,
+    })
 
     let originalChunk = this.firstChunk
     let clonedChunk = (cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone())
@@ -224,6 +228,7 @@ export default class MagicString {
     }
 
     cloned.sourcemapLocations = new BitSet(this.sourcemapLocations)
+    cloned.storedNames = { ...this.storedNames }
 
     cloned.intro = this.intro
     cloned.outro = this.outro

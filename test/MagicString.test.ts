@@ -207,6 +207,40 @@ describe('magicString', () => {
 
       assert.equal(source.toString(), clone.toString())
     })
+
+    it('should clone the ignore-list hint', () => {
+      const source = new MagicString('abcdefghijkl', {
+        filename: 'foo.js',
+        ignoreList: true,
+      })
+
+      const clone = source.clone()
+
+      assert.equal(clone.ignoreList, true)
+      assert.deepEqual(clone.generateMap({ includeContent: false }).x_google_ignoreList, [0])
+    })
+
+    it('should clone stored names', () => {
+      const source = new MagicString('abcdefghijkl', { filename: 'foo.js' })
+
+      source.update(3, 9, 'XYZ', { storeName: true })
+
+      const clone = source.clone()
+
+      assert.notStrictEqual(source.storedNames, clone.storedNames)
+      assert.deepEqual(clone.generateMap({ includeContent: false }).names, ['defghi'])
+    })
+
+    it('should not share stored names with the clone', () => {
+      const source = new MagicString('abcdefghijkl', { filename: 'foo.js' })
+
+      source.update(3, 9, 'XYZ', { storeName: true })
+
+      const clone = source.clone()
+      clone.update(0, 3, 'ABC', { storeName: true })
+
+      assert.deepEqual(source.generateMap({ includeContent: false }).names, ['defghi'])
+    })
   })
 
   describe('generateMap', () => {
