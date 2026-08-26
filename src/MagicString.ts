@@ -608,8 +608,10 @@ export default class MagicString {
     }
 
     if (this.original.length !== 0) {
-      while (start < 0) start += this.original.length
-      while (end < 0) end += this.original.length
+      if (start < 0)
+        start = Math.max(0, start + this.original.length)
+      if (end < 0)
+        end = Math.max(0, end + this.original.length)
     }
 
     if (start < 0) {
@@ -764,8 +766,10 @@ export default class MagicString {
     end = end + this.offset
 
     if (this.original.length !== 0) {
-      while (start < 0) start += this.original.length
-      while (end < 0) end += this.original.length
+      if (start < 0)
+        start = Math.max(0, start + this.original.length)
+      if (end < 0)
+        end = Math.max(0, end + this.original.length)
     }
 
     if (start === end)
@@ -807,8 +811,10 @@ export default class MagicString {
     end = end + this.offset
 
     if (this.original.length !== 0) {
-      while (start < 0) start += this.original.length
-      while (end < 0) end += this.original.length
+      if (start < 0)
+        start = Math.max(0, start + this.original.length)
+      if (end < 0)
+        end = Math.max(0, end + this.original.length)
     }
 
     if (start === end)
@@ -902,8 +908,10 @@ export default class MagicString {
     end = end + this.offset
 
     if (this.original.length !== 0) {
-      while (start < 0) start += this.original.length
-      while (end < 0) end += this.original.length
+      if (start < 0)
+        start = Math.max(0, start + this.original.length)
+      if (end < 0)
+        end = Math.max(0, end + this.original.length)
     }
 
     let result = ''

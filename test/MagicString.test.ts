@@ -1599,6 +1599,25 @@ describe('magicString', () => {
       assert.equal(s.slice(0, -3), 'abcdefghi')
     })
 
+    it('clamps negative indices below -length instead of wrapping repeatedly', () => {
+      const s = new MagicString('problems = 99')
+      assert.equal(s.slice(-100, 5), 'probl')
+      assert.equal(s.slice(-100, -1), 'problems = 9')
+
+      const sRemove = new MagicString('problems = 99')
+      sRemove.remove(-100, 5)
+      assert.equal(sRemove.toString(), 'ems = 99')
+
+      const sUpdate = new MagicString('problems = 99')
+      sUpdate.update(-100, 5, 'solution')
+      assert.equal(sUpdate.toString(), 'solutionems = 99')
+
+      const sReset = new MagicString('problems = 99')
+      sReset.update(0, 5, 'XXXXX')
+      sReset.reset(-100, 5)
+      assert.equal(sReset.toString(), 'problems = 99')
+    })
+
     it('includes inserted characters, respecting insertion direction', () => {
       const s = new MagicString('abefij')
 
