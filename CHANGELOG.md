@@ -1,3 +1,12 @@
+## [1.2.3](https://github.com/Rich-Harris/magic-string/compare/v1.2.2...v1.2.3) (2026-08-26)
+
+### Bug Fixes
+
+* clamp negative indices below -length instead of wrapping repeatedly ([#337](https://github.com/Rich-Harris/magic-string/issues/337)) ([9391bb7](https://github.com/Rich-Harris/magic-string/commit/9391bb73118a03eef42a0524a3d4ade3aae28915))
+* guess the most common indentation in a bundle ([#334](https://github.com/Rich-Harris/magic-string/issues/334)) ([111b030](https://github.com/Rich-Harris/magic-string/commit/111b0309846a0a3c2fa6a21ea2c47ae21abdd79d))
+* handle empty matches in `replace` and `replaceAll` ([#335](https://github.com/Rich-Harris/magic-string/issues/335)) ([b6a53f7](https://github.com/Rich-Harris/magic-string/commit/b6a53f770f2ed60ecf143175ad8f38790702c0e8))
+* trim the separators between sources ([#333](https://github.com/Rich-Harris/magic-string/issues/333)) ([1bb4cce](https://github.com/Rich-Harris/magic-string/commit/1bb4cce75efba314b1950a7cede137f85cc4d959))
+
 ## [1.2.2](https://github.com/Rich-Harris/magic-string/compare/v1.2.1...v1.2.2) (2026-08-20)
 
 ### Bug Fixes
