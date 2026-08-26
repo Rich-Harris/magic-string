@@ -246,7 +246,7 @@ export default class Bundle {
 
     return (
       Object.keys(indentStringCounts).sort((a, b) => {
-        return indentStringCounts[a] - indentStringCounts[b]
+        return indentStringCounts[b] - indentStringCounts[a]
       })[0] || '\t'
     )
   }
