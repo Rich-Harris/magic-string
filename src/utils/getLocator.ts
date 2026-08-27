@@ -4,12 +4,10 @@ export interface SourceLocation {
 }
 
 export default function getLocator(source: string): (index: number) => SourceLocation {
-  const originalLines = source.split('\n')
-  const lineOffsets = []
+  const lineOffsets = [0]
 
-  for (let i = 0, pos = 0; i < originalLines.length; i++) {
-    lineOffsets.push(pos)
-    pos += originalLines[i].length + 1
+  for (let i = source.indexOf('\n'); i !== -1; i = source.indexOf('\n', i + 1)) {
+    lineOffsets.push(i + 1)
   }
 
   return function locate(index: number): SourceLocation {
