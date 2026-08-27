@@ -48,6 +48,94 @@ const warned = {
   storeName: false,
 }
 
+/**
+ * Expands the `$` substitution patterns that `String.prototype.replace` accepts
+ * in a string replacement.
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
+ *
+ * `captures` holds the capture groups in order, so `captures[0]` is `$1`.
+ * `namedCaptures` is `undefined` when the pattern has no named groups, and
+ * `$<name>` is then literal text - which is also the case for a string search
+ * value, where there are no groups of either kind.
+ */
+function expandReplacement(
+  replacement: string,
+  matched: string,
+  position: number,
+  str: string,
+  captures: (string | undefined)[],
+  namedCaptures: Record<string, string | undefined> | undefined,
+): string {
+  if (!replacement.includes('$'))
+    return replacement
+
+  let result = ''
+  let index = 0
+
+  while (index < replacement.length) {
+    const dollar = replacement.indexOf('$', index)
+    if (dollar === -1) {
+      result += replacement.slice(index)
+      break
+    }
+
+    result += replacement.slice(index, dollar)
+
+    const char = replacement[dollar + 1]
+    // a `$` that introduces nothing recognisable stands for itself, so consume
+    // only the `$` and reconsider what follows as text
+    let expansion = '$'
+    let consumed = 1
+
+    if (char === '$') {
+      consumed = 2
+    }
+    else if (char === '&') {
+      expansion = matched
+      consumed = 2
+    }
+    else if (char === '`') {
+      expansion = str.slice(0, position)
+      consumed = 2
+    }
+    else if (char === '\'') {
+      expansion = str.slice(position + matched.length)
+      consumed = 2
+    }
+    else if (char === '<' && namedCaptures !== undefined) {
+      const close = replacement.indexOf('>', dollar + 2)
+      if (close !== -1) {
+        // an unknown group name expands to nothing rather than staying literal
+        expansion = namedCaptures[replacement.slice(dollar + 2, close)] ?? ''
+        consumed = close + 1 - dollar
+      }
+    }
+    else if (char >= '0' && char <= '9') {
+      const second = replacement[dollar + 2]
+      const double = second >= '0' && second <= '9' ? Number(char + second) : Number.NaN
+      const single = Number(char)
+
+      // `$nn` only wins over `$n` when it names a group that exists, so `$12`
+      // is group 12 given twelve groups and group 1 followed by "2" given one.
+      // `$0` names no group and is literal, as is any index past the last group
+      if (double >= 1 && double <= captures.length) {
+        expansion = captures[double - 1] ?? ''
+        consumed = 3
+      }
+      else if (single >= 1 && single <= captures.length) {
+        // a group that did not participate in the match expands to nothing
+        expansion = captures[single - 1] ?? ''
+        consumed = 2
+      }
+    }
+
+    result += expansion
+    index = dollar + consumed
+  }
+
+  return result
+}
+
 export default class MagicString {
   declare original: string
   /** @internal */
@@ -1206,17 +1294,14 @@ export default class MagicString {
   _replaceRegexp(searchValue: RegExp, replacement: string | ReplacementFunction): this {
     function getReplacement(match: RegExpMatchArray, str: string): string {
       if (typeof replacement === 'string') {
-        return replacement.replace(/\$(\$|&|\d+)/g, (_: string, i: string) => {
-          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
-          if (i === '$')
-            return '$'
-          if (i === '&')
-            return match[0]
-          const num = +i
-          if (num < match.length)
-            return match[+i]
-          return `$${i}`
-        })
+        return expandReplacement(
+          replacement,
+          match[0],
+          match.index,
+          str,
+          match.slice(1),
+          match.groups,
+        )
       }
       else {
         return replacement(match[0], ...match.slice(1), match.index, str, match.groups)
@@ -1270,6 +1355,9 @@ export default class MagicString {
       if (typeof replacement === 'function') {
         replacement = replacement(string, index, original)
       }
+      else {
+        replacement = expandReplacement(replacement, string, index, original, [], undefined)
+      }
       if (string !== replacement) {
         if (string.length === 0) {
           // an empty search string matches the empty range at the start of the
@@ -1308,7 +1396,9 @@ export default class MagicString {
     if (stringLength === 0) {
       for (let index = 0; index <= original.length; index += 1) {
         const _replacement
-          = typeof replacement === 'function' ? replacement('', index, original) : replacement
+          = typeof replacement === 'function'
+            ? replacement('', index, original)
+            : expandReplacement(replacement, '', index, original, [], undefined)
         if (_replacement !== '')
           this.appendRight(index, _replacement)
       }
@@ -1323,7 +1413,9 @@ export default class MagicString {
     ) {
       const previous = original.slice(index, index + stringLength)
       const _replacement
-        = typeof replacement === 'function' ? replacement(previous, index, original) : replacement
+        = typeof replacement === 'function'
+          ? replacement(previous, index, original)
+          : expandReplacement(replacement, previous, index, original, [], undefined)
       if (previous !== _replacement)
         this.overwrite(index, index + stringLength, _replacement)
     }
