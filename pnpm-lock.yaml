@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@jridgewell/sourcemap-codec':
-        specifier: ^1.6.0-beta.0
-        version: 1.6.0-beta.0
+        specifier: ^1.6.0
+        version: 1.6.0
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^9.1.0
@@ -263,8 +263,8 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@jridgewell/sourcemap-codec@1.6.0-beta.0':
-    resolution: {integrity: sha512-JH8NJ34vK04ttiUpAP2gG+HFrLzijNYDKXab+cP4vWR0KwMEN23SOivFo4SbnoQJO/L4qVcImGxAGx28zrPy7g==}
+  '@jridgewell/sourcemap-codec@1.6.0':
+    resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
 
   '@napi-rs/wasm-runtime@1.1.6':
     resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
@@ -2226,7 +2226,7 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@jridgewell/sourcemap-codec@1.6.0-beta.0': {}
+  '@jridgewell/sourcemap-codec@1.6.0': {}
 
   '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:

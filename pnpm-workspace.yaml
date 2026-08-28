@@ -1,5 +1,6 @@
 minimumReleaseAgeExclude:
   - tsdown
+  - '@jridgewell/sourcemap-codec@1.6.0'
 
 shellEmulator: true
 trustLockfile: true
