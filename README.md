@@ -148,6 +148,18 @@ Indicates if the string has been changed.
 
 Prefixes each line of the string with `prefix`. If `prefix` is not supplied, the indentation will be guessed from the original content, falling back to a single tab character. Returns `this`.
 
+Lines are counted in the generated string, so content added with `append*`/`prepend*` is indented too, and a line break inside that content starts a new line just like a line break in the original:
+
+```js
+const s = new MagicString('var a = 1;\nvar b = 2;')
+
+s.prependRight(11, 'debugger;\n')
+s.toString() // 'var a = 1;\ndebugger;\nvar b = 2;'
+
+s.indent('  ')
+s.toString() // '  var a = 1;\n  debugger;\n  var b = 2;'
+```
+
 The `options` argument can have an `exclude` property, which is an array of `[start, end]` character ranges. These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
 
 ### s.insertLeft( index, content )

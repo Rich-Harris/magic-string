@@ -764,6 +764,120 @@ describe('magicString', () => {
       assert.equal(s.toString(), '\tclass Foo extends Baz {}')
     })
 
+    it('should indent content added with appendRight/prependRight', () => {
+      const s = new MagicString('a\nb\nc')
+
+      s.appendRight(2, 'Q\n')
+      assert.equal(s.toString(), 'a\nQ\nb\nc')
+
+      s.indent('>')
+      assert.equal(s.toString(), '>a\n>Q\n>b\n>c')
+    })
+
+    it('should indent content added with appendLeft/prependLeft', () => {
+      const s = new MagicString('a\nb\nc')
+
+      s.appendLeft(1, '\nQ')
+      assert.equal(s.toString(), 'a\nQ\nb\nc')
+
+      s.indent('>')
+      assert.equal(s.toString(), '>a\n>Q\n>b\n>c')
+    })
+
+    it('should indent a line that starts inside inserted content', () => {
+      const s = new MagicString('a\nb\nc')
+
+      s.appendLeft(2, 'X')
+      assert.equal(s.toString(), 'a\nXb\nc')
+
+      // the indent belongs in front of the insert, not between it and `b`
+      s.indent('>')
+      assert.equal(s.toString(), '>a\n>Xb\n>c')
+    })
+
+    it('should indent original content that follows a multiline insert', () => {
+      const s = new MagicString('a\nb\nc')
+
+      s.prependRight(2, 'one\ntwo\n')
+      assert.equal(s.toString(), 'a\none\ntwo\nb\nc')
+
+      s.indent('>')
+      assert.equal(s.toString(), '>a\n>one\n>two\n>b\n>c')
+    })
+
+    it('should not indent content that continues the current line', () => {
+      const s = new MagicString('a\nb\nc')
+
+      s.appendRight(2, 'X')
+      assert.equal(s.toString(), 'a\nXb\nc')
+
+      s.indent('>')
+      assert.equal(s.toString(), '>a\n>Xb\n>c')
+    })
+
+    it('should indent lines that start inside the outro', () => {
+      const s = new MagicString('a\nb\nc')
+
+      s.append('\nZ')
+      assert.equal(s.toString(), 'a\nb\nc\nZ')
+
+      s.indent('>')
+      assert.equal(s.toString(), '>a\n>b\n>c\n>Z')
+    })
+
+    it('should indent every line of a wrapped module', () => {
+      const s = new MagicString('var a = 1;\nvar b = 2;')
+
+      s.prepend('(function () {\n')
+      s.prependRight(11, 'debugger;\n')
+      s.append('\n}());')
+      assert.equal(
+        s.toString(),
+        '(function () {\nvar a = 1;\ndebugger;\nvar b = 2;\n}());',
+      )
+
+      s.indent('  ')
+      assert.equal(
+        s.toString(),
+        '  (function () {\n  var a = 1;\n  debugger;\n  var b = 2;\n  }());',
+      )
+    })
+
+    it('should indent every line of the generated string', () => {
+      const original = 'const a = 1;\nconst b = 2;\n\nexport { a, b };\n'
+
+      const build = (s: MagicString) => {
+        s.prepend('// header\n')
+        s.appendLeft(12, '\nconst inserted = 3;')
+        s.overwrite(13, 25, 'const b = 20;\nconst c = 30;')
+        s.append('// footer\n')
+      }
+
+      const generated = new MagicString(original)
+      build(generated)
+
+      const indented = new MagicString(original)
+      build(indented)
+      indented.indent('  ')
+
+      assert.equal(
+        indented.toString(),
+        generated
+          .toString()
+          .split('\n')
+          .map(line => (line === '' ? line : `  ${line}`))
+          .join('\n'),
+      )
+    })
+
+    it('should respect indentStart across inserted content', () => {
+      const s = new MagicString('a\nb')
+
+      s.prependRight(0, 'X')
+      s.indent('>', { indentStart: false })
+      assert.equal(s.toString(), 'Xa\n>b')
+    })
+
     it('should return this', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.indent(), s)
