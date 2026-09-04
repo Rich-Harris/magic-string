@@ -1882,6 +1882,22 @@ describe('magicString', () => {
 
       assert.equal(s.isEmpty(), true)
     })
+
+    it('should count content appended or prepended to the string', () => {
+      assert.equal(new MagicString('').append('X').isEmpty(), false)
+      assert.equal(new MagicString('').prepend('Y').isEmpty(), false)
+
+      const s = new MagicString('abc')
+      s.remove(0, 3)
+      s.append('!')
+      assert.equal(s.toString(), '!')
+      assert.equal(s.isEmpty(), false)
+    })
+
+    it('should still disregard whitespace appended or prepended to the string', () => {
+      const s = new MagicString('').prepend('  ').append('   ')
+      assert.equal(s.isEmpty(), true)
+    })
   })
 
   describe('length', () => {
