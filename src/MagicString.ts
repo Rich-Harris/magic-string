@@ -454,14 +454,23 @@ export default class MagicString {
     }
 
     let shouldIndentNextCharacter = options.indentStart !== false
-    const replacer = (match: string) => {
-      if (shouldIndentNextCharacter)
-        return `${resolvedIndentStr}${match}`
-      shouldIndentNextCharacter = true
-      return match
+
+    // Indents every line break inside `str`, plus the very first character when
+    // `str` starts a line in the generated output. Any match after offset 0
+    // necessarily follows a line break inside `str`, so it always gets indented.
+    const indentPiece = (str: string) => {
+      if (str === '')
+        return str
+
+      const indented = str.replace(pattern, (match: string, offset: number) =>
+        offset > 0 || shouldIndentNextCharacter ? `${resolvedIndentStr}${match}` : match)
+
+      shouldIndentNextCharacter = str[str.length - 1] === '\n'
+
+      return indented
     }
 
-    this.intro = this.intro.replace(pattern, replacer)
+    this.intro = indentPiece(this.intro)
 
     let charIndex = 0
     let chunk = this.firstChunk
@@ -470,7 +479,10 @@ export default class MagicString {
       shouldIndentNextCharacter = false
 
       if (index === chunk!.start) {
-        chunk!.prependRight(resolvedIndentStr)
+        // `appendRight` rather than `prependRight`, so that the indent lands
+        // directly in front of the content rather than in front of an intro
+        // that has already been indented in its own right
+        chunk!.appendRight(resolvedIndentStr)
       }
       else {
         this._splitChunk(chunk!, index)
@@ -482,13 +494,14 @@ export default class MagicString {
     while (chunk) {
       const end = chunk.end
 
+      // content added with `appendRight`/`prependRight` is emitted before the
+      // chunk itself, so it has to be indented before the chunk is walked
+      if (!isExcluded[chunk.start])
+        chunk.intro = indentPiece(chunk.intro)
+
       if (chunk.edited) {
         if (!isExcluded[charIndex]) {
-          chunk.content = chunk.content.replace(pattern, replacer)
-
-          if (chunk.content.length) {
-            shouldIndentNextCharacter = chunk.content[chunk.content.length - 1] === '\n'
-          }
+          chunk.content = indentPiece(chunk.content)
         }
       }
       else if (options.exclude) {
@@ -535,11 +548,15 @@ export default class MagicString {
         }
       }
 
+      // ...and content added with `appendLeft`/`prependLeft` is emitted after it
+      if (!isExcluded[chunk.end - 1])
+        chunk.outro = indentPiece(chunk.outro)
+
       charIndex = chunk.end
       chunk = chunk.next
     }
 
-    this.outro = this.outro.replace(pattern, replacer)
+    this.outro = indentPiece(this.outro)
 
     return this
   }
