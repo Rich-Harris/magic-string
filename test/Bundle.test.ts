@@ -905,6 +905,16 @@ describe('bundle', () => {
 
       assert.equal(b.length(), b.toString().length)
     })
+
+    it('should count content appended or prepended to a source', () => {
+      const b = new Bundle({ separator: ';' })
+
+      b.addSource(new MagicString('abc').append('X'))
+      b.addSource(new MagicString('def').prepend('Y'))
+
+      assert.equal(b.toString(), 'abcX;Ydef')
+      assert.equal(b.length(), b.toString().length)
+    })
   })
 
   describe('prepend', () => {
