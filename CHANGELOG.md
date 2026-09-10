@@ -1,3 +1,23 @@
+# [1.3.0](https://github.com/Rich-Harris/magic-string/compare/v1.2.3...v1.3.0) (2026-09-10)
+
+### Bug Fixes
+
+* count source appends and prepends in Bundle#length ([#344](https://github.com/Rich-Harris/magic-string/issues/344)) ([f1797b4](https://github.com/Rich-Harris/magic-string/commit/f1797b4ac7e2b8e7c1e94add1a6190eefd5ab09b)), closes [Bundle#length](https://github.com/Bundle/issues/length)
+* count string-level appends and prepends in isEmpty ([#345](https://github.com/Rich-Harris/magic-string/issues/345)) ([d489a75](https://github.com/Rich-Harris/magic-string/commit/d489a758a959cddc3d0d09f1a00001c021e04f12))
+* expand `$` substitutions in `replace` as `String.prototype` does ([#340](https://github.com/Rich-Harris/magic-string/issues/340)) ([cd05874](https://github.com/Rich-Harris/magic-string/commit/cd058747cb21b8eb557313b1c096a34297aaa79a))
+* indent content added with `append`/`prepend` ([#343](https://github.com/Rich-Harris/magic-string/issues/343)) ([18986e0](https://github.com/Rich-Harris/magic-string/commit/18986e039f119ce0fab63e8a7b912b422f0ac4e7))
+* only pass the groups object to a replacer when the pattern has named groups ([#342](https://github.com/Rich-Harris/magic-string/issues/342)) ([574366f](https://github.com/Rich-Harris/magic-string/commit/574366f3cb93315d3ddd78ba91ed8bbc95fe07fd))
+
+### Features
+
+* add hires mode source map mode using range mappings ([#317](https://github.com/Rich-Harris/magic-string/issues/317)) ([708e379](https://github.com/Rich-Harris/magic-string/commit/708e3793aac8fa85617b9b8790edb0d283199256))
+* support a function for `includeContent` in Bundle ([#165](https://github.com/Rich-Harris/magic-string/issues/165)) ([ead0c08](https://github.com/Rich-Harris/magic-string/commit/ead0c08a017663fe46b1c91a67b12e50092a41c2))
+
+### Performance Improvements
+
+* avoid split() when locating lines ([#338](https://github.com/Rich-Harris/magic-string/issues/338)) ([7e0060b](https://github.com/Rich-Harris/magic-string/commit/7e0060b062ede107816e682b69845aaf8cbb7622))
+* walk unedited chunks line by line when generating mappings ([#339](https://github.com/Rich-Harris/magic-string/issues/339)) ([910a39c](https://github.com/Rich-Harris/magic-string/commit/910a39c960406c261042861a8f2ae61cf3cf0dcb))
+
 ## [1.2.3](https://github.com/Rich-Harris/magic-string/compare/v1.2.2...v1.2.3) (2026-08-26)
 
 ### Bug Fixes
