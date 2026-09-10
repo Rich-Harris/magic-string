@@ -11,15 +11,20 @@ interface GlobalBuffer {
 
 export interface SourceMapOptions {
   /**
-   * Whether the mapping should be high-resolution.
-   * Hi-res mappings map every single character, meaning (for example) your devtools will always
-   * be able to pinpoint the exact location of function calls and so on.
-   * With lo-res mappings, devtools may only be able to identify the correct
-   * line - but they're quicker to generate and less bulky.
-   * You can also set `"boundary"` to generate a semi-hi-res mappings segmented per word boundary
-   * instead of per character, suitable for string semantics that are separated by words.
-   * If you set `"experimental-range"` to generate hires mappings that use range mappings, a
-   * source map extension that can map all positions in a range. This feature is experimental.
+   * Whether the mapping should be high-resolution:
+   * - `false` (default) - lo-res mappings. Only one mapping per line, plus any locations added
+   *   with `s.addSourcemapLocation()`. Quicker to generate and less bulky, but devtools may only
+   *   be able to identify the correct line, not the exact column.
+   * - `true` - hi-res mappings. Every single character gets a mapping, so devtools can always
+   *   pinpoint the exact location of function calls and so on.
+   * - `"boundary"` - semi-hi-res mappings, segmented per word boundary instead of per character.
+   *   Suitable for string semantics that are separated by words.
+   * - `"experimental-range"` - hi-res mappings that use range mappings
+   *   (https://github.com/tc39/ecma426/blob/main/proposals/range-mappings.md), a source map
+   *   extension that can map all positions in a range with fewer mappings than mapping every
+   *   character individually. This requires support for range mappings in the source map
+   *   consumer, and the feature is experimental.
+   *
    * If sourcemap locations have been specified with s.addSourceMapLocation(), they will be used here.
    */
   hires?: boolean | 'boundary' | 'experimental-range'

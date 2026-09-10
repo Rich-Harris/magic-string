@@ -92,11 +92,20 @@ s.offset = 6
 s.slice() === 'world'
 ```
 
+## Hi-res mappings
+
+The `hires` option (passed to `generateMap`/`generateDecodedMap`) controls how granular sourcemap mappings are:
+
+- `false` (default) - lo-res mappings. Only one mapping per line, plus any locations added with `s.addSourcemapLocation()`. Quicker to generate and less bulky, but devtools may only be able to identify the correct line, not the exact column.
+- `true` - hi-res mappings. Every single character gets a mapping, so devtools can always pinpoint the exact location of function calls and so on.
+- `"boundary"` - semi-hi-res mappings, segmented per word boundary instead of per character. Suitable for string semantics that are separated by words.
+- `"experimental-range"` - hi-res mappings that use [range mappings](https://github.com/tc39/ecma426/blob/main/proposals/range-mappings.md), a source map extension that can map all positions in a range with fewer mappings than mapping every character individually. This requires support for range mappings in the source map consumer, and the feature is experimental.
+
 ## Methods
 
 ### s.addSourcemapLocation( index )
 
-Adds the specified character index (with respect to the original string) to sourcemap mappings, if `hires` is `false` (see below).
+Adds the specified character index (with respect to the original string) to sourcemap mappings, if `hires` is `false` (see [Hi-res mappings](#hi-res-mappings)).
 
 ### s.append( content )
 
@@ -125,7 +134,7 @@ Generates a [version 3 sourcemap](https://docs.google.com/document/d/1U1RGAehQwR
 - `file` - the filename where you plan to write the sourcemap
 - `source` - the filename of the file containing the original source
 - `includeContent` - whether to include the original content in the map's `sourcesContent` array
-- `hires` - whether the mapping should be high-resolution. Hi-res mappings map every single character, meaning (for example) your devtools will always be able to pinpoint the exact location of function calls and so on. With lo-res mappings, devtools may only be able to identify the correct line - but they're quicker to generate and less bulky. You can also set `"boundary"` to generate a semi-hi-res mappings segmented per word boundary instead of per character, suitable for string semantics that are separated by words. If sourcemap locations have been specified with `s.addSourcemapLocation()`, they will be used here.
+- `hires` - whether the mapping should be high-resolution. See [Hi-res mappings](#hi-res-mappings) for the available modes. If sourcemap locations have been specified with `s.addSourcemapLocation()`, they will be used here.
 
 The returned sourcemap has two (non-enumerable) methods attached for convenience:
 
