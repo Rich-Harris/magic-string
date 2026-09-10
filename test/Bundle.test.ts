@@ -1,8 +1,9 @@
 import type { RawSourceMap } from 'source-map-js'
 import type { ExclusionRange } from '../src/index.ts'
-import MagicString, { Bundle } from 'magic-string'
 import { SourceMapConsumer } from 'source-map-js'
 import { assert, describe, it } from 'vitest'
+import { Bundle } from '../src/index.ts'
+import MagicString from './utils/IntegrityCheckingMagicString.ts'
 
 interface BundleInternals extends Bundle {
   sources: Array<{
@@ -64,6 +65,30 @@ describe('bundle', () => {
       assert.strictEqual(b.sources[0].ignoreList, false)
       assert.strictEqual(b.sources[0].indentExclusionRanges, array)
     })
+
+    it('should throw when content is missing', () => {
+      const b = new Bundle()
+      // @ts-expect-error runtime validation is the subject of this test
+      assert.throws(() => b.addSource({}), /requires a `content` property/)
+    })
+
+    it('should throw when adding a different source under a duplicate filename', () => {
+      const b = new Bundle()
+      const foo = new MagicString('foo', { filename: 'foo.js' })
+      const alsoFoo = new MagicString('bar', { filename: 'foo.js' })
+
+      b.addSource(foo)
+      assert.throws(() => b.addSource(alsoFoo), /duplicate filename "foo\.js" with different content/)
+    })
+
+    it('should allow the same filename when the content matches', () => {
+      const b = new Bundle()
+      const foo1 = new MagicString('foo', { filename: 'foo.js' })
+      const foo2 = new MagicString('foo', { filename: 'foo.js' })
+
+      b.addSource(foo1)
+      assert.doesNotThrow(() => b.addSource(foo2))
+    })
   })
 
   describe('append', () => {
@@ -88,6 +113,16 @@ describe('bundle', () => {
     it('should return this', () => {
       const b = new Bundle()
       assert.strictEqual(b.append('x'), b)
+    })
+
+    it('should accept a custom separator', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString('*'))
+      b.append('123', { separator: ';' })
+      b.append('456')
+
+      assert.equal(b.toString(), '*;123456')
     })
   })
 
@@ -364,6 +399,22 @@ describe('bundle', () => {
 
       loc = smc.originalPositionFor({ line: 2, column: 9 })
       assert.equal(loc.name, 'two')
+    })
+
+    it('should not duplicate a name shared by multiple sources', () => {
+      const b = new Bundle()
+
+      const one = new MagicString('var foo = 1', { filename: 'one.js' })
+      const two = new MagicString('var foo = 2', { filename: 'two.js' })
+
+      one.overwrite(4, 7, 'bar', { storeName: true })
+      two.overwrite(4, 7, 'bar', { storeName: true })
+
+      b.addSource(one)
+      b.addSource(two)
+
+      const map = b.generateDecodedMap({ file: 'output.js', source: 'input.js' })
+      assert.deepEqual(map.names, ['foo'])
     })
 
     it('should exclude sources without filename from sourcemap', () => {
@@ -892,6 +943,24 @@ describe('bundle', () => {
       assert.equal(b.toString(), '')
       assert.equal(b.isEmpty(), true)
     })
+
+    it('should ignore a whitespace-only intro', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString(''))
+      b.prepend('  ')
+
+      assert.equal(b.isEmpty(), true)
+    })
+
+    it('should see a non-whitespace intro', () => {
+      const b = new Bundle()
+
+      b.addSource(new MagicString(''))
+      b.prepend('//intro')
+
+      assert.equal(b.isEmpty(), false)
+    })
   })
 
   describe('length', () => {
@@ -1035,6 +1104,25 @@ describe('bundle', () => {
 
       b.trimStart()
       assert.equal(b.toString(), ';   abc')
+    })
+
+    it('should trim empty lines with trimLines', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('\n\nabc\n\n') })
+
+      b.trimLines()
+      assert.equal(b.toString(), 'abc')
+    })
+
+    it('should stop trimEnd at a separator that is not whitespace', () => {
+      const b = new Bundle({ separator: ';' })
+
+      b.addSource({ content: new MagicString('abc   ') })
+      b.addSource({ content: new MagicString('   ') })
+
+      b.trimEnd()
+      assert.equal(b.toString(), 'abc   ;')
     })
   })
 

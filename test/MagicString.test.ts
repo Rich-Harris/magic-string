@@ -128,12 +128,24 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.appendLeft(0, 'a'), s)
     })
+
+    it('should throw when given non-string content', () => {
+      const s = new MagicString('abcdefghijkl')
+      // @ts-expect-error runtime validation is the subject of this test
+      assert.throws(() => s.appendLeft(0, []), MagicStringError)
+    })
   })
 
   describe('appendRight', () => {
     it('should return this', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.appendRight(0, 'a'), s)
+    })
+
+    it('should throw when given non-string content', () => {
+      const s = new MagicString('abcdefghijkl')
+      // @ts-expect-error runtime validation is the subject of this test
+      assert.throws(() => s.appendRight(0, []), MagicStringError)
     })
   })
 
@@ -435,6 +447,23 @@ describe('magicString', () => {
       smc.eachMapping(() => (numMappings += 1))
 
       assert.equal(numMappings, 3) // one at 0, one at the edit, one afterwards
+    })
+
+    it('should recover names for multiline replacement content', () => {
+      const s = new MagicString('function Foo () {}')
+
+      s.overwrite(9, 12, 'Bar\nBaz', { storeName: true })
+
+      const map = s.generateMap({
+        file: 'output.js',
+        source: 'input.js',
+        includeContent: true,
+      })
+
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+
+      const loc = smc.originalPositionFor({ line: 1, column: 9 })
+      assert.equal(loc.name, 'Foo')
     })
 
     it('should generate a sourcemap that correctly locates moved content', () => {
@@ -910,6 +939,11 @@ describe('magicString', () => {
       const s = new MagicString('abc\ndef\nghi')
       assert.equal(s.getIndentString(), '\t')
     })
+
+    it('should return a tab when more lines are tab-indented than space-indented', () => {
+      const s = new MagicString('abc\n\tdef\nghi')
+      assert.equal(s.getIndentString(), '\t')
+    })
   })
 
   describe('indent', () => {
@@ -965,6 +999,36 @@ describe('magicString', () => {
 
       s.indent('>>', { exclude: [7, 15] })
       assert.equal(s.toString(), '>>  abc\n>>  def\nghi\njkl')
+    })
+
+    it('should accept an options object as the only argument', () => {
+      const s = new MagicString('abc\ndef\nghi\njkl')
+
+      s.indent({ exclude: [7, 15] })
+      assert.equal(s.toString(), '\tabc\n\tdef\nghi\njkl')
+    })
+
+    it('should accept an array of exclusion ranges', () => {
+      const s = new MagicString('abc\ndef\nghi\njkl')
+
+      s.indent('  ', { exclude: [[7, 15]] })
+      assert.equal(s.toString(), '  abc\n  def\nghi\njkl')
+    })
+
+    it('should not indent an excluded chunk intro', () => {
+      const s = new MagicString('abc\ndef')
+      s.appendRight(4, '>>')
+
+      s.indent('  ', { exclude: [4, 7] })
+      assert.equal(s.toString(), '  abc\n>>def')
+    })
+
+    it('should not indent excluded edited content', () => {
+      const s = new MagicString('abc\ndef\nghi')
+      s.overwrite(4, 7, 'XXX')
+
+      s.indent('  ', { exclude: [4, 7] })
+      assert.equal(s.toString(), '  abc\nXXX\n  ghi')
     })
 
     it('should not add characters to empty lines', () => {
@@ -1136,6 +1200,40 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
       // @ts-expect-error deprecated runtime API intentionally accepts ignored arguments
       assert.throws(() => s.insert(6, 'X'), /deprecated/)
+    })
+
+    it('insertLeft warns and delegates to appendLeft', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warned = false
+      console.warn = () => {
+        warned = true
+      }
+      try {
+        s.insertLeft(6, 'X')
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.equal(warned, true)
+      assert.equal(s.toString(), 'abcdefXghijkl')
+    })
+
+    it('insertRight warns and delegates to prependRight', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warned = false
+      console.warn = () => {
+        warned = true
+      }
+      try {
+        s.insertRight(6, 'X')
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.equal(warned, true)
+      assert.equal(s.toString(), 'abcdefXghijkl')
     })
 
     // TODO move this into prependRight and appendLeft tests
@@ -1596,6 +1694,34 @@ describe('magicString', () => {
       assert.throws(() => s.update(-2, -1, 'x'), /out of bounds/)
     })
 
+    it('should throw when end is greater than the original string length', () => {
+      const s = new MagicString('abc')
+      assert.throws(() => s.update(0, 4, 'x'), /end 4 is out of bounds/)
+    })
+
+    it('should resolve a negative end index relative to the string length', () => {
+      const s = new MagicString('abcdefghijkl')
+      s.update(9, -1, 'XYZ')
+      assert.equal(s.toString(), 'abcdefghiXYZl')
+    })
+
+    it('should warn and treat `true` as legacy storeName option', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warned = false
+      console.warn = () => {
+        warned = true
+      }
+      try {
+        s.update(3, 4, 'D', true)
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.equal(warned, true)
+      assert.equal(s.toString(), 'abcDefghijkl')
+    })
+
     it('replaces interior inserts with overwrite option', () => {
       const s = new MagicString('abcdefghijkl')
 
@@ -1666,6 +1792,12 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.prepend('xyz'), s)
     })
+
+    it('should throw when given non-string content', () => {
+      const s = new MagicString('abcdefghijkl')
+      // @ts-expect-error runtime validation is the subject of this test
+      assert.throws(() => s.prepend([]), MagicStringError)
+    })
   })
 
   describe('prependLeft', () => {
@@ -1673,12 +1805,24 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.prependLeft(0, 'a'), s)
     })
+
+    it('should throw when given non-string content', () => {
+      const s = new MagicString('abcdefghijkl')
+      // @ts-expect-error runtime validation is the subject of this test
+      assert.throws(() => s.prependLeft(0, []), MagicStringError)
+    })
   })
 
   describe('prependRight', () => {
     it('should return this', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.prependRight(0, 'a'), s)
+    })
+
+    it('should throw when given non-string content', () => {
+      const s = new MagicString('abcdefghijkl')
+      // @ts-expect-error runtime validation is the subject of this test
+      assert.throws(() => s.prependRight(0, []), MagicStringError)
     })
   })
 
@@ -1848,6 +1992,16 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcdefghijkl')
     })
 
+    it('should throw when the range is out of bounds', () => {
+      const s = new MagicString('abcdefghijkl')
+      assert.throws(() => s.reset(0, 99), /out of bounds/)
+    })
+
+    it('should throw when start is greater than end', () => {
+      const s = new MagicString('abcdefghijkl')
+      assert.throws(() => s.reset(9, 5), /end must be greater than start/)
+    })
+
     it('should reset overlapping ranges', () => {
       const s1 = new MagicString('abcdefghijkl')
 
@@ -1942,6 +2096,11 @@ describe('magicString', () => {
       assert.equal(s.slice(2, 10), 'ZZ')
 
       assert.throws(() => s.slice(3, 9))
+    })
+
+    it('should support slicing an empty string', () => {
+      const s = new MagicString('')
+      assert.equal(s.slice(), '')
     })
 
     it('defaults `end` to the original string length', () => {
@@ -2097,6 +2256,34 @@ describe('magicString', () => {
   })
 
   describe('trim', () => {
+    it('should trim whitespace appended after the content', () => {
+      const s = new MagicString('abc')
+      s.append('  ')
+      s.trimEnd()
+      assert.equal(s.toString(), 'abc')
+    })
+
+    it('should trim whitespace prepended before the content', () => {
+      const s = new MagicString('abc')
+      s.prepend('  ')
+      s.trimStart()
+      assert.equal(s.toString(), 'abc')
+    })
+
+    it('should abort trimEnd when the global outro still has content after trimming', () => {
+      const s = new MagicString('abc')
+      s.append(' x ')
+      s.trimEnd()
+      assert.equal(s.toString(), 'abc x')
+    })
+
+    it('should abort trimStart when the global intro still has content after trimming', () => {
+      const s = new MagicString('abc')
+      s.prepend(' x ')
+      s.trimStart()
+      assert.equal(s.toString(), 'x abc')
+    })
+
     it('should trim original content', () => {
       assert.equal(new MagicString('   abcdefghijkl   ').trim().toString(), 'abcdefghijkl')
       assert.equal(new MagicString('   abcdefghijkl').trim().toString(), 'abcdefghijkl')
@@ -2254,6 +2441,20 @@ describe('magicString', () => {
       const s = new MagicString('').prepend('  ').append('   ')
       assert.equal(s.isEmpty(), true)
     })
+
+    it('should disregard whitespace-only chunk intro/content/outro', () => {
+      const s = new MagicString('   ')
+      s.appendRight(0, ' ')
+      s.appendLeft(3, ' ')
+      assert.equal(s.isEmpty(), true)
+    })
+
+    it('should notice non-whitespace content in a chunk outro', () => {
+      const s = new MagicString('abc')
+      s.remove(0, 3)
+      s.appendLeft(3, 'x')
+      assert.equal(s.isEmpty(), false)
+    })
   })
 
   describe('length', () => {
@@ -2272,6 +2473,43 @@ describe('magicString', () => {
       s.remove(15, 16)
 
       assert.equal(s.length(), 5)
+    })
+  })
+
+  describe('lastChar', () => {
+    it('should return the last character of unmodified content', () => {
+      const s = new MagicString('abc')
+      assert.equal(s.lastChar(), 'c')
+    })
+
+    it('should return the last character of the global outro', () => {
+      const s = new MagicString('abc')
+      s.append('xyz')
+      assert.equal(s.lastChar(), 'z')
+    })
+
+    it('should return the last character of a chunk outro', () => {
+      const s = new MagicString('abc')
+      s.appendLeft(3, 'xyz')
+      assert.equal(s.lastChar(), 'z')
+    })
+
+    it('should return the last character of a chunk intro when content and outro are empty', () => {
+      const s = new MagicString('abcdef')
+      s.remove(3, 6)
+      s.appendRight(3, 'xyz')
+      assert.equal(s.lastChar(), 'z')
+    })
+
+    it('should return the last character of the global intro when there is nothing else', () => {
+      const s = new MagicString('')
+      s.prepend('xyz')
+      assert.equal(s.lastChar(), 'z')
+    })
+
+    it('should return an empty string when there is no content at all', () => {
+      const s = new MagicString('')
+      assert.equal(s.lastChar(), '')
     })
   })
 
@@ -2295,6 +2533,40 @@ describe('magicString', () => {
       s.append('\n//lastline')
 
       assert.equal(s.lastLine(), '//lastline')
+    })
+
+    it('should return the tail of a chunk outro that contains a newline', () => {
+      const s = new MagicString('abcdef')
+      s.remove(0, 3)
+      s.appendLeft(3, 'X\nY')
+      assert.equal(s.lastLine(), 'Ydef')
+    })
+
+    it('should accumulate a chunk outro that has no newline', () => {
+      const s = new MagicString('abcdef')
+      s.remove(0, 3)
+      s.appendLeft(3, 'XY')
+      assert.equal(s.lastLine(), 'XYdef')
+    })
+
+    it('should return the tail of a chunk intro that contains a newline', () => {
+      const s = new MagicString('abcdef')
+      s.remove(3, 6)
+      s.appendRight(3, 'X\nY')
+      assert.equal(s.lastLine(), 'Y')
+    })
+
+    it('should accumulate a chunk intro that has no newline', () => {
+      const s = new MagicString('abcdef')
+      s.remove(3, 6)
+      s.appendRight(3, 'XY')
+      assert.equal(s.lastLine(), 'abcXY')
+    })
+
+    it('should return the tail of a global intro that contains a newline', () => {
+      const s = new MagicString('')
+      s.prepend('P\nQ')
+      assert.equal(s.lastLine(), 'Q')
     })
   })
 
