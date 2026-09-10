@@ -219,6 +219,7 @@ export default class Bundle {
       names,
       mappings: mappings.raw,
       x_google_ignoreList,
+      rangeMappings: mappings.rawRangeMappings,
     }
   }
 

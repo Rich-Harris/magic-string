@@ -1,5 +1,6 @@
 minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
+  - tsdown
   - '@types/node@26.5.1'
 
 trustPolicy: no-downgrade
