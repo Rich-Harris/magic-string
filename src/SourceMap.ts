@@ -1,4 +1,4 @@
-import { encode } from '@jridgewell/sourcemap-codec'
+import { encode, encodeRangeMappings } from '@jridgewell/sourcemap-codec'
 import MagicStringError from './MagicStringError.ts'
 
 type Btoa = (str: string) => string
@@ -11,16 +11,23 @@ interface GlobalBuffer {
 
 export interface SourceMapOptions {
   /**
-   * Whether the mapping should be high-resolution.
-   * Hi-res mappings map every single character, meaning (for example) your devtools will always
-   * be able to pinpoint the exact location of function calls and so on.
-   * With lo-res mappings, devtools may only be able to identify the correct
-   * line - but they're quicker to generate and less bulky.
-   * You can also set `"boundary"` to generate a semi-hi-res mappings segmented per word boundary
-   * instead of per character, suitable for string semantics that are separated by words.
+   * Whether the mapping should be high-resolution:
+   * - `false` (default) - lo-res mappings. Only one mapping per line, plus any locations added
+   *   with `s.addSourcemapLocation()`. Quicker to generate and less bulky, but devtools may only
+   *   be able to identify the correct line, not the exact column.
+   * - `true` - hi-res mappings. Every single character gets a mapping, so devtools can always
+   *   pinpoint the exact location of function calls and so on.
+   * - `"boundary"` - semi-hi-res mappings, segmented per word boundary instead of per character.
+   *   Suitable for string semantics that are separated by words.
+   * - `"experimental-range"` - hi-res mappings that use range mappings
+   *   (https://github.com/tc39/ecma426/blob/main/proposals/range-mappings.md), a source map
+   *   extension that can map all positions in a range with fewer mappings than mapping every
+   *   character individually. This requires support for range mappings in the source map
+   *   consumer, and the feature is experimental.
+   *
    * If sourcemap locations have been specified with s.addSourceMapLocation(), they will be used here.
    */
-  hires?: boolean | 'boundary'
+  hires?: boolean | 'boundary' | 'experimental-range'
   /**
    * The filename where you plan to write the sourcemap.
    */
@@ -40,6 +47,8 @@ export type SourceMapSegment
     | [number, number, number, number]
     | [number, number, number, number, number]
 
+export type SourceMapRangeMappings = number[][]
+
 export interface DecodedSourceMap {
   file?: string
   sources: string[]
@@ -48,6 +57,7 @@ export interface DecodedSourceMap {
   mappings: SourceMapSegment[][]
   x_google_ignoreList?: number[]
   debugId?: string
+  rangeMappings?: SourceMapRangeMappings
 }
 
 function getBtoa(): Btoa {
@@ -77,6 +87,7 @@ export default class SourceMap {
   declare mappings: string
   declare x_google_ignoreList: number[] | undefined
   declare debugId: string | undefined
+  declare rangeMappings: string | undefined
 
   constructor(properties: DecodedSourceMap) {
     this.version = 3
@@ -90,6 +101,18 @@ export default class SourceMap {
     }
     if (typeof properties.debugId !== 'undefined') {
       this.debugId = properties.debugId
+    }
+    if (typeof properties.rangeMappings !== 'undefined') {
+      let shouldOutputRangeMapping = false
+      for (const line of properties.rangeMappings) {
+        if (line.length !== 0) {
+          shouldOutputRangeMapping = true
+          break
+        }
+      }
+      if (shouldOutputRangeMapping) {
+        this.rangeMappings = encodeRangeMappings(properties.rangeMappings)
+      }
     }
   }
 

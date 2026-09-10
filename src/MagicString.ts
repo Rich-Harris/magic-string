@@ -289,6 +289,7 @@ export default class MagicString {
       names,
       mappings: mappings.raw,
       x_google_ignoreList: this.ignoreList ? [sourceIndex] : undefined,
+      rangeMappings: mappings.rawRangeMappings,
     }
   }
 
@@ -1043,6 +1044,9 @@ export default class MagicString {
    * Returns true if the resulting source is empty (disregarding white space).
    */
   isEmpty(): boolean {
+    // mirrors toString(): the string-level intro and outro bookend the chunks
+    if (this.intro.length && this.intro.trim())
+      return false
     let chunk: Chunk | null = this.firstChunk
     while (chunk) {
       if (
@@ -1054,6 +1058,8 @@ export default class MagicString {
       }
       chunk = chunk.next
     }
+    if (this.outro.length && this.outro.trim())
+      return false
     return true
   }
 
@@ -1219,7 +1225,12 @@ export default class MagicString {
         })
       }
       else {
-        return replacement(match[0], ...match.slice(1), match.index, str, match.groups)
+        // `String.prototype.replace` only passes the named-capture-groups object
+        // when the pattern actually has named groups - passing an `undefined`
+        // there unconditionally shifts the last argument a replacer sees
+        return match.groups === undefined
+          ? replacement(match[0], ...match.slice(1), match.index, str)
+          : replacement(match[0], ...match.slice(1), match.index, str, match.groups)
       }
     }
     const replaceMatch = (match: RegExpMatchArray): void => {

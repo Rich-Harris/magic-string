@@ -1,6 +1,6 @@
 import type BitSet from '../BitSet.ts'
 import type Chunk from '../Chunk.ts'
-import type { SourceMapOptions, SourceMapSegment } from '../SourceMap.ts'
+import type { SourceMapOptions, SourceMapRangeMappings, SourceMapSegment } from '../SourceMap.ts'
 import type { SourceLocation } from './getLocator.ts'
 
 const NEWLINE_CHAR = 10
@@ -16,6 +16,8 @@ export default class Mappings {
   declare generatedCodeColumn: number
   declare raw: SourceMapSegment[][]
   declare rawSegments: SourceMapSegment[]
+  declare rawRangeMappings: SourceMapRangeMappings
+  declare rawRangeMappingsIndices: number[]
   declare pending: SourceMapSegment | null
 
   constructor(hires: SourceMapOptions['hires']) {
@@ -24,6 +26,8 @@ export default class Mappings {
     this.generatedCodeColumn = 0
     this.raw = []
     this.rawSegments = this.raw[this.generatedCodeLine] = []
+    this.rawRangeMappings = []
+    this.rawRangeMappingsIndices = this.rawRangeMappings[this.generatedCodeLine] = []
     this.pending = null
   }
 
@@ -48,6 +52,7 @@ export default class Mappings {
 
         this.generatedCodeLine += 1
         this.raw[this.generatedCodeLine] = this.rawSegments = []
+        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
         this.generatedCodeColumn = 0
 
         previousContentLineEnd = contentLineEnd
@@ -87,15 +92,20 @@ export default class Mappings {
 
     if (this.hires) {
       const boundary = this.hires === 'boundary'
+      const experimentalRange = this.hires === 'experimental-range'
       // when iterating each char, check if it's in a word boundary
       let charInHiresBoundary = false
       while (i < end) {
+        if (experimentalRange && i + 1 >= end) {
+          this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+        }
         const code = original.charCodeAt(i)
         if (code === NEWLINE_CHAR) {
           loc.line += 1
           loc.column = 0
           this.generatedCodeLine += 1
           this.raw[this.generatedCodeLine] = this.rawSegments = []
+          this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
           this.generatedCodeColumn = 0
           charInHiresBoundary = false
         }
@@ -113,6 +123,12 @@ export default class Mappings {
               // for non-word char, end the boundary by pushing a segment
               this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
               charInHiresBoundary = false
+            }
+          }
+          else if (experimentalRange) {
+            if (i === chunk.start) {
+              this.rawRangeMappingsIndices.push(this.rawSegments.length)
+              this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
             }
           }
           else {
@@ -159,6 +175,7 @@ export default class Mappings {
         loc.column = 0
         this.generatedCodeLine += 1
         this.raw[this.generatedCodeLine] = this.rawSegments = []
+        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
         this.generatedCodeColumn = 0
         i = newline + 1
       }
@@ -171,16 +188,17 @@ export default class Mappings {
     if (!str)
       return
 
-    const lines = str.split('\n')
+    const lastNewline = str.lastIndexOf('\n')
 
-    if (lines.length > 1) {
-      for (let i = 0; i < lines.length - 1; i++) {
+    if (lastNewline !== -1) {
+      for (let i = str.indexOf('\n'); i !== -1; i = str.indexOf('\n', i + 1)) {
         this.generatedCodeLine++
         this.raw[this.generatedCodeLine] = this.rawSegments = []
+        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
       }
       this.generatedCodeColumn = 0
     }
 
-    this.generatedCodeColumn += lines[lines.length - 1].length
+    this.generatedCodeColumn += str.length - lastNewline - 1
   }
 }

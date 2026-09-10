@@ -219,6 +219,7 @@ export default class Bundle {
       names,
       mappings: mappings.raw,
       x_google_ignoreList,
+      rangeMappings: mappings.rawRangeMappings,
     }
   }
 
@@ -321,7 +322,7 @@ export default class Bundle {
       // mirrors toString(): every source but the first is preceded by a separator
       const separator = source.separator !== undefined ? source.separator : this.separator
 
-      return length + (i > 0 ? separator.length : 0) + source.content.length()
+      return length + (i > 0 ? separator.length : 0) + source.content.toString().length
     }, this.intro.length)
   }
 
