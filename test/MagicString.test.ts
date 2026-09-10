@@ -2313,11 +2313,14 @@ describe('magicString', () => {
     })
 
     it('works with global regex replace', () => {
-      const s = new MagicString('1 2 3 4 a b c')
+      const code = '1 2 3 4 a b c'
+      const s = new MagicString(code)
 
       s.replace(/(\d)/g, 'xx$1$10')
 
-      assert.strictEqual(s.toString(), 'xx1$10 xx2$10 xx3$10 xx4$10 a b c')
+      // there is no tenth group, so `$10` is group 1 followed by a literal "0"
+      assert.strictEqual(s.toString(), 'xx110 xx220 xx330 xx440 a b c')
+      assert.strictEqual(s.toString(), code.replace(/(\d)/g, 'xx$1$10'))
     })
 
     it('works with global regex replace $$', () => {
@@ -2326,6 +2329,150 @@ describe('magicString', () => {
       s.replace(/(\d)/g, '$$')
 
       assert.strictEqual(s.toString(), '$ $ $ $ a b c')
+    })
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_a_parameter
+    describe('substitution patterns', () => {
+      it('expands $& to the matched substring', () => {
+        assert.strictEqual(new MagicString('abcabc').replace(/b/, '[$&]').toString(), 'a[b]cabc')
+      })
+
+      it('expands $` and $\' to the text around the match', () => {
+        assert.strictEqual(new MagicString('abcabc').replace(/b/, '$`').toString(), 'aacabc')
+        assert.strictEqual(new MagicString('abcabc').replace(/b/, '$\'').toString(), 'acabccabc')
+      })
+
+      it('expands $<name> for a named capture group', () => {
+        const s = new MagicString('abcabc')
+
+        s.replace(/(?<first>a)(?<second>b)/, '$<second>$<first>')
+
+        assert.strictEqual(s.toString(), 'bacabc')
+      })
+
+      it('expands an unknown group name to nothing', () => {
+        assert.strictEqual(
+          new MagicString('abcabc').replace(/(?<first>a)/, '[$<nope>]').toString(),
+          '[]bcabc',
+        )
+      })
+
+      it('leaves $<name> literal when the pattern has no named groups', () => {
+        assert.strictEqual(
+          new MagicString('abcabc').replace(/b/, '$<first>').toString(),
+          'a$<first>cabc',
+        )
+      })
+
+      it('expands a group that did not participate in the match to nothing', () => {
+        assert.strictEqual(new MagicString('ac').replace(/a(b)?/, '[$1]').toString(), '[]c')
+      })
+
+      it('leaves $0 literal, since it names no group', () => {
+        assert.strictEqual(new MagicString('abcabc').replace(/(a)/, '[$0]').toString(), '[$0]bcabc')
+      })
+
+      it('prefers $nn over $n only when that group exists', () => {
+        // one group: `$12` is group 1 followed by a literal "2"
+        assert.strictEqual(new MagicString('ab').replace(/(a)/, '[$12]').toString(), '[a2]b')
+        // two groups: `$01` is group 1
+        assert.strictEqual(new MagicString('ab').replace(/(a)(b)/, '[$01]').toString(), '[a]')
+        // `$00` names no group at all
+        assert.strictEqual(new MagicString('ab').replace(/(a)(b)/, '[$00]').toString(), '[$00]')
+      })
+
+      it('leaves a dollar sign that introduces nothing recognisable alone', () => {
+        assert.strictEqual(new MagicString('abcabc').replace(/b/, '$').toString(), 'a$cabc')
+        assert.strictEqual(new MagicString('abcabc').replace(/b/, '$z').toString(), 'a$zcabc')
+      })
+
+      it('expands $$, $& and the surrounding text for a string search value', () => {
+        assert.strictEqual(new MagicString('abcabc').replace('b', '$$').toString(), 'a$cabc')
+        assert.strictEqual(new MagicString('abcabc').replace('b', '[$&]').toString(), 'a[b]cabc')
+        assert.strictEqual(new MagicString('abcabc').replace('b', '$`').toString(), 'aacabc')
+        assert.strictEqual(new MagicString('abcabc').replace('b', '$\'').toString(), 'acabccabc')
+      })
+
+      it('leaves group references literal for a string search value', () => {
+        // a string search value has no capture groups of either kind
+        assert.strictEqual(new MagicString('11').replace('1', '$0$1').toString(), '$0$11')
+        assert.strictEqual(new MagicString('abc').replace('b', '$<x>').toString(), 'a$<x>c')
+      })
+
+      it('agrees with String.prototype.replace and replaceAll across the table', () => {
+        const sources = ['abcabc', 'hello world', 'a1b2c3', 'aaa']
+        const patterns: [string, string][] = [
+          ['b', ''],
+          ['b', 'g'],
+          ['(a)(b)', ''],
+          ['(a)(b)', 'g'],
+          ['a(b)?', 'g'],
+          ['(?<first>a)(?<second>b)', 'g'],
+          [String.raw`(\w)(\w+)`, 'g'],
+        ]
+        const replacements = [
+          'X',
+          '$$',
+          '$&',
+          '$`',
+          '$\'',
+          '$0',
+          '$1',
+          '$2',
+          '$3',
+          '$12',
+          '$01',
+          '$<first>',
+          '$<second>',
+          '$<nope>',
+          '$<unclosed',
+          '$',
+          '$z',
+          '$$&',
+          '<$`|$&|$\'>',
+        ]
+
+        for (const source of sources) {
+          for (const [pattern, flags] of patterns) {
+            for (const replacement of replacements) {
+              for (const method of ['replace', 'replaceAll'] as const) {
+                if (method === 'replaceAll' && !flags.includes('g'))
+                  continue
+
+                const label = `${JSON.stringify(source)}.${method}(/${pattern}/${flags}, ${JSON.stringify(replacement)})`
+
+                assert.strictEqual(
+                  new MagicString(source)[method](new RegExp(pattern, flags), replacement).toString(),
+                  source[method](new RegExp(pattern, flags), replacement),
+                  label,
+                )
+              }
+            }
+          }
+        }
+      })
+
+      it('agrees with String.prototype for a string search value', () => {
+        const sources = ['abcabc', 'hello world', 'foo bar foo']
+        const needles = ['b', 'o', 'foo', 'zzz', '']
+        const replacements = ['X', '$$', '$&', '$`', '$\'', '$1', '$0', '$<n>', '$', '[$&]', '$$&']
+
+        for (const source of sources) {
+          for (const needle of needles) {
+            for (const replacement of replacements) {
+              for (const method of ['replace', 'replaceAll'] as const) {
+                const label = `${JSON.stringify(source)}.${method}(${JSON.stringify(needle)}, ${JSON.stringify(replacement)})`
+
+                assert.strictEqual(
+                  new MagicString(source)[method](needle, replacement).toString(),
+                  source[method](needle, replacement),
+                  label,
+                )
+              }
+            }
+          }
+        }
+      })
     })
 
     it('works with global regex replace function', () => {
@@ -2563,6 +2710,27 @@ describe('magicString', () => {
 
       assert.strictEqual(s.toString(), 'abc')
       assert.strictEqual(s.hasChanged(), false)
+    })
+
+    it('expands substitution patterns for every match', () => {
+      assert.strictEqual(
+        new MagicString('a1b2').replaceAll(/(\d)/g, '[$1$&]').toString(),
+        'a[11]b[22]',
+      )
+      assert.strictEqual(new MagicString('foo foo').replaceAll('foo', '$&$&').toString(), 'foofoo foofoo')
+    })
+
+    it('expands substitution patterns at every empty-string match', () => {
+      const code = 'ab'
+
+      assert.strictEqual(
+        new MagicString(code).replaceAll('', '$`').toString(),
+        code.replaceAll('', '$`'),
+      )
+      assert.strictEqual(
+        new MagicString(code).replaceAll('', '<$$>').toString(),
+        code.replaceAll('', '<$$>'),
+      )
     })
   })
 })
