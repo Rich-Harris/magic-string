@@ -663,7 +663,7 @@ describe('magicString', () => {
 
       assert.deepEqual(decoded.mappings, [
         [
-          [0, 0, 0, 0], 
+          [0, 0, 0, 0],
           [8, 0, 0, 8],
           [9, 0, 0, 9],
           [12, 0, 0, 12],
@@ -806,7 +806,7 @@ describe('magicString', () => {
 
       assert.deepEqual(decoded.mappings, [
         [
-          [0, 0, 0, 0], 
+          [0, 0, 0, 0],
           [1, 0, 0, 1],
           [5, 0, 0, 2],
         ],
