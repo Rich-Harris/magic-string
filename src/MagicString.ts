@@ -1224,7 +1224,12 @@ export default class MagicString {
         })
       }
       else {
-        return replacement(match[0], ...match.slice(1), match.index, str, match.groups)
+        // `String.prototype.replace` only passes the named-capture-groups object
+        // when the pattern actually has named groups - passing an `undefined`
+        // there unconditionally shifts the last argument a replacer sees
+        return match.groups === undefined
+          ? replacement(match[0], ...match.slice(1), match.index, str)
+          : replacement(match[0], ...match.slice(1), match.index, str, match.groups)
       }
     }
     const replaceMatch = (match: RegExpMatchArray): void => {

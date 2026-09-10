@@ -2119,6 +2119,42 @@ describe('magicString', () => {
       )
     })
 
+    it('only passes the groups object when the pattern has named groups', () => {
+      const args: any[][] = []
+      const native: any[][] = []
+      const code = 'abc'
+
+      new MagicString(code).replace(/b/g, (...rest: any[]) => {
+        args.push(rest)
+        return 'Z'
+      })
+      code.replace(/b/g, (...rest: any[]) => {
+        native.push(rest)
+        return 'Z'
+      })
+
+      assert.deepEqual(args, native)
+      assert.deepEqual(args, [['b', 1, code]])
+    })
+
+    it('passes the groups object when the pattern has named groups', () => {
+      const args: any[][] = []
+      const native: any[][] = []
+      const code = 'abc'
+
+      new MagicString(code).replace(/(?<mid>b)/g, (...rest: any[]) => {
+        args.push(rest)
+        return 'Z'
+      })
+      code.replace(/(?<mid>b)/g, (...rest: any[]) => {
+        native.push(rest)
+        return 'Z'
+      })
+
+      assert.deepEqual(args, native)
+      assert.deepEqual(args, [['b', 'b', 1, code, { mid: 'b' }]])
+    })
+
     it('should ignore non-changed replacements', () => {
       const code = 'a12bc345#$*%'
       const matched: string[] = []
