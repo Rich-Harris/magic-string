@@ -171,14 +171,6 @@ s.toString() // '  var a = 1;\n  debugger;\n  var b = 2;'
 
 The `options` argument can have an `exclude` property, which is an array of `[start, end]` character ranges. These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
 
-### s.insertLeft( index, content )
-
-**DEPRECATED** since 0.17 – use `s.appendLeft(...)` instead
-
-### s.insertRight( index, content )
-
-**DEPRECATED** since 0.17 – use `s.prependRight(...)` instead
-
 ### s.isEmpty()
 
 Returns true if the resulting source is empty (disregarding white space).
@@ -208,14 +200,6 @@ s.length() // still 7
 ```
 
 `s.prepend()` and `s.append()` always land outside the body, as do inserts made before the first character or after the last one.
-
-### s.locate( index )
-
-**REMOVED** in 0.13, deprecated since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
-
-### s.locateOrigin( index )
-
-**REMOVED** in 0.13, deprecated since 0.10 – see [#30](https://github.com/Rich-Harris/magic-string/pull/30)
 
 ### s.move( start, end, index )
 
@@ -361,6 +345,14 @@ const map = bundle.generateMap({
   file: 'bundle.js',
   includeContent: true,
   hires: true,
+})
+```
+
+`includeContent` can also be a function that receives `{ filename, content }` for each source and returns whether to include it, allowing per-source control:
+
+```js
+bundle.generateMap({
+  includeContent: (source) => !source.filename.startsWith('http'),
 })
 ```
 
