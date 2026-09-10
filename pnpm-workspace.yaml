@@ -1,7 +1,12 @@
+minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
-  - tsdown
+  - '@types/node@26.5.1'
 
-shellEmulator: true
-trustLockfile: true
 trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 604800 # 7 days
+
+update:
+  ignoreDeps:
+    - typescript@7
+
+shellEmulator: true
