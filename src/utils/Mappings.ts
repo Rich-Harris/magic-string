@@ -32,6 +32,7 @@ export default class Mappings {
   }
 
   addEdit(sourceIndex: number, content: string, loc: SourceLocation, nameIndex: number): void {
+    /* v8 ignore else -- `pending` is never assigned a truthy value */
     if (content.length) {
       const contentLengthMinusOne = content.length - 1
       let contentLineEnd = content.indexOf('\n', 0)

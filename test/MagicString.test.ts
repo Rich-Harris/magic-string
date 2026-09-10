@@ -1219,6 +1219,24 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcdefXghijkl')
     })
 
+    it('insertLeft does not warn again once it already has', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warnCount = 0
+      console.warn = () => {
+        warnCount += 1
+      }
+      try {
+        // the deprecation warning was already emitted by the previous test
+        s.insertLeft(6, 'X')
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.equal(warnCount, 0)
+      assert.equal(s.toString(), 'abcdefXghijkl')
+    })
+
     it('insertRight warns and delegates to prependRight', () => {
       const s = new MagicString('abcdefghijkl')
       const warn = console.warn
@@ -1233,6 +1251,24 @@ describe('magicString', () => {
         console.warn = warn
       }
       assert.equal(warned, true)
+      assert.equal(s.toString(), 'abcdefXghijkl')
+    })
+
+    it('insertRight does not warn again once it already has', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warnCount = 0
+      console.warn = () => {
+        warnCount += 1
+      }
+      try {
+        // the deprecation warning was already emitted by the previous test
+        s.insertRight(6, 'X')
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.equal(warnCount, 0)
       assert.equal(s.toString(), 'abcdefXghijkl')
     })
 
@@ -1375,6 +1411,24 @@ describe('magicString', () => {
 
       // The first move is still intact and the string is still printable.
       assert.equal(s.toString(), 'cabdef')
+    })
+
+    it('allows a later move that still spans a forward run of chunks', () => {
+      const s = new MagicString('abcdefgh')
+      s.move(0, 2, 8)
+      assert.equal(s.toString(), 'cdefghab')
+
+      s.move(2, 6, 0)
+      assert.equal(s.toString(), 'ghcdefab')
+    })
+
+    it('allows a later move whose walk passes through an intermediate chunk', () => {
+      const s = new MagicString('abcdefgh')
+      s.move(2, 4, 6)
+      assert.equal(s.toString(), 'abefcdgh')
+
+      s.move(0, 6, 8)
+      assert.equal(s.toString(), 'cdghabef')
     })
 
     it('carries the reordering over to a clone', () => {
@@ -1722,6 +1776,24 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcDefghijkl')
     })
 
+    it('does not warn again for `true` once it already has', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warnCount = 0
+      console.warn = () => {
+        warnCount += 1
+      }
+      try {
+        // the deprecation warning was already emitted by the previous test
+        s.update(6, 7, 'G', true)
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.equal(warnCount, 0)
+      assert.equal(s.toString(), 'abcdefGhijkl')
+    })
+
     it('replaces interior inserts with overwrite option', () => {
       const s = new MagicString('abcdefghijkl')
 
@@ -1983,6 +2055,11 @@ describe('magicString', () => {
       s.remove(3, 5)
       s.reset(0, 0).reset(6, 6).reset(9, -3)
       assert.equal(s.toString(), 'abcfghijkl')
+    })
+
+    it('should treat a zero-length reset on an empty string as a no-op', () => {
+      const s = new MagicString('')
+      assert.equal(s.reset(0, 0).toString(), '')
     })
 
     it('should treat not modified resets as a no-op', () => {

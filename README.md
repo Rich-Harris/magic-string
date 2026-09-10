@@ -1,9 +1,5 @@
 # magic-string
 
-<a href="https://github.com/Rich-Harris/magic-string/actions/workflows/test.yml">
-  <img src="https://img.shields.io/github/actions/workflow/status/Rich-Harris/magic-string/test.yml"
-       alt="build status">
-</a>
 <a href="https://npmjs.org/package/magic-string">
   <img src="https://img.shields.io/npm/v/magic-string.svg"
        alt="npm version">

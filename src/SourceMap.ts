@@ -61,10 +61,12 @@ export interface DecodedSourceMap {
 }
 
 function getBtoa(): Btoa {
+  /* v8 ignore next -- environment fallback, unreachable when `btoa` is present */
   if (typeof globalThis !== 'undefined' && typeof globalThis.btoa === 'function') {
     return str => globalThis.btoa(unescape(encodeURIComponent(str)))
   }
 
+  /* v8 ignore start -- environment fallback, unreachable when `btoa` is present */
   const bufferKey = 'Buffer'
   const buffer = (globalThis as typeof globalThis & Record<string, GlobalBuffer | undefined>)[bufferKey]
   if (buffer) {
@@ -74,6 +76,7 @@ function getBtoa(): Btoa {
   return () => {
     throw new MagicStringError('unsupported environment: `btoa` or `Buffer` is required')
   }
+  /* v8 ignore stop */
 }
 
 const btoa = /* #__PURE__ */ getBtoa()

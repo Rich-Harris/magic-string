@@ -24,6 +24,7 @@ export default class Chunk {
     this.storeName = false
     this.edited = false
 
+    /* v8 ignore next 8 -- DEBUG is always true in tests */
     if (DEBUG) {
       // we make these non-enumerable, for sanity while debugging
       Object.defineProperties(this, {

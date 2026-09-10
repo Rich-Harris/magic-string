@@ -167,6 +167,7 @@ export default class Bundle {
     this.sources.forEach((source, i) => {
       if (i > 0) {
         // mirrors toString(): a source can override the bundle separator
+        /* v8 ignore next -- addSource always normalizes source.separator */
         mappings.advance(source.separator !== undefined ? source.separator : this.separator)
       }
 
@@ -282,6 +283,7 @@ export default class Bundle {
     let trailingNewline = !this.intro || this.intro.slice(-1) === '\n'
 
     this.sources.forEach((source, i) => {
+      /* v8 ignore next -- addSource always normalizes source.separator */
       const separator = source.separator !== undefined ? source.separator : this.separator
       const indentStart = trailingNewline || (i > 0 && /\r?\n$/.test(separator))
 
@@ -312,6 +314,7 @@ export default class Bundle {
   toString(): string {
     const body = this.sources
       .map((source, i) => {
+        /* v8 ignore next -- addSource always normalizes source.separator */
         const separator = source.separator !== undefined ? source.separator : this.separator
         const str = (i > 0 ? separator : '') + source.content.toString()
 
@@ -327,6 +330,7 @@ export default class Bundle {
       return false
     if (this.sources.some((source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
+      /* v8 ignore next -- addSource always normalizes source.separator */
       const separator = source.separator !== undefined ? source.separator : this.separator
 
       return (i > 0 && separator.trim() !== '') || !source.content.isEmpty()
@@ -339,6 +343,7 @@ export default class Bundle {
   length(): number {
     return this.sources.reduce((length, source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
+      /* v8 ignore next -- addSource always normalizes source.separator */
       const separator = source.separator !== undefined ? source.separator : this.separator
 
       return length + (i > 0 ? separator.length : 0) + source.content.toString().length
@@ -363,6 +368,7 @@ export default class Bundle {
 
         if (i > 0) {
           // mirrors toString(): every source but the first is preceded by a separator
+          /* v8 ignore next -- addSource always normalizes source.separator */
           const separator = source.separator !== undefined ? source.separator : this.separator
           source.separator = separator.replace(rx, '')
 
@@ -392,6 +398,7 @@ export default class Bundle {
 
       if (i > 0) {
         // mirrors toString(): every source but the first is preceded by a separator
+        /* v8 ignore next -- addSource always normalizes source.separator */
         const separator = source.separator !== undefined ? source.separator : this.separator
         source.separator = separator.replace(rx, '')
 

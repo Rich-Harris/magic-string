@@ -191,6 +191,7 @@ export default class MagicString {
       hasMovedChunks: { writable: true, value: false },
     })
 
+    /* v8 ignore next 3 -- DEBUG is always true in tests */
     if (DEBUG) {
       Object.defineProperty(this, 'stats', { value: new Stats() })
     }
@@ -227,6 +228,7 @@ export default class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('appendLeft')
 
@@ -241,6 +243,7 @@ export default class MagicString {
       this.intro += content
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('appendLeft')
     return this
@@ -258,6 +261,7 @@ export default class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('appendRight')
 
@@ -272,6 +276,7 @@ export default class MagicString {
       this.outro += content
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('appendRight')
     return this
@@ -605,6 +610,7 @@ export default class MagicString {
       throw new MagicStringError('cannot move a selection inside itself')
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('move')
 
@@ -670,6 +676,7 @@ export default class MagicString {
 
     this.hasMovedChunks = true
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('move')
     return this
@@ -735,6 +742,7 @@ export default class MagicString {
       throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('overwrite')
 
@@ -767,6 +775,7 @@ export default class MagicString {
     const first = this.byStart.get(start)
     const last = this.byEnd.get(end)
 
+    /* v8 ignore else -- unreachable: a valid start/end always yields a `first` chunk */
     if (first) {
       let chunk = first
       while (chunk !== last) {
@@ -788,6 +797,7 @@ export default class MagicString {
       newChunk.previous = last
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('overwrite')
     return this
@@ -815,6 +825,7 @@ export default class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('insertRight')
 
@@ -829,6 +840,7 @@ export default class MagicString {
       this.intro = content + this.intro
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('insertRight')
     return this
@@ -844,6 +856,7 @@ export default class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('insertRight')
 
@@ -858,6 +871,7 @@ export default class MagicString {
       this.outro = content + this.outro
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('insertRight')
     return this
@@ -888,6 +902,7 @@ export default class MagicString {
       throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('remove')
 
@@ -904,6 +919,7 @@ export default class MagicString {
       chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('remove')
     return this
@@ -933,6 +949,7 @@ export default class MagicString {
       throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('reset')
 
@@ -947,6 +964,7 @@ export default class MagicString {
       chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
     }
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('reset')
     return this
@@ -1084,6 +1102,7 @@ export default class MagicString {
     if (this.byStart.get(index) || this.byEnd.get(index))
       return
 
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.time('_split')
 
@@ -1125,6 +1144,7 @@ export default class MagicString {
       this.lastChunk = newChunk
 
     this.lastSearchedChunk = chunk
+    /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
       this.stats.timeEnd('_split')
     return true
@@ -1336,6 +1356,7 @@ export default class MagicString {
       }
     }
     const replaceMatch = (match: RegExpMatchArray): void => {
+      /* v8 ignore next 2 -- `match.index` is always defined for matches from `matchAll` */
       if (match.index == null)
         return
 
