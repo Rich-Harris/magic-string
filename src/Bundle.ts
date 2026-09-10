@@ -28,6 +28,21 @@ interface UniqueSource {
   content: string
 }
 
+export interface BundledSourceFileRecord {
+  filename: string
+  content: string
+}
+
+export interface BundleSourceMapOptions extends Omit<SourceMapOptions, 'includeContent'> {
+  /**
+   * Whether to include the original content of each source in the map's `sourcesContent` array.
+   * Can also be a function that receives the source's `filename` and `content` and returns
+   * whether to include it, allowing per-source control (for example, omitting content for
+   * sources that are otherwise loadable at runtime, such as public http(s) urls).
+   */
+  includeContent?: boolean | ((source: BundledSourceFileRecord) => boolean)
+}
+
 export interface DecodedSourceMapOrMissingContent extends Omit<DecodedSourceMap, 'sourcesContent'> {
   sourcesContent: Array<string | null>
 }
@@ -133,7 +148,7 @@ export default class Bundle {
     return bundle as this
   }
 
-  generateDecodedMap(options: SourceMapOptions = {}): DecodedSourceMapOrMissingContent {
+  generateDecodedMap(options: BundleSourceMapOptions = {}): DecodedSourceMapOrMissingContent {
     const names = []
     let x_google_ignoreList
     this.sources.forEach((source) => {
@@ -214,7 +229,11 @@ export default class Bundle {
         return options.file ? getRelativePath(options.file, source.filename) : source.filename
       }),
       sourcesContent: this.uniqueSources.map((source) => {
-        return options.includeContent ? source.content : null
+        const includeContent = typeof options.includeContent === 'function'
+          ? options.includeContent(source)
+          : options.includeContent
+
+        return includeContent ? source.content : null
       }),
       names,
       mappings: mappings.raw,
@@ -224,7 +243,7 @@ export default class Bundle {
   }
 
   generateMap(
-    options?: SourceMapOptions,
+    options?: BundleSourceMapOptions,
   ): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> } {
     return new SourceMap(this.generateDecodedMap(options)) as Omit<SourceMap, 'sourcesContent'> & {
       sourcesContent: Array<string | null>

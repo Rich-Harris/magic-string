@@ -4,7 +4,7 @@ import MagicStringError from './MagicStringError.ts'
 import SourceMap from './SourceMap.ts'
 
 export { Bundle, MagicString as default, MagicString, MagicStringError, SourceMap }
-export type { BundleOptions } from './Bundle.ts'
+export type { BundledSourceFileRecord, BundleOptions, BundleSourceMapOptions } from './Bundle.ts'
 export type {
   ExclusionRange,
   IndentOptions,

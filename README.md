@@ -344,7 +344,10 @@ bundle.toString()
 //   console.log( answer );
 // }());
 
-// options are as per `s.generateMap()` above
+// options are as per `s.generateMap()` above, except that `includeContent` can
+// also be a function of the shape `(source: { filename: string, content: string }) => boolean`,
+// letting you decide per-source whether to embed its content - for example, to omit
+// content for sources that can otherwise be loaded by the runtime, such as public http(s) urls
 const map = bundle.generateMap({
   file: 'bundle.js',
   includeContent: true,
