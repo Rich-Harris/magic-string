@@ -136,16 +136,16 @@ export default class Mappings {
     if (!str)
       return
 
-    const lines = str.split('\n')
+    const lastNewline = str.lastIndexOf('\n')
 
-    if (lines.length > 1) {
-      for (let i = 0; i < lines.length - 1; i++) {
+    if (lastNewline !== -1) {
+      for (let i = str.indexOf('\n'); i !== -1; i = str.indexOf('\n', i + 1)) {
         this.generatedCodeLine++
         this.raw[this.generatedCodeLine] = this.rawSegments = []
       }
       this.generatedCodeColumn = 0
     }
 
-    this.generatedCodeColumn += lines[lines.length - 1].length
+    this.generatedCodeColumn += str.length - lastNewline - 1
   }
 }
