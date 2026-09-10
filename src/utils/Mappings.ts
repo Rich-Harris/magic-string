@@ -3,7 +3,12 @@ import type Chunk from '../Chunk.ts'
 import type { SourceMapOptions, SourceMapRangeMappings, SourceMapSegment } from '../SourceMap.ts'
 import type { SourceLocation } from './getLocator.ts'
 
-const wordRegex = /\w/
+const NEWLINE_CHAR = 10
+
+// equivalent to /\w/ without the `u` flag, which only matches ASCII word characters
+function isWordCode(code: number): boolean {
+  return (code >= 97 && code <= 122) || (code >= 65 && code <= 90) || (code >= 48 && code <= 57) || code === 95
+}
 
 export default class Mappings {
   declare hires: SourceMapOptions['hires']
@@ -82,66 +87,98 @@ export default class Mappings {
     loc: SourceLocation,
     sourcemapLocations: BitSet,
   ): void {
-    let originalCharIndex = chunk.start
-    let first = true
-    // when iterating each char, check if it's in a word boundary
-    let charInHiresBoundary = false
+    const end = chunk.end
+    let i = chunk.start
 
-    while (originalCharIndex < chunk.end) {
-      if (this.hires === 'experimental-range' && originalCharIndex + 1 >= chunk.end) {
-        this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+    if (this.hires) {
+      const boundary = this.hires === 'boundary'
+      const experimentalRange = this.hires === 'experimental-range'
+      // when iterating each char, check if it's in a word boundary
+      let charInHiresBoundary = false
+      while (i < end) {
+        if (experimentalRange && i + 1 >= end) {
+          this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+        }
+        const code = original.charCodeAt(i)
+        if (code === NEWLINE_CHAR) {
+          loc.line += 1
+          loc.column = 0
+          this.generatedCodeLine += 1
+          this.raw[this.generatedCodeLine] = this.rawSegments = []
+          this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
+          this.generatedCodeColumn = 0
+          charInHiresBoundary = false
+        }
+        else {
+          if (boundary) {
+            // in hires "boundary", group segments per word boundary than per char
+            if (isWordCode(code)) {
+              // for first char in the boundary found, start the boundary by pushing a segment
+              if (!charInHiresBoundary) {
+                this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+                charInHiresBoundary = true
+              }
+            }
+            else {
+              // for non-word char, end the boundary by pushing a segment
+              this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+              charInHiresBoundary = false
+            }
+          }
+          else if (experimentalRange) {
+            if (i === chunk.start) {
+              this.rawRangeMappingsIndices.push(this.rawSegments.length)
+              this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+            }
+          }
+          else {
+            this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+          }
+          loc.column += 1
+          this.generatedCodeColumn += 1
+        }
+        i += 1
       }
-      if (original[originalCharIndex] === '\n') {
+    }
+    else {
+      // without hires only the first character of each line and the explicitly
+      // added sourcemap locations get a segment, so walk line by line instead of
+      // char by char
+      const bits = sourcemapLocations.bits
+      while (i < end) {
+        let newline = original.indexOf('\n', i)
+        if (newline === -1 || newline > end)
+          newline = end
+        if (newline > i) {
+          this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+          for (let w = (i + 1) >> 5, last = (newline - 1) >> 5; w <= last; w++) {
+            let word = bits[w]
+            if (!word)
+              continue
+            const base = w << 5
+            while (word) {
+              const lowest = word & -word
+              const index = base + 31 - Math.clz32(lowest)
+              if (index > i && index < newline) {
+                const offset = index - i
+                this.rawSegments.push([this.generatedCodeColumn + offset, sourceIndex, loc.line, loc.column + offset])
+              }
+              word ^= lowest
+            }
+          }
+          loc.column += newline - i
+          this.generatedCodeColumn += newline - i
+        }
+        if (newline === end)
+          break
         loc.line += 1
         loc.column = 0
         this.generatedCodeLine += 1
         this.raw[this.generatedCodeLine] = this.rawSegments = []
         this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
         this.generatedCodeColumn = 0
-        first = true
-        charInHiresBoundary = false
+        i = newline + 1
       }
-      else {
-        if (this.hires || first || sourcemapLocations.has(originalCharIndex)) {
-          const segment: SourceMapSegment = [
-            this.generatedCodeColumn,
-            sourceIndex,
-            loc.line,
-            loc.column,
-          ]
-
-          if (this.hires === 'boundary') {
-            // in hires "boundary", group segments per word boundary than per char
-            if (wordRegex.test(original[originalCharIndex])) {
-              // for first char in the boundary found, start the boundary by pushing a segment
-              if (!charInHiresBoundary) {
-                this.rawSegments.push(segment)
-                charInHiresBoundary = true
-              }
-            }
-            else {
-              // for non-word char, end the boundary by pushing a segment
-              this.rawSegments.push(segment)
-              charInHiresBoundary = false
-            }
-          }
-          else if (this.hires === 'experimental-range') {
-            if (originalCharIndex === chunk.start) {
-              this.rawRangeMappingsIndices.push(this.rawSegments.length)
-              this.rawSegments.push(segment)
-            }
-          }
-          else {
-            this.rawSegments.push(segment)
-          }
-        }
-
-        loc.column += 1
-        this.generatedCodeColumn += 1
-        first = false
-      }
-
-      originalCharIndex += 1
     }
 
     this.pending = null
