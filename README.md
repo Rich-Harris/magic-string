@@ -352,7 +352,7 @@ const map = bundle.generateMap({
 
 ```js
 bundle.generateMap({
-  includeContent: (source) => !source.filename.startsWith('http'),
+  includeContent: source => !source.filename.startsWith('http'),
 })
 ```
 

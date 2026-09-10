@@ -48,6 +48,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^9.5.1",
     "@types/node": "^26.5.1",
+    "@vitest/coverage-v8": "^5.0.0",
     "benchmark": "^2.1.4",
     "bumpp": "^12.3.0",
     "conventional-changelog": "^8.1.3",

@@ -1,43 +1,19 @@
-name: Test
+name: Unit Test
 
 on:
   push:
-    branches:
-      - main
-      - master
-
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main]
+
+permissions: {}
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
+  unit-test:
+    uses: sxzz/workflows/.github/workflows/unit-test.yml@main
 
-    timeout-minutes: 10
-
-    strategy:
-      matrix:
-        node_version: [lts/*]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node_version }}
-
-      - uses: pnpm/action-setup@v6
-
-      - name: Install
-        run: pnpm i
-
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Test
-        run: pnpm test
+  # coverage:
+  #   uses: sxzz/workflows/.github/workflows/coverage.yml@main
+  #   needs: unit-test
+  #   permissions:
+  #     id-token: write
