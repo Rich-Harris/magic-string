@@ -1044,7 +1044,7 @@ export default class MagicString {
     let chunk = this.firstChunk
     while (chunk && (chunk.start > start || chunk.end <= start)) {
       // found end chunk before start
-      if (chunk.start < end && chunk.end >= end) {
+      if ((chunk.start < end && chunk.end >= end) || (end === 0 && chunk.start === 0)) {
         return result
       }
 
@@ -1057,6 +1057,12 @@ export default class MagicString {
 
     const startChunk = chunk
     while (chunk) {
+      // for end === 0 the slice ends at the very start of the original, so stop
+      // once the walk reaches the chunk holding that position, taking nothing from it
+      if (end === 0 && chunk.start === 0) {
+        break
+      }
+
       if (chunk.intro && (startChunk !== chunk || chunk.start === start)) {
         result += chunk.intro
       }

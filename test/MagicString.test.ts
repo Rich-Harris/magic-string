@@ -2294,6 +2294,23 @@ describe('magicString', () => {
 
       assert.equal(s.slice(2, 4), 'cd')
     })
+
+    it('treats an end of zero as an empty upper bound', () => {
+      const s = new MagicString('hello')
+      assert.equal(s.slice(0, 0), '')
+      assert.equal(s.slice(3, 0), '')
+      assert.equal(s.slice(0, -100), '')
+      assert.equal(s.slice(5, 0), '')
+    })
+
+    it('walks moved chunks when the end is zero', () => {
+      const s = new MagicString('abcde')
+      s.move(0, 2, 5)
+      assert.equal(s.toString(), 'cdeab')
+      assert.equal(s.slice(2, 0), 'cde')
+      assert.equal(s.slice(4, 0), 'e')
+      assert.equal(s.slice(1, 0), '')
+    })
   })
 
   describe('snip', () => {
