@@ -2378,6 +2378,20 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'x abc')
     })
 
+    it('should carry trimStart into the global outro when nothing comes before it', () => {
+      const s = new MagicString('   ')
+      s.append(' x ')
+      s.trimStart()
+      assert.equal(s.toString(), 'x ')
+    })
+
+    it('should carry trimEnd into the global intro when nothing comes after it', () => {
+      const s = new MagicString('   ')
+      s.prepend(' x ')
+      s.trimEnd()
+      assert.equal(s.toString(), ' x')
+    })
+
     it('should trim original content', () => {
       assert.equal(new MagicString('   abcdefghijkl   ').trim().toString(), 'abcdefghijkl')
       assert.equal(new MagicString('   abcdefghijkl').trim().toString(), 'abcdefghijkl')
