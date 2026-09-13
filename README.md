@@ -250,7 +250,7 @@ If `regexpOrString` is a regex, then it must have the global (`g`) flag set, or 
 
 ### s.remove( start, end )
 
-Removes the characters from `start` to `end` (of the original string, **not** the generated string). Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `this`.
+Removes the characters from `start` to `end` (of the original string, **not** the generated string). Content appended or prepended at positions strictly inside the range is removed along with it, while content attached at `start` or `end` is preserved — use `s.overwrite( start, end, '' )` to remove the range including its edge inserts. Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `this`.
 
 ### s.reset( start, end )
 

@@ -1969,6 +1969,17 @@ describe('magicString', () => {
     })
 
     it('should remove interior inserts', () => {
+      const s = new MagicString('abcde;')
+
+      s.appendLeft(2, '[')
+      s.prependRight(2, '(')
+      s.appendLeft(4, ')')
+      s.prependRight(4, ']')
+      s.remove(1, 5)
+      assert.equal(s.toString(), 'a;')
+    })
+
+    it('should preserve inserts anchored to the edges of the removed range', () => {
       const s = new MagicString('abc;')
 
       s.appendLeft(1, '[')
@@ -1976,7 +1987,23 @@ describe('magicString', () => {
       s.appendLeft(2, ')')
       s.prependRight(2, ']')
       s.remove(1, 2)
-      assert.equal(s.toString(), 'a[]c;')
+      assert.equal(s.toString(), 'a[()]c;')
+    })
+
+    it('should preserve content appended at the edge of a removed range (#282)', () => {
+      const s = new MagicString(
+        '.prose pre{--at-apply:text-sm;--at-apply:p-5;--at-apply:p-6;}',
+      )
+
+      s.appendRight(45, 'padding:1.25rem;')
+      s.remove(30, 45)
+      s.appendRight(60, 'padding:1.5rem;')
+      s.remove(45, 60)
+
+      assert.equal(
+        s.toString(),
+        '.prose pre{--at-apply:text-sm;padding:1.25rem;padding:1.5rem;}',
+      )
     })
 
     it('should provide a useful error when illegal removals are attempted', () => {
