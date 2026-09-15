@@ -25,8 +25,9 @@ export class IntegrityCheckingMagicString extends MagicString {
   }
 }
 
-for (const key in MagicString.prototype) {
-  if (!Object.hasOwn(MagicString.prototype, key)) {
+// class methods are not enumerable, so `for...in` would not see any of them
+for (const key of Object.getOwnPropertyNames(MagicString.prototype)) {
+  if (key === 'constructor') {
     continue
   }
   const func = (MagicString.prototype as unknown as Record<string, unknown>)[key]
