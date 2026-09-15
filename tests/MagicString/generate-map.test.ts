@@ -1,4 +1,5 @@
 import type { RawSourceMap } from 'source-map-js'
+import { encode } from '@jridgewell/sourcemap-codec'
 import { SourceMapConsumer } from 'source-map-js'
 import { assert, describe, it } from 'vitest'
 import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
@@ -674,6 +675,44 @@ describe('magicString', () => {
       assert.equal(
         map.mappings,
         'AAAA,QAAQ,CAAC,GAAG,CAAC,CAAC;AACd,CAAC,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC,GAAG,CAAC;AACnB',
+      )
+    })
+
+    it('generates the same mappings as encoding the decoded map, for every hires mode', () => {
+      const hiresModes = [false, true, 'boundary', 'experimental-range'] as const
+
+      for (const hires of hiresModes) {
+        const s = new MagicString('function foo(a, b) {\n  return a + b\n}\nfoo(1, 2)\n')
+        s.prepend('"use strict";\n')
+        s.overwrite(9, 12, 'add', { storeName: true })
+        s.update(23, 24, 'first\nvalue', { storeName: true })
+        s.remove(36, 37)
+        s.appendLeft(38, ' // sum')
+        s.append('\nexport { foo }')
+        s.addSourcemapLocation(41)
+        s.addSourcemapLocation(45)
+
+        const map = s.generateMap({ hires })
+        const decoded = s.generateDecodedMap({ hires })
+
+        assert.equal(map.mappings, encode(decoded.mappings), `hires: ${hires}`)
+        assert.deepEqual(decoded.names, map.names, `hires: ${hires}`)
+      }
+    })
+
+    it('generates correct mappings that are larger than the encoder buffer', () => {
+      // one segment per character, far exceeding the 16KB encoder buffer
+      const wide = new MagicString('a'.repeat(20000))
+      assert.equal(
+        wide.generateMap({ hires: true }).mappings,
+        encode(wide.generateDecodedMap({ hires: true }).mappings),
+      )
+
+      // only line breaks, so the buffer fills up between segments
+      const tall = new MagicString('\n'.repeat(20000))
+      assert.equal(
+        tall.generateMap({ hires: true }).mappings,
+        encode(tall.generateDecodedMap({ hires: true }).mappings),
       )
     })
   })

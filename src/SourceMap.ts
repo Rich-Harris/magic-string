@@ -92,13 +92,13 @@ export class SourceMap {
   declare debugId: string | undefined
   declare rangeMappings: string | undefined
 
-  constructor(properties: DecodedSourceMap) {
+  constructor(properties: DecodedSourceMap | (Omit<DecodedSourceMap, 'mappings'> & { mappings: string })) {
     this.version = 3
     this.file = properties.file
     this.sources = properties.sources
     this.sourcesContent = properties.sourcesContent
     this.names = properties.names
-    this.mappings = encode(properties.mappings)
+    this.mappings = typeof properties.mappings === 'string' ? properties.mappings : encode(properties.mappings)
     if (typeof properties.x_google_ignoreList !== 'undefined') {
       this.x_google_ignoreList = properties.x_google_ignoreList
     }

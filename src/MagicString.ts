@@ -8,6 +8,7 @@ import { getRelativePath } from './utils/getRelativePath.ts'
 import { guessIndent } from './utils/guessIndent.ts'
 import { isObject } from './utils/isObject.ts'
 import { Mappings } from './utils/Mappings.ts'
+import { MappingsEncoder } from './utils/MappingsEncoder.ts'
 import { Stats } from './utils/Stats.ts'
 
 export type ExclusionRange = [number, number]
@@ -337,10 +338,37 @@ export class MagicString {
   generateDecodedMap(options?: SourceMapOptions): DecodedSourceMap {
     options = options || {}
 
+    const mappings = new Mappings(options.hires)
+    const names = this._generateMappings(mappings)
+
+    return {
+      ...this._mapProperties(options, names),
+      mappings: mappings.raw,
+      rangeMappings: mappings.rawRangeMappings,
+    }
+  }
+
+  /**
+   * Generates a version 3 sourcemap.
+   */
+  generateMap(options?: SourceMapOptions): SourceMap {
+    options = options || {}
+
+    const encoder = new MappingsEncoder()
+    const mappings = new Mappings(options.hires, encoder)
+    const names = this._generateMappings(mappings)
+
+    return new SourceMap({
+      ...this._mapProperties(options, names),
+      mappings: encoder.finish(mappings.rawSegments),
+      rangeMappings: mappings.rawRangeMappings,
+    })
+  }
+
+  /** @internal */
+  _generateMappings(mappings: Mappings): string[] {
     const sourceIndex = 0
     const names = Object.keys(this.storedNames)
-    const mappings = new Mappings(options.hires)
-
     const locate = getLocator(this.original)
 
     if (this.intro) {
@@ -373,6 +401,11 @@ export class MagicString {
       mappings.advance(this.outro)
     }
 
+    return names
+  }
+
+  /** @internal */
+  _mapProperties(options: SourceMapOptions, names: string[]): Omit<DecodedSourceMap, 'mappings' | 'rangeMappings'> {
     return {
       file: options.file ? options.file.split(/[/\\]/).pop() : undefined,
       sources: [
@@ -380,17 +413,8 @@ export class MagicString {
       ],
       sourcesContent: options.includeContent ? [this.original] : undefined,
       names,
-      mappings: mappings.raw,
-      x_google_ignoreList: this.ignoreList ? [sourceIndex] : undefined,
-      rangeMappings: mappings.rawRangeMappings,
+      x_google_ignoreList: this.ignoreList ? [0] : undefined,
     }
-  }
-
-  /**
-   * Generates a version 3 sourcemap.
-   */
-  generateMap(options?: SourceMapOptions): SourceMap {
-    return new SourceMap(this.generateDecodedMap(options))
   }
 
   /** @internal */

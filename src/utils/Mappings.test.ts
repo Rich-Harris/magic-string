@@ -3,6 +3,7 @@ import { assert, describe, it } from 'vitest'
 import { BitSet } from '../BitSet.ts'
 import { Chunk } from '../Chunk.ts'
 import { Mappings } from './Mappings.ts'
+import { MappingsEncoder, SEGMENTS_PER_FLUSH } from './MappingsEncoder.ts'
 
 function loc(line: number, column: number): SourceLocation {
   return { line, column }
@@ -14,7 +15,6 @@ describe('mappings', () => {
     assert.deepEqual(mappings.raw, [[]])
     assert.equal(mappings.generatedCodeLine, 0)
     assert.equal(mappings.generatedCodeColumn, 0)
-    assert.equal(mappings.pending, null)
   })
 
   describe('addEdit', () => {
@@ -33,20 +33,11 @@ describe('mappings', () => {
       assert.deepEqual(mappings.raw, [[[0, 0, 0, 0, 5]]])
     })
 
-    it('does nothing for empty content with no pending segment', () => {
+    it('does nothing for empty content', () => {
       const mappings = new Mappings(false)
       mappings.addEdit(0, '', loc(0, 0), -1)
 
       assert.deepEqual(mappings.raw, [[]])
-    })
-
-    it('flushes a pending segment when content is empty', () => {
-      const mappings = new Mappings(false)
-      mappings.pending = [0, 0, 0, 0]
-      mappings.addEdit(0, '', loc(0, 0), -1)
-
-      assert.deepEqual(mappings.raw, [[[0, 0, 0, 0]]])
-      assert.equal(mappings.pending, null)
     })
 
     it('creates a new line for each newline in multi-line content', () => {
@@ -168,16 +159,33 @@ describe('mappings', () => {
       ])
       assert.deepEqual(mappings.rawRangeMappingsIndices, [0])
     })
+  })
 
-    it('clears the pending segment', () => {
-      const mappings = new Mappings(false)
-      mappings.pending = [0, 0, 0, 0]
-      const original = 'a'
+  describe('with an encoder', () => {
+    it('hands each completed line to the encoder instead of growing raw', () => {
+      const encoder = new MappingsEncoder()
+      const mappings = new Mappings(false, encoder)
+      const original = 'ab\ncd'
       const chunk = new Chunk(0, original.length, original)
 
       mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
 
-      assert.equal(mappings.pending, null)
+      assert.equal(mappings.raw.length, 1)
+      assert.equal(mappings.generatedCodeLine, 1)
+      // AAAA;AACA = [[[0, 0, 0, 0]], [[0, 0, 1, 0]]]
+      assert.equal(encoder.finish(mappings.rawSegments), 'AAAA;AACA')
+    })
+
+    it('caps how many segments a single long line buffers', () => {
+      const encoder = new MappingsEncoder()
+      const mappings = new Mappings(true, encoder)
+      const original = 'a'.repeat(SEGMENTS_PER_FLUSH + 2)
+      const chunk = new Chunk(0, original.length, original)
+
+      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
+
+      assert.isBelow(mappings.rawSegments.length, SEGMENTS_PER_FLUSH)
+      assert.equal(encoder.finish(mappings.rawSegments), `AAAA${',CAAC'.repeat(SEGMENTS_PER_FLUSH + 1)}`)
     })
   })
 })

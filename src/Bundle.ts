@@ -7,6 +7,7 @@ import { getLocator } from './utils/getLocator.ts'
 import { getRelativePath } from './utils/getRelativePath.ts'
 import { isObject } from './utils/isObject.ts'
 import { Mappings } from './utils/Mappings.ts'
+import { MappingsEncoder } from './utils/MappingsEncoder.ts'
 
 const hasOwnProp = Object.prototype.hasOwnProperty
 
@@ -149,16 +150,43 @@ export class Bundle {
   }
 
   generateDecodedMap(options: BundleSourceMapOptions = {}): DecodedSourceMapOrMissingContent {
-    const names = []
-    let x_google_ignoreList
+    const mappings = new Mappings(options.hires)
+    const { names, x_google_ignoreList } = this._generateMappings(mappings)
+
+    return {
+      ...this._mapProperties(options, names, x_google_ignoreList),
+      mappings: mappings.raw,
+      rangeMappings: mappings.rawRangeMappings,
+    }
+  }
+
+  generateMap(
+    options: BundleSourceMapOptions = {},
+  ): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> } {
+    const encoder = new MappingsEncoder()
+    const mappings = new Mappings(options.hires, encoder)
+    const { names, x_google_ignoreList } = this._generateMappings(mappings)
+
+    // bundle maps always provide sourcesContent, while SourceMap types it as optional
+    return new SourceMap({
+      ...this._mapProperties(options, names, x_google_ignoreList),
+      mappings: encoder.finish(mappings.rawSegments),
+      rangeMappings: mappings.rawRangeMappings,
+    }) as Omit<SourceMap, 'sourcesContent'> & {
+      sourcesContent: Array<string | null>
+    }
+  }
+
+  /** @internal */
+  _generateMappings(mappings: Mappings): { names: string[], x_google_ignoreList: number[] | undefined } {
+    const names: string[] = []
+    let x_google_ignoreList: number[] | undefined
     this.sources.forEach((source) => {
       Object.keys(source.content.storedNames).forEach((name) => {
         if (!names.includes(name))
           names.push(name)
       })
     })
-
-    const mappings = new Mappings(options.hires)
 
     if (this.intro) {
       mappings.advance(this.intro)
@@ -224,6 +252,15 @@ export class Bundle {
       }
     })
 
+    return { names, x_google_ignoreList }
+  }
+
+  /** @internal */
+  _mapProperties(
+    options: BundleSourceMapOptions,
+    names: string[],
+    x_google_ignoreList: number[] | undefined,
+  ): Omit<DecodedSourceMapOrMissingContent, 'mappings' | 'rangeMappings'> {
     return {
       file: options.file ? options.file.split(/[/\\]/).pop() : undefined,
       sources: this.uniqueSources.map((source) => {
@@ -237,17 +274,7 @@ export class Bundle {
         return includeContent ? source.content : null
       }),
       names,
-      mappings: mappings.raw,
       x_google_ignoreList,
-      rangeMappings: mappings.rawRangeMappings,
-    }
-  }
-
-  generateMap(
-    options?: BundleSourceMapOptions,
-  ): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> } {
-    return new SourceMap(this.generateDecodedMap(options)) as Omit<SourceMap, 'sourcesContent'> & {
-      sourcesContent: Array<string | null>
     }
   }
 
