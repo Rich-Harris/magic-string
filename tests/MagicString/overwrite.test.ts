@@ -143,5 +143,24 @@ describe('magicString', () => {
       s.appendLeft(7, 'h')
       assert.equal(s.toString(), 'abh')
     })
+
+    // https://github.com/Rich-Harris/magic-string/issues/139
+    // Re-editing a range whose chunk was already overwritten (the protobufjs
+    // export-reassignment pattern that broke rollup) must surface a located
+    // error rather than silently corrupting the chunk's content.
+    it('reports a located error when re-editing an already-overwritten range', () => {
+      const code = 'const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});'
+      const s = new MagicString(code)
+
+      s.overwrite(14, 40, 'ROOT')
+      assert.throws(
+        () => s.overwrite(14, 23, 'X'),
+        /cannot split a chunk that has already been edited \(0:23/,
+      )
+
+      const output = s.toString()
+      assert.equal(output, 'const $root = ROOT || ($protobuf.roots["default"] = {});')
+      assert.notMatch(output, /undefined/)
+    })
   })
 })
