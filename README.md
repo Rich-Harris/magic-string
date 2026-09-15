@@ -209,6 +209,9 @@ The fourth argument is optional. It can have a `storeName` property — if `true
 
 It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
 
+> [!NOTE]
+> `overwrite`/`update`/`remove` operate on ranges of the **original** string, so they'll throw (e.g. `cannot overwrite across a split point`, `cannot split a chunk that has already been edited`) if the same range is edited more than once, or if you want to keep applying further transformations on top of already-modified content. If you run into this, or want to chain multiple rounds of edits on a single instance with an auto-combined sourcemap, see [magic-string-stack](https://github.com/antfu/magic-string-stack).
+
 ### s.prepend( content )
 
 Prepends the string with the specified content. Returns `this`.
