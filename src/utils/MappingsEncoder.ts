@@ -83,13 +83,6 @@ export class MappingsEncoder {
   private drain(trailing: FullSegment[] | null): void {
     const lines = this.lines
     const lineCount = lines.length
-    let pos = this.pos
-    let needsComma = this.needsComma
-    let prevGenColumn = this.prevGenColumn
-    let prevSourceIndex = this.prevSourceIndex
-    let prevSourceLine = this.prevSourceLine
-    let prevSourceColumn = this.prevSourceColumn
-    let prevNameIndex = this.prevNameIndex
 
     for (let l = 0; l <= lineCount; l++) {
       const line = l < lineCount ? lines[l] : trailing
@@ -97,50 +90,36 @@ export class MappingsEncoder {
         break
 
       for (let i = 0; i < line.length; i++) {
-        if (pos > FLUSH_THRESHOLD) {
-          this.pos = pos
+        if (this.pos > FLUSH_THRESHOLD)
           this.flush()
-          pos = 0
-        }
         const segment = line[i]
-        if (needsComma)
-          scratch[pos++] = COMMA
-        needsComma = true
-        pos = writeVlq(pos, segment[0] - prevGenColumn)
-        prevGenColumn = segment[0]
-        pos = writeVlq(pos, segment[1] - prevSourceIndex)
-        prevSourceIndex = segment[1]
-        pos = writeVlq(pos, segment[2] - prevSourceLine)
-        prevSourceLine = segment[2]
-        pos = writeVlq(pos, segment[3] - prevSourceColumn)
-        prevSourceColumn = segment[3]
+        if (this.needsComma)
+          scratch[this.pos++] = COMMA
+        this.needsComma = true
+        this.pos = writeVlq(this.pos, segment[0] - this.prevGenColumn)
+        this.prevGenColumn = segment[0]
+        this.pos = writeVlq(this.pos, segment[1] - this.prevSourceIndex)
+        this.prevSourceIndex = segment[1]
+        this.pos = writeVlq(this.pos, segment[2] - this.prevSourceLine)
+        this.prevSourceLine = segment[2]
+        this.pos = writeVlq(this.pos, segment[3] - this.prevSourceColumn)
+        this.prevSourceColumn = segment[3]
         if (segment.length === 5) {
-          pos = writeVlq(pos, segment[4] - prevNameIndex)
-          prevNameIndex = segment[4]
+          this.pos = writeVlq(this.pos, segment[4] - this.prevNameIndex)
+          this.prevNameIndex = segment[4]
         }
       }
 
       if (l < lineCount) {
-        if (pos > FLUSH_THRESHOLD) {
-          this.pos = pos
+        if (this.pos > FLUSH_THRESHOLD)
           this.flush()
-          pos = 0
-        }
-        scratch[pos++] = SEMICOLON
-        needsComma = false
-        prevGenColumn = 0
+        scratch[this.pos++] = SEMICOLON
+        this.needsComma = false
+        this.prevGenColumn = 0
       }
     }
     lines.length = 0
     this.buffered = 0
-
-    this.pos = pos
-    this.needsComma = needsComma
-    this.prevGenColumn = prevGenColumn
-    this.prevSourceIndex = prevSourceIndex
-    this.prevSourceLine = prevSourceLine
-    this.prevSourceColumn = prevSourceColumn
-    this.prevNameIndex = prevNameIndex
   }
 
   private flush(): void {
