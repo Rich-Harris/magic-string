@@ -1,3 +1,12 @@
+## [1.3.2](https://github.com/Rich-Harris/magic-string/compare/v1.3.1...v1.3.2) (2026-09-15)
+
+### Bug Fixes
+
+* carry trimStart and trimEnd into the outro and intro ([#348](https://github.com/Rich-Harris/magic-string/issues/348)) ([07d2fcb](https://github.com/Rich-Harris/magic-string/commit/07d2fcb2a77936a2a095262d5a9b60b3d2eafe82))
+* preserve inserts anchored to the edges of a removed range ([#282](https://github.com/Rich-Harris/magic-string/issues/282)) ([#349](https://github.com/Rich-Harris/magic-string/issues/349)) ([bd7ee85](https://github.com/Rich-Harris/magic-string/commit/bd7ee85c544f485d35889e4d207862146b75a6a0))
+* return an empty slice when the end index resolves to zero ([#346](https://github.com/Rich-Harris/magic-string/issues/346)) ([5531971](https://github.com/Rich-Harris/magic-string/commit/55319710e3cf244670f84bad38fd783a85fddd1f))
+* treat moving a range to where it already sits as a no-op ([#347](https://github.com/Rich-Harris/magic-string/issues/347)) ([22ed11b](https://github.com/Rich-Harris/magic-string/commit/22ed11b402c9caf05083b328c3a1e4b2e87f3b9a))
+
 ## [1.3.1](https://github.com/Rich-Harris/magic-string/compare/v1.3.0...v1.3.1) (2026-09-10)
 
 # [1.3.0](https://github.com/Rich-Harris/magic-string/compare/v1.2.3...v1.3.0) (2026-09-10)
