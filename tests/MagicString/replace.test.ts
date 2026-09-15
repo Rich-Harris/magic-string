@@ -312,5 +312,23 @@ describe('magicString', () => {
       assert.strictEqual(new MagicString('foo').replace(re, 'X').toString(), 'fXX')
       assert.strictEqual(re.lastIndex, 0)
     })
+
+    it('does not resurrect removed content when the match sits on it', () => {
+      // https://github.com/Rich-Harris/magic-string/issues/223
+      assert.strictEqual(new MagicString('00').remove(0, 1).replace('0', '1').toString(), '1')
+      assert.strictEqual(new MagicString('00').remove(0, 1).replace(/0/, '1').toString(), '1')
+    })
+
+    it('replaces the first match still present in the output', () => {
+      // the first occurrence has been removed, so the second one is replaced,
+      // and the replacer sees the surviving match's index
+      const s = new MagicString('0-0').remove(0, 1).replace('0', (_, index) => String(index))
+      assert.strictEqual(s.toString(), '-2')
+    })
+
+    it('does nothing when every match has been removed', () => {
+      assert.strictEqual(new MagicString('00').remove(0, 2).replace('0', '1').toString(), '')
+      assert.strictEqual(new MagicString('00').remove(0, 2).replace(/0/, '1').toString(), '')
+    })
   })
 })
