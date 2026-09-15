@@ -1425,11 +1425,23 @@ export class MagicString {
    * @internal
    */
   _hasRemovedContent(start: number, end: number): boolean {
-    let chunk: Chunk | null = this.firstChunk
-    while (chunk) {
-      if (chunk.content === '' && chunk.start < end && chunk.end > start)
+    // Chunks tile `original`, so only those overlapping [start, end) matter: find
+    // the one holding `start`, searching from the last visited chunk as _split
+    // does, and walk forward through byStart. replace/replaceAll call this once
+    // per match, so scanning the whole list from firstChunk made them quadratic.
+    let chunk = this.byStart.get(start)
+    if (!chunk) {
+      chunk = this.lastSearchedChunk
+      const searchForward = start >= chunk.end
+      while (chunk && !chunk.contains(start))
+        chunk = searchForward ? this.byStart.get(chunk.end) : this.byEnd.get(chunk.start)
+      if (chunk)
+        this.lastSearchedChunk = chunk
+    }
+    while (chunk && chunk.start < end) {
+      if (chunk.content === '')
         return true
-      chunk = chunk.next
+      chunk = this.byStart.get(chunk.end)
     }
     return false
   }
