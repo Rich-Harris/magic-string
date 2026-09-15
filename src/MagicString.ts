@@ -1414,6 +1414,31 @@ export class MagicString {
     return outputIndex !== this.original.length
   }
 
+  /**
+   * Whether the original range [start, end) has had any of its characters
+   * removed. `replace`/`replaceAll` search `original`, so a match can land on
+   * text that is no longer in the output - overwriting it would resurrect the
+   * removed characters, so such matches are skipped instead.
+   *
+   * @internal
+   */
+  _hasRemovedContent(start: number, end: number): boolean {
+    let chunk: Chunk | null = this.firstChunk
+    while (chunk) {
+      if (
+        chunk.edited
+        && chunk.content === ''
+        && chunk.start !== chunk.end
+        && chunk.start < end
+        && chunk.end > start
+      ) {
+        return true
+      }
+      chunk = chunk.next
+    }
+    return false
+  }
+
   /** @internal */
   _replaceRegexp(searchValue: RegExp, replacement: string | ReplacementFunction): this {
     function getReplacement(match: RegExpMatchArray, str: string): string {
@@ -1436,14 +1461,19 @@ export class MagicString {
           : replacement(match[0], ...match.slice(1), match.index, str, match.groups)
       }
     }
-    const replaceMatch = (match: RegExpMatchArray): void => {
+    // Returns true once a surviving match has been handled, so a non-global
+    // search can stop at the first match still present in the output.
+    const replaceMatch = (match: RegExpMatchArray): boolean => {
       /* v8 ignore next 2 -- `match.index` is always defined for matches from `matchAll` */
       if (match.index == null)
-        return
+        return false
+
+      if (match[0].length !== 0 && this._hasRemovedContent(match.index, match.index + match[0].length))
+        return false
 
       const replacement = getReplacement(match, this.original)
       if (replacement === match[0])
-        return
+        return true
 
       if (match[0].length === 0) {
         // a zero-length match spans no characters, so there is no range to
@@ -1454,6 +1484,7 @@ export class MagicString {
       else {
         this.overwrite(match.index, match.index + match[0].length, replacement)
       }
+      return true
     }
 
     if (searchValue.global) {
@@ -1468,9 +1499,16 @@ export class MagicString {
       }
     }
     else {
+      // `.match` respects a custom `Symbol.match`, so keep using it for the
+      // first match; only when that match sits on removed content fall back to
+      // scanning for the next match still present in the output
       const match = this.original.match(searchValue)
-      if (match) {
-        replaceMatch(match)
+      if (match && !replaceMatch(match)) {
+        const global = new RegExp(searchValue.source, `${searchValue.flags}g`)
+        for (const next of this.original.matchAll(global)) {
+          if (replaceMatch(next))
+            break
+        }
       }
     }
     return this
@@ -1479,26 +1517,32 @@ export class MagicString {
   /** @internal */
   _replaceString(string: string, replacement: string | ReplacementFunction): this {
     const { original } = this
-    const index = original.indexOf(string)
 
-    if (index !== -1) {
-      if (typeof replacement === 'function') {
-        replacement = replacement(string, index, original)
+    // skip occurrences whose characters have been removed, so the first match
+    // still present in the output is the one replaced
+    let index = original.indexOf(string)
+    while (index !== -1) {
+      if (string.length !== 0 && this._hasRemovedContent(index, index + string.length)) {
+        index = original.indexOf(string, index + string.length)
+        continue
       }
-      else {
-        replacement = expandReplacement(replacement, string, index, original, [], undefined)
-      }
-      if (string !== replacement) {
+
+      const _replacement
+        = typeof replacement === 'function'
+          ? replacement(string, index, original)
+          : expandReplacement(replacement, string, index, original, [], undefined)
+      if (string !== _replacement) {
         if (string.length === 0) {
           // an empty search string matches the empty range at the start of the
           // string, which has no characters to overwrite - the replacement is an
           // insertion there, as it is for `String.prototype.replace`
-          this.appendRight(index, replacement)
+          this.appendRight(index, _replacement)
         }
         else {
-          this.overwrite(index, index + string.length, replacement)
+          this.overwrite(index, index + string.length, _replacement)
         }
       }
+      break
     }
 
     return this
@@ -1541,6 +1585,9 @@ export class MagicString {
       index !== -1;
       index = original.indexOf(string, index + stringLength)
     ) {
+      if (this._hasRemovedContent(index, index + stringLength))
+        continue
+
       const previous = original.slice(index, index + stringLength)
       const _replacement
         = typeof replacement === 'function'

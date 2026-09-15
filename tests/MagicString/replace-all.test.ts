@@ -150,5 +150,11 @@ describe('magicString', () => {
         code.replaceAll('', '<$$>'),
       )
     })
+
+    it('skips matches whose content has been removed', () => {
+      // https://github.com/Rich-Harris/magic-string/issues/223
+      assert.strictEqual(new MagicString('000').remove(0, 1).replaceAll('0', '1').toString(), '11')
+      assert.strictEqual(new MagicString('000').remove(0, 1).replaceAll(/0/g, '1').toString(), '11')
+    })
   })
 })
