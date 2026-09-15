@@ -1248,7 +1248,10 @@ export default class MagicString {
       chunk = chunk.previous
     } while (chunk)
 
-    return false
+    // like Chunk#trimEnd, carry on into the intro once everything after it has
+    // been trimmed away, since the intro is then the end of the string
+    this.intro = this.intro.replace(rx, '')
+    return this.intro.length > 0
   }
 
   /**
@@ -1288,7 +1291,10 @@ export default class MagicString {
       chunk = chunk.next
     } while (chunk)
 
-    return false
+    // like Chunk#trimStart, carry on into the outro once everything before it
+    // has been trimmed away, since the outro is then the start of the string
+    this.outro = this.outro.replace(rx, '')
+    return this.outro.length > 0
   }
 
   /**

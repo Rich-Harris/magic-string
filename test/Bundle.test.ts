@@ -1124,6 +1124,26 @@ describe('bundle', () => {
       b.trimEnd()
       assert.equal(b.toString(), 'abc   ;')
     })
+
+    it('should stop trimStart at a blank source that still has appended content', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('   ').append('X') })
+      b.addSource({ content: new MagicString('  Y') })
+
+      b.trimStart()
+      assert.equal(b.toString(), 'X\n  Y')
+    })
+
+    it('should stop trimEnd at a blank source that still has prepended content', () => {
+      const b = new Bundle()
+
+      b.addSource({ content: new MagicString('Y  ') })
+      b.addSource({ content: new MagicString('   ').prepend('X') })
+
+      b.trimEnd()
+      assert.equal(b.toString(), 'Y  \nX')
+    })
   })
 
   describe('toString', () => {
