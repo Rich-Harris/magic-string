@@ -1972,9 +1972,13 @@ describe('magicString', () => {
       const s = new MagicString('abcde;')
 
       s.appendLeft(2, '[')
+      assert.equal(s.toString(), 'ab[cde;')
       s.prependRight(2, '(')
+      assert.equal(s.toString(), 'ab[(cde;')
       s.appendLeft(4, ')')
+      assert.equal(s.toString(), 'ab[(cd)e;')
       s.prependRight(4, ']')
+      assert.equal(s.toString(), 'ab[(cd)]e;')
       s.remove(1, 5)
       assert.equal(s.toString(), 'a;')
     })
@@ -1996,10 +2000,25 @@ describe('magicString', () => {
       )
 
       s.appendRight(45, 'padding:1.25rem;')
-      s.remove(30, 45)
-      s.appendRight(60, 'padding:1.5rem;')
-      s.remove(45, 60)
+      assert.equal(
+        s.toString(),
+        '.prose pre{--at-apply:text-sm;--at-apply:p-5;padding:1.25rem;--at-apply:p-6;}',
+      )
 
+      s.remove(30, 45)
+
+      assert.equal(
+        s.toString(),
+        '.prose pre{--at-apply:text-sm;padding:1.25rem;--at-apply:p-6;}',
+      )
+
+      s.appendRight(60, 'padding:1.5rem;')
+      assert.equal(
+        s.toString(),
+        '.prose pre{--at-apply:text-sm;padding:1.25rem;--at-apply:p-6;padding:1.5rem;}',
+      )
+
+      s.remove(45, 60)
       assert.equal(
         s.toString(),
         '.prose pre{--at-apply:text-sm;padding:1.25rem;padding:1.5rem;}',
