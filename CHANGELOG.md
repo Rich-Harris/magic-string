@@ -1,3 +1,18 @@
+# [1.4.0](https://github.com/Rich-Harris/magic-string/compare/v1.3.2...v1.4.0) (2026-09-15)
+
+### Bug Fixes
+
+* don't resurrect removed content in replace/replaceAll ([#352](https://github.com/Rich-Harris/magic-string/issues/352)) ([c847b0e](https://github.com/Rich-Harris/magic-string/commit/c847b0eb3999a1374994b73d9a4410cf82f43b4d))
+
+### Features
+
+* add affinity option to move() ([#351](https://github.com/Rich-Harris/magic-string/issues/351)) ([f849b39](https://github.com/Rich-Harris/magic-string/commit/f849b3961ce162e045fdf1d3b1b11bb7879d7c25))
+* **bundle:** add toMagicString() to flatten a Bundle into a MagicString ([#353](https://github.com/Rich-Harris/magic-string/issues/353)) ([3a7c7b0](https://github.com/Rich-Harris/magic-string/commit/3a7c7b0dea1cf634833ecc16e2a0df8e3363282f))
+
+### Performance Improvements
+
+* encode mappings incrementally in generateMap to cut peak memory ([#350](https://github.com/Rich-Harris/magic-string/issues/350)) ([1401f6c](https://github.com/Rich-Harris/magic-string/commit/1401f6c8e05b5652c65e26a7f6485024b2053148))
+
 ## [1.3.2](https://github.com/Rich-Harris/magic-string/compare/v1.3.1...v1.3.2) (2026-09-15)
 
 ### Bug Fixes
