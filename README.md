@@ -421,6 +421,24 @@ bundle.append('c', { separator: '\n' })
 bundle.toString() // 'ab\nc'
 ```
 
+### bundle.toMagicString()
+
+Flattens the bundle into a single `MagicString`, so the concatenated result can be processed further with the full `MagicString` API:
+
+```js
+const bundle = new Bundle()
+bundle.addSource(new MagicString('var answer = 42;'))
+bundle.addSource(new MagicString('console.log(answer);'))
+
+const s = bundle.toMagicString()
+s.toString() // 'var answer = 42;\nconsole.log(answer);'
+
+// now use any MagicString method on the combined result
+s.prepend('(function () {\n').append('\n}());')
+```
+
+The returned string's `original` is the concatenation of every source's `original`, and all existing edits, inserts, intros, outros and separators are preserved, so `s.toString()` equals `bundle.toString()` and `s.generateMap()` maps back to that combined original. Because a `MagicString` maps to a single source, per-source `filename`s are not carried over - call `bundle.generateMap()` before flattening if you need the multi-source mapping.
+
 ## License
 
 MIT

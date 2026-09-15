@@ -1,3 +1,4 @@
+import type { Chunk } from './Chunk.ts'
 import type { ExclusionRange } from './MagicString.ts'
 import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts'
 import { MagicString } from './MagicString.ts'
@@ -147,6 +148,113 @@ export class Bundle {
     })
 
     return bundle as this
+  }
+
+  /**
+   * Flattens the bundle into a single `MagicString`, so the concatenated result can be
+   * processed further with the full `MagicString` API. The returned string's `original`
+   * is the concatenation of every source's `original`, and all existing edits, inserts,
+   * intros, outros and separators are preserved as inserted content, so its `toString()`
+   * equals the bundle's `toString()` and its sourcemap maps back to that combined original.
+   *
+   * Because a `MagicString` maps to a single source, per-source `filename`s are not carried
+   * over; generate the bundle's map before flattening if you need the multi-source mapping.
+   */
+  toMagicString(): MagicString {
+    const combined = new MagicString(this.sources.map(source => source.content.original).join(''))
+
+    let offset = 0
+    let pending = this.intro
+    let first: Chunk | null = null
+    let last: Chunk | null = null
+    const byStart = new Map<number, Chunk>()
+    const byEnd = new Map<number, Chunk>()
+    let hasMovedChunks = false
+
+    this.sources.forEach((source, i) => {
+      const magicString = source.content
+      const separator = i > 0
+        /* v8 ignore next -- addSource always normalizes source.separator */
+        ? (source.separator !== undefined ? source.separator : this.separator)
+        : ''
+
+      // A source with no original contributes only inserted text (its intro, any
+      // appends, its outro), which has no place in the combined coordinate space,
+      // so fold it into the text waiting in front of the next real chunk.
+      if (magicString.original.length === 0) {
+        pending += separator + magicString.toString()
+        return
+      }
+
+      pending += separator + magicString.intro
+
+      let sourceFirst: Chunk | null = null
+      let previous: Chunk | null = null
+      let originalChunk: Chunk | null = magicString.firstChunk
+      while (originalChunk) {
+        const chunk = originalChunk.clone()
+        chunk.start += offset
+        chunk.end += offset
+        chunk.previous = previous
+        chunk.next = null
+        if (previous)
+          previous.next = chunk
+        byStart.set(chunk.start, chunk)
+        byEnd.set(chunk.end, chunk)
+        sourceFirst ??= chunk
+        previous = chunk
+        originalChunk = originalChunk.next
+      }
+      const sourceLast = previous!
+
+      sourceFirst!.intro = pending + sourceFirst!.intro
+      pending = ''
+      sourceLast.outro += magicString.outro
+
+      if (last) {
+        last.next = sourceFirst
+        sourceFirst!.previous = last
+      }
+      else {
+        first = sourceFirst
+      }
+      last = sourceLast
+
+      for (let index = 0; index < magicString.original.length; index += 1) {
+        if (magicString.sourcemapLocations.has(index))
+          combined.sourcemapLocations.add(index + offset)
+      }
+      Object.keys(magicString.storedNames).forEach((name) => {
+        Object.defineProperty(combined.storedNames, name, {
+          writable: true,
+          value: true,
+          enumerable: true,
+        })
+      })
+      if (magicString.hasMovedChunks)
+        hasMovedChunks = true
+
+      offset += magicString.original.length
+    })
+
+    if (!first) {
+      // every source was empty (or there were none): keep the default empty chunk
+      // and hang all the inserted text off the string-level intro
+      combined.intro = pending
+      return combined
+    }
+
+    if (pending)
+      last!.outro += pending
+
+    combined.firstChunk = first
+    combined.lastChunk = last
+    combined.lastSearchedChunk = first
+    combined.byStart = byStart
+    combined.byEnd = byEnd
+    combined.hasMovedChunks = hasMovedChunks
+
+    return combined
   }
 
   generateDecodedMap(options: BundleSourceMapOptions = {}): DecodedSourceMapOrMissingContent {
