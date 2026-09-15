@@ -6,9 +6,11 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    isolate: false,
     coverage: {
       exclude: [
-        'test/**',
+        'src/**/*.test.ts',
+        'tests/**',
         'dist/**',
       ],
     },

@@ -8,5 +8,6 @@
     "stripInternal": false,
     "isolatedDeclarations": false
   },
-  "include": ["test/**/*.ts", "vitest.config.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"],
+  "exclude": []
 }
