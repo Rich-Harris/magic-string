@@ -884,6 +884,9 @@ export default class MagicString {
 
   /**
    * Removes the characters from `start` to `end` (of the original string, **not** the generated string).
+   * Content appended or prepended at positions strictly inside the range is removed with it, while
+   * content attached at `start` or `end` is preserved — use `s.overwrite(start, end, '')` to remove
+   * the range including its edge inserts.
    * Removing the same content twice, or making removals that partially overlap, will cause an error.
    */
   remove(start: number, end: number): this {
@@ -917,9 +920,13 @@ export default class MagicString {
     let chunk = this.byStart.get(start)
 
     while (chunk) {
-      chunk.intro = ''
-      chunk.outro = ''
-      chunk.edit('')
+      // inserts anchored to the edges of the removed range are kept; only
+      // inserts strictly inside the range are removed with the original chars
+      if (chunk.start > start)
+        chunk.intro = ''
+      if (chunk.end < end)
+        chunk.outro = ''
+      chunk.edit('', false, true)
 
       chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
     }
