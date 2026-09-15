@@ -210,5 +210,65 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
       assert.strictEqual(s.move(3, 6, 9), s)
     })
+
+    describe('affinity', () => {
+      it('defaults to right affinity', () => {
+        const explicit = new MagicString('abcd')
+        explicit.move(0, 1, 2).move(3, 4, 2, 'right')
+
+        const implicit = new MagicString('abcd')
+        implicit.move(0, 1, 2).move(3, 4, 2)
+
+        assert.equal(implicit.toString(), explicit.toString())
+      })
+
+      it('anchors before the content starting at index with right affinity', () => {
+        // "a" is moved before "c", then "d" lands before "c" too, so it slots
+        // in against the following content.
+        const s = new MagicString('abcd')
+        s.move(0, 1, 2)
+        s.move(3, 4, 2, 'right')
+        s.checkIntegrity()
+
+        assert.equal(s.toString(), 'badc')
+      })
+
+      it('anchors after the content ending at index with left affinity', () => {
+        // Same two moves, but "d" now attaches to "b", the content ending at
+        // index 2, rather than the "c" that follows.
+        const s = new MagicString('abcd')
+        s.move(0, 1, 2)
+        s.move(3, 4, 2, 'left')
+        s.checkIntegrity()
+
+        assert.equal(s.toString(), 'bdac')
+      })
+
+      it('left affinity at the start prepends to the front', () => {
+        const s = new MagicString('abc')
+        s.move(2, 3, 0, 'left')
+        s.checkIntegrity()
+
+        assert.equal(s.toString(), 'cab')
+      })
+
+      it('left affinity at the end appends to the back', () => {
+        const s = new MagicString('abc')
+        s.move(0, 1, 3, 'left')
+        s.checkIntegrity()
+
+        assert.equal(s.toString(), 'bca')
+      })
+
+      it('does nothing when moving a range to where it already is with left affinity', () => {
+        const s = new MagicString('abcd')
+        s.move(0, 1, 2, 'left')
+        assert.equal(s.toString(), 'bacd')
+
+        s.move(0, 1, 2, 'left')
+        s.checkIntegrity()
+        assert.equal(s.toString(), 'bacd')
+      })
+    })
   })
 })

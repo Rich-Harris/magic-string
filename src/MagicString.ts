@@ -621,8 +621,14 @@ export class MagicString {
 
   /**
    * Moves the characters from `start` and `end` to `index`.
+   *
+   * `affinity` controls where the range is anchored at `index`. With the
+   * default `'right'`, it is inserted before the content that starts at `index`;
+   * with `'left'`, it is inserted after the content that ends at `index`. The
+   * two differ only when other content has already been moved to that boundary,
+   * mirroring the `appendLeft`/`appendRight` distinction.
    */
-  move(start: number, end: number, index: number): this {
+  move(start: number, end: number, index: number, affinity: 'left' | 'right' = 'right'): this {
     start = start + this.offset
     end = end + this.offset
     index = index + this.offset
@@ -668,15 +674,42 @@ export class MagicString {
     const oldLeft = first.previous
     const oldRight = last.next
 
-    const newRight = this.byStart.get(index)
-    if (!newRight && last === this.lastChunk)
-      return this
-    // Nothing to do if an earlier move already put the range right before
-    // `index`. Splicing it in next to itself would link the chunk list back on
-    // itself, and drop the range from the output unless it comes first.
-    if (newRight && newRight.previous === last)
-      return this
-    const newLeft = newRight ? newRight.previous : this.lastChunk
+    // Anchor the range at `index` according to `affinity`: `'right'` puts it
+    // before the chunk starting at `index`, `'left'` after the chunk ending at
+    // `index`. When no such anchor exists (`index` is at an end of the string)
+    // the range falls to that end.
+    //
+    // The early returns catch the cases where the range is already in place:
+    // splicing it in next to itself would link the chunk list back on itself
+    // and drop the range from the output.
+    let newLeft: Chunk | null
+    let newRight: Chunk | null
+    if (affinity === 'left') {
+      newLeft = this.byEnd.get(index) ?? null
+      if (!newLeft) {
+        if (first === this.firstChunk)
+          return this
+        newRight = this.firstChunk
+      }
+      else {
+        if (newLeft.next === first)
+          return this
+        newRight = newLeft.next
+      }
+    }
+    else {
+      newRight = this.byStart.get(index) ?? null
+      if (!newRight) {
+        if (last === this.lastChunk)
+          return this
+        newLeft = this.lastChunk
+      }
+      else {
+        if (newRight.previous === last)
+          return this
+        newLeft = newRight.previous
+      }
+    }
 
     if (oldLeft)
       oldLeft.next = oldRight

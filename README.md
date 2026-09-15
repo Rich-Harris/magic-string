@@ -197,9 +197,11 @@ s.length() // still 7
 
 `s.prepend()` and `s.append()` always land outside the body, as do inserts made before the first character or after the last one.
 
-### s.move( start, end, index )
+### s.move( start, end, index[, affinity] )
 
 Moves the characters from `start` and `end` to `index`. Returns `this`.
+
+`affinity` (`'left'` or `'right'`, defaulting to `'right'`) controls where the range is anchored at `index`: `'right'` inserts it before the content that starts at `index`, `'left'` inserts it after the content that ends at `index`. The two differ only when other content has already been moved to that boundary, mirroring the `appendLeft`/`appendRight` distinction.
 
 ### s.overwrite( start, end, content[, options] )
 
