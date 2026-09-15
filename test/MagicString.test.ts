@@ -1452,6 +1452,31 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcdefghijkl')
     })
 
+    it('does nothing when moving a range to where it already is', () => {
+      // The first move puts "d" right before "b", so the second has nothing to
+      // do. It used to splice "d" in next to itself, which dropped it from the
+      // output and left the chunk list pointing back at itself.
+      const s = new MagicString('abcd')
+      s.move(3, 4, 1)
+      assert.equal(s.toString(), 'adbc')
+
+      s.move(3, 4, 1)
+      s.checkIntegrity()
+      assert.equal(s.toString(), 'adbc')
+    })
+
+    it('does nothing when moving a range to the front where it already is', () => {
+      // The same no-op at the very start. The text survived here, but the first
+      // chunk became its own previous chunk, so lastLine() looped forever.
+      const s = new MagicString('xb')
+      s.move(1, 2, 0)
+      s.move(1, 2, 0)
+      s.checkIntegrity()
+
+      assert.equal(s.toString(), 'bx')
+      assert.equal(s.lastLine(), 'bx')
+    })
+
     it('allows edits of moved content', () => {
       const s1 = new MagicString('abcdefghijkl')
 

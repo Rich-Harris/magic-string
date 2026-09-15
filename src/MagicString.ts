@@ -647,6 +647,11 @@ export default class MagicString {
     const newRight = this.byStart.get(index)
     if (!newRight && last === this.lastChunk)
       return this
+    // Nothing to do if an earlier move already put the range right before
+    // `index`. Splicing it in next to itself would link the chunk list back on
+    // itself, and drop the range from the output unless it comes first.
+    if (newRight && newRight.previous === last)
+      return this
     const newLeft = newRight ? newRight.previous : this.lastChunk
 
     if (oldLeft)
