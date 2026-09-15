@@ -1,4 +1,5 @@
 import type { RawSourceMap } from 'source-map-js'
+import { encode } from '@jridgewell/sourcemap-codec'
 import { SourceMapConsumer } from 'source-map-js'
 import { assert, describe, it } from 'vitest'
 import { Bundle } from '../../src/index.ts'
@@ -408,6 +409,27 @@ describe('bundle', () => {
       assert.equal(b.generateMap().rangeMappings, undefined)
       assert.equal(b.generateMap({ hires: true }).rangeMappings, undefined)
       assert.equal(b.generateMap({ hires: 'boundary' }).rangeMappings, undefined)
+    })
+
+    it('generates the same mappings as encoding the decoded map, for every hires mode', () => {
+      const hiresModes = [false, true, 'boundary', 'experimental-range'] as const
+
+      for (const hires of hiresModes) {
+        const b = new Bundle({ intro: '/* bundle */\n' })
+
+        const one = new MagicString('function one() {\n  return 1\n}', { filename: 'one.js' })
+        one.overwrite(9, 12, 'uno', { storeName: true })
+        const two = new MagicString('function two() {\n  return 2\n}', { filename: 'two.js' })
+        two.addSourcemapLocation(20)
+        b.addSource(one)
+        b.addSource(two)
+        b.addSource({ content: new MagicString('/* no filename */') })
+
+        const map = b.generateMap({ hires })
+        const decoded = b.generateDecodedMap({ hires })
+
+        assert.equal(map.mappings, encode(decoded.mappings), `hires: ${hires}`)
+      }
     })
 
     it('handles prepended content', () => {

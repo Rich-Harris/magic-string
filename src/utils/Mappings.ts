@@ -1,7 +1,9 @@
 import type { BitSet } from '../BitSet.ts'
 import type { Chunk } from '../Chunk.ts'
-import type { SourceMapOptions, SourceMapRangeMappings, SourceMapSegment } from '../SourceMap.ts'
+import type { SourceMapOptions, SourceMapRangeMappings } from '../SourceMap.ts'
 import type { SourceLocation } from './getLocator.ts'
+import type { FullSegment, MappingsEncoder } from './MappingsEncoder.ts'
+import { SEGMENTS_PER_FLUSH } from './MappingsEncoder.ts'
 
 const NEWLINE_CHAR = 10
 
@@ -14,13 +16,13 @@ export class Mappings {
   declare hires: SourceMapOptions['hires']
   declare generatedCodeLine: number
   declare generatedCodeColumn: number
-  declare raw: SourceMapSegment[][]
-  declare rawSegments: SourceMapSegment[]
+  declare raw: FullSegment[][]
+  declare rawSegments: FullSegment[]
   declare rawRangeMappings: SourceMapRangeMappings
   declare rawRangeMappingsIndices: number[]
-  declare pending: SourceMapSegment | null
+  declare encoder: MappingsEncoder | null
 
-  constructor(hires: SourceMapOptions['hires']) {
+  constructor(hires: SourceMapOptions['hires'], encoder: MappingsEncoder | null = null) {
     this.hires = hires
     this.generatedCodeLine = 0
     this.generatedCodeColumn = 0
@@ -28,11 +30,25 @@ export class Mappings {
     this.rawSegments = this.raw[this.generatedCodeLine] = []
     this.rawRangeMappings = []
     this.rawRangeMappingsIndices = this.rawRangeMappings[this.generatedCodeLine] = []
-    this.pending = null
+    this.encoder = encoder
+  }
+
+  private nextLine(): void {
+    if (this.encoder === null) {
+      this.generatedCodeLine += 1
+      this.raw[this.generatedCodeLine] = this.rawSegments = []
+    }
+    else {
+      // hand the finished line to the encoder, which releases it once drained
+      this.encoder.endLine(this.rawSegments)
+      this.rawSegments = []
+      this.generatedCodeLine += 1
+    }
+    this.generatedCodeColumn = 0
+    this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
   }
 
   addEdit(sourceIndex: number, content: string, loc: SourceLocation, nameIndex: number): void {
-    /* v8 ignore else -- `pending` is never assigned a truthy value */
     if (content.length) {
       const contentLengthMinusOne = content.length - 1
       let contentLineEnd = content.indexOf('\n', 0)
@@ -40,7 +56,7 @@ export class Mappings {
       // Loop through each line in the content and add a segment, but stop if the last line is empty,
       // else code afterwards would fill one line too many
       while (contentLineEnd >= 0 && contentLengthMinusOne > contentLineEnd) {
-        const segment: SourceMapSegment = [
+        const segment: FullSegment = [
           this.generatedCodeColumn,
           sourceIndex,
           loc.line,
@@ -51,16 +67,13 @@ export class Mappings {
         }
         this.rawSegments.push(segment)
 
-        this.generatedCodeLine += 1
-        this.raw[this.generatedCodeLine] = this.rawSegments = []
-        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
-        this.generatedCodeColumn = 0
+        this.nextLine()
 
         previousContentLineEnd = contentLineEnd
         contentLineEnd = content.indexOf('\n', contentLineEnd + 1)
       }
 
-      const segment: SourceMapSegment = [
+      const segment: FullSegment = [
         this.generatedCodeColumn,
         sourceIndex,
         loc.line,
@@ -73,12 +86,6 @@ export class Mappings {
 
       this.advance(content.slice(previousContentLineEnd + 1))
     }
-    else if (this.pending) {
-      this.rawSegments.push(this.pending)
-      this.advance(content)
-    }
-
-    this.pending = null
   }
 
   addUneditedChunk(
@@ -94,9 +101,15 @@ export class Mappings {
     if (this.hires) {
       const boundary = this.hires === 'boundary'
       const experimentalRange = this.hires === 'experimental-range'
+      const encoder = experimentalRange ? null : this.encoder
       // when iterating each char, check if it's in a word boundary
       let charInHiresBoundary = false
       while (i < end) {
+        if (encoder !== null && this.rawSegments.length >= SEGMENTS_PER_FLUSH) {
+          // cap how many decoded segments a single (possibly very long) line buffers
+          encoder.segments(this.rawSegments)
+          this.rawSegments.length = 0
+        }
         if (experimentalRange && i + 1 >= end) {
           this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
         }
@@ -104,10 +117,7 @@ export class Mappings {
         if (code === NEWLINE_CHAR) {
           loc.line += 1
           loc.column = 0
-          this.generatedCodeLine += 1
-          this.raw[this.generatedCodeLine] = this.rawSegments = []
-          this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
-          this.generatedCodeColumn = 0
+          this.nextLine()
           charInHiresBoundary = false
         }
         else {
@@ -174,15 +184,10 @@ export class Mappings {
           break
         loc.line += 1
         loc.column = 0
-        this.generatedCodeLine += 1
-        this.raw[this.generatedCodeLine] = this.rawSegments = []
-        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
-        this.generatedCodeColumn = 0
+        this.nextLine()
         i = newline + 1
       }
     }
-
-    this.pending = null
   }
 
   advance(str: string): void {
@@ -191,13 +196,8 @@ export class Mappings {
 
     const lastNewline = str.lastIndexOf('\n')
 
-    if (lastNewline !== -1) {
-      for (let i = str.indexOf('\n'); i !== -1; i = str.indexOf('\n', i + 1)) {
-        this.generatedCodeLine++
-        this.raw[this.generatedCodeLine] = this.rawSegments = []
-        this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
-      }
-      this.generatedCodeColumn = 0
+    for (let i = str.indexOf('\n'); i !== -1; i = str.indexOf('\n', i + 1)) {
+      this.nextLine()
     }
 
     this.generatedCodeColumn += str.length - lastNewline - 1
