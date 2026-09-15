@@ -156,5 +156,15 @@ describe('magicString', () => {
       assert.strictEqual(new MagicString('000').remove(0, 1).replaceAll('0', '1').toString(), '11')
       assert.strictEqual(new MagicString('000').remove(0, 1).replaceAll(/0/g, '1').toString(), '11')
     })
+
+    it('finds removed content that lies before the last searched chunk', () => {
+      // the insert at 5 leaves the chunk search past the removed range, so the
+      // lookup for a match inside it has to walk backwards to find it
+      const create = () => new MagicString('000----').remove(0, 3).appendLeft(5, '!')
+
+      assert.strictEqual(create().replaceAll('0', '1').toString(), '--!--')
+      assert.strictEqual(create().replaceAll(/0/g, '1').toString(), '--!--')
+      assert.strictEqual(create().replace('0', '1').toString(), '--!--')
+    })
   })
 })
