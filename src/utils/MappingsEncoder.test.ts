@@ -68,4 +68,21 @@ describe('mappingsEncoder', () => {
     const encoder = new MappingsEncoder()
     assert.equal(encoder.finish(segments), encode([segments]))
   })
+
+  it('leaves nothing in the shared buffer for another encoder to overwrite', () => {
+    const encoder = new MappingsEncoder()
+    const decoded: FullSegment[][] = []
+    for (let line = 0; line < SEGMENTS_PER_FLUSH; line++) {
+      const segments: FullSegment[] = [[0, 0, line, 0]]
+      decoded.push(segments)
+      encoder.endLine(segments)
+    }
+
+    // a second encoder running to completion in between, as a map generated
+    // inside a Bundle includeContent callback does
+    new MappingsEncoder().finish([[0, 0, 0, 0], [1, 0, 0, 1]])
+
+    decoded.push([])
+    assert.equal(encoder.finish([]), encode(decoded))
+  })
 })

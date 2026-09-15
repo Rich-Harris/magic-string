@@ -18,7 +18,9 @@ const BUFFER_SIZE = 16384
 const FLUSH_THRESHOLD = BUFFER_SIZE - 36
 
 // shared scratch buffer: an encoder only touches it inside synchronous drain/flush
-// calls and never relies on its content across generateMap invocations
+// calls and flushes it before drain returns, so no bytes are left in it between
+// calls for another encoder to overwrite (Bundle#generateMap can run one inside an
+// includeContent callback while its own mappings are still being encoded)
 const scratch = /* #__PURE__ */ new Uint8Array(BUFFER_SIZE)
 
 function writeVlq(pos: number, num: number): number {
@@ -120,6 +122,7 @@ export class MappingsEncoder {
     }
     lines.length = 0
     this.buffered = 0
+    this.flush()
   }
 
   private flush(): void {

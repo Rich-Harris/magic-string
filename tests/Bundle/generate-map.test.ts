@@ -655,5 +655,24 @@ describe('bundle', () => {
       assert.equal(map.sourcesContent[0], files['one.js'].original)
       assert.equal(map.sourcesContent[1], null)
     })
+
+    it('keeps the mappings intact when includeContent generates another map', () => {
+      // includeContent runs while the bundle's own mappings are still being encoded,
+      // and a map generated inside it used to overwrite the encoder's pending output
+      const b = new Bundle()
+      b.addSource(new MagicString('abcdefghij;'.repeat(600), { filename: 'a.js' }))
+      const other = new MagicString('function foo() { return 1 }\n'.repeat(40))
+
+      const expected = encode(b.generateDecodedMap({ hires: true }).mappings)
+      const map = b.generateMap({
+        hires: true,
+        includeContent() {
+          other.generateMap({ hires: true })
+          return true
+        },
+      })
+
+      assert.equal(map.mappings, expected)
+    })
   })
 })
