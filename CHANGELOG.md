@@ -1,3 +1,9 @@
+## [1.4.1](https://github.com/Rich-Harris/magic-string/compare/v1.4.0...v1.4.1) (2026-09-15)
+
+### Bug Fixes
+
+* flush the shared encoder buffer at the end of every drain ([#356](https://github.com/Rich-Harris/magic-string/issues/356)) ([f682ccf](https://github.com/Rich-Harris/magic-string/commit/f682ccfc5973d4ffc2d5aabc01060d8c78f52bcb))
+
 # [1.4.0](https://github.com/Rich-Harris/magic-string/compare/v1.3.2...v1.4.0) (2026-09-15)
 
 ### Bug Fixes
