@@ -138,37 +138,39 @@ function expandReplacement(
 }
 
 export class MagicString {
-  declare original: string
+  declare public readonly original: string
+  declare public offset: number
+
   /** @internal */
-  declare outro: string
+  declare private outro: string
   /** @internal */
-  declare intro: string
+  declare private intro: string
   /** @internal */
-  declare filename: string | undefined
-  declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
+  declare private filename: string | undefined
   /** @internal */
-  declare ignoreList: boolean | undefined
-  declare offset: number
+  declare private ignoreList: boolean | undefined
   /** @internal */
-  declare firstChunk: Chunk
+  declare private firstChunk: Chunk
   /** @internal */
-  declare lastChunk: Chunk
+  declare private lastChunk: Chunk
   /** @internal */
-  declare lastSearchedChunk: Chunk
+  declare private lastSearchedChunk: Chunk
   /** @internal */
-  declare byStart: Map<number, Chunk>
+  declare private byStart: Map<number, Chunk>
   /** @internal */
-  declare byEnd: Map<number, Chunk>
+  declare private byEnd: Map<number, Chunk>
   /** @internal */
-  declare sourcemapLocations: BitSet
+  declare private sourcemapLocations: BitSet
   /** @internal */
-  declare storedNames: Record<string, true>
+  declare private storedNames: Record<string, true>
   /** @internal */
-  declare indentStr: string | null | undefined
+  declare private indentStr: string | null | undefined
   /** @internal */
-  declare stats: Stats
+  declare private stats: Stats
   /** @internal */
-  declare hasMovedChunks: boolean
+  declare private hasMovedChunks: boolean
+  /** @internal */
+  declare private indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
 
   constructor(string: string, options: MagicStringOptions = {}) {
     const chunk = new Chunk(0, string.length, string)
