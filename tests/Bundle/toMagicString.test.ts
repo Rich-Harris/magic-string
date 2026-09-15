@@ -177,5 +177,19 @@ describe('bundle', () => {
       assert.strictEqual(flat.toString(), 'defabc\nxyz')
       assertIntegrity(flat)
     })
+
+    it('keeps move() cycle-safety after flattening a moved source', () => {
+      const a = new MagicString('abcdefgh')
+      a.move(0, 2, 8) // reorders the chunk list to 'cdefghab'
+      const b = new Bundle()
+      b.addSource(a)
+
+      const flat = b.toMagicString()
+      assert.strictEqual(flat.toString(), 'cdefghab')
+
+      // the reordered list must keep `hasMovedChunks` set so move()'s safety walk
+      // still fires, rather than splicing the chunk list into a cycle
+      assert.throws(() => flat.move(0, 4, 8), /earlier move split that range/)
+    })
   })
 })
