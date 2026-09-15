@@ -1425,15 +1425,8 @@ export class MagicString {
   _hasRemovedContent(start: number, end: number): boolean {
     let chunk: Chunk | null = this.firstChunk
     while (chunk) {
-      if (
-        chunk.edited
-        && chunk.content === ''
-        && chunk.start !== chunk.end
-        && chunk.start < end
-        && chunk.end > start
-      ) {
+      if (chunk.content === '' && chunk.start < end && chunk.end > start)
         return true
-      }
       chunk = chunk.next
     }
     return false
@@ -1468,7 +1461,7 @@ export class MagicString {
       if (match.index == null)
         return false
 
-      if (match[0].length !== 0 && this._hasRemovedContent(match.index, match.index + match[0].length))
+      if (this._hasRemovedContent(match.index, match.index + match[0].length))
         return false
 
       const replacement = getReplacement(match, this.original)
@@ -1522,24 +1515,26 @@ export class MagicString {
     // still present in the output is the one replaced
     let index = original.indexOf(string)
     while (index !== -1) {
-      if (string.length !== 0 && this._hasRemovedContent(index, index + string.length)) {
+      if (this._hasRemovedContent(index, index + string.length)) {
         index = original.indexOf(string, index + string.length)
         continue
       }
 
-      const _replacement
-        = typeof replacement === 'function'
-          ? replacement(string, index, original)
-          : expandReplacement(replacement, string, index, original, [], undefined)
-      if (string !== _replacement) {
+      if (typeof replacement === 'function') {
+        replacement = replacement(string, index, original)
+      }
+      else {
+        replacement = expandReplacement(replacement, string, index, original, [], undefined)
+      }
+      if (string !== replacement) {
         if (string.length === 0) {
           // an empty search string matches the empty range at the start of the
           // string, which has no characters to overwrite - the replacement is an
           // insertion there, as it is for `String.prototype.replace`
-          this.appendRight(index, _replacement)
+          this.appendRight(index, replacement)
         }
         else {
-          this.overwrite(index, index + string.length, _replacement)
+          this.overwrite(index, index + string.length, replacement)
         }
       }
       break
