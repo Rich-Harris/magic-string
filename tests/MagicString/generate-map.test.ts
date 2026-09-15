@@ -1,7 +1,7 @@
 import type { RawSourceMap } from 'source-map-js'
 import { SourceMapConsumer } from 'source-map-js'
 import { assert, describe, it } from 'vitest'
-import MagicString from '../__utils/IntegrityCheckingMagicString.ts'
+import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 describe('magicString', () => {
   describe('generateMap', () => {

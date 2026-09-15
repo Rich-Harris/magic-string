@@ -1,7 +1,7 @@
-import Bundle from './Bundle.ts'
-import MagicString from './MagicString.ts'
-import MagicStringError from './MagicStringError.ts'
-import SourceMap from './SourceMap.ts'
+import { Bundle } from './Bundle.ts'
+import { MagicString } from './MagicString.ts'
+import { MagicStringError } from './MagicStringError.ts'
+import { SourceMap } from './SourceMap.ts'
 
 export { Bundle, MagicString as default, MagicString, MagicStringError, SourceMap }
 export type { BundledSourceFileRecord, BundleOptions, BundleSourceMapOptions } from './Bundle.ts'

@@ -1,5 +1,5 @@
 import { encode, encodeRangeMappings } from '@jridgewell/sourcemap-codec'
-import MagicStringError from './MagicStringError.ts'
+import { MagicStringError } from './MagicStringError.ts'
 
 type Btoa = (str: string) => string
 
@@ -81,7 +81,7 @@ function getBtoa(): Btoa {
 
 const btoa = /* #__PURE__ */ getBtoa()
 
-export default class SourceMap {
+export class SourceMap {
   declare version: number
   declare file: string | undefined
   declare sources: string[]

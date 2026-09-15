@@ -1,4 +1,4 @@
-export default class BitSet {
+export class BitSet {
   declare bits: number[]
 
   constructor(arg?: BitSet) {

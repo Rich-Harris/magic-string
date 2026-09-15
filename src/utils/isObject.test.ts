@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import isObject from './isObject.ts'
+import { isObject } from './isObject.ts'
 
 describe('isObject', () => {
   it('returns true for plain objects', () => {

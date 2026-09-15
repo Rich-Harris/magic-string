@@ -1,6 +1,6 @@
 import type { ExclusionRange } from '../../src/index.ts'
 import { assert, describe, it } from 'vitest'
-import MagicString from '../__utils/IntegrityCheckingMagicString.ts'
+import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 describe('magicString', () => {
   describe('clone', () => {

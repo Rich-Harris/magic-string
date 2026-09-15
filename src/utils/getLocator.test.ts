@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import getLocator from './getLocator.ts'
+import { getLocator } from './getLocator.ts'
 
 describe('getLocator', () => {
   it('locates a position on the first line', () => {

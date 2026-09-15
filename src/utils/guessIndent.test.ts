@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import guessIndent from './guessIndent.ts'
+import { guessIndent } from './guessIndent.ts'
 
 describe('guessIndent', () => {
   it('returns null when no indentation is present', () => {

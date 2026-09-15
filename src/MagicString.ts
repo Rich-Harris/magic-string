@@ -1,14 +1,14 @@
 import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts'
-import BitSet from './BitSet.ts'
-import Chunk from './Chunk.ts'
-import MagicStringError from './MagicStringError.ts'
-import SourceMap from './SourceMap.ts'
-import getLocator from './utils/getLocator.ts'
-import getRelativePath from './utils/getRelativePath.ts'
-import guessIndent from './utils/guessIndent.ts'
-import isObject from './utils/isObject.ts'
-import Mappings from './utils/Mappings.ts'
-import Stats from './utils/Stats.ts'
+import { BitSet } from './BitSet.ts'
+import { Chunk } from './Chunk.ts'
+import { MagicStringError } from './MagicStringError.ts'
+import { SourceMap } from './SourceMap.ts'
+import { getLocator } from './utils/getLocator.ts'
+import { getRelativePath } from './utils/getRelativePath.ts'
+import { guessIndent } from './utils/guessIndent.ts'
+import { isObject } from './utils/isObject.ts'
+import { Mappings } from './utils/Mappings.ts'
+import { Stats } from './utils/Stats.ts'
 
 export type ExclusionRange = [number, number]
 
@@ -136,7 +136,7 @@ function expandReplacement(
   return result
 }
 
-export default class MagicString {
+export class MagicString {
   declare original: string
   /** @internal */
   declare outro: string

@@ -1,6 +1,6 @@
 declare const DEBUG: boolean
 
-export default class Chunk {
+export class Chunk {
   declare start: number
   declare end: number
   declare original: string

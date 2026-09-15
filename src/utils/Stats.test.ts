@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import Stats from './Stats.ts'
+import { Stats } from './Stats.ts'
 
 describe('stats', () => {
   it('accumulates elapsed time under a label across multiple time/timeEnd calls', () => {

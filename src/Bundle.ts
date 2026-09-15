@@ -1,12 +1,12 @@
 import type { ExclusionRange } from './MagicString.ts'
 import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts'
-import MagicString from './MagicString.ts'
-import MagicStringError from './MagicStringError.ts'
-import SourceMap from './SourceMap.ts'
-import getLocator from './utils/getLocator.ts'
-import getRelativePath from './utils/getRelativePath.ts'
-import isObject from './utils/isObject.ts'
-import Mappings from './utils/Mappings.ts'
+import { MagicString } from './MagicString.ts'
+import { MagicStringError } from './MagicStringError.ts'
+import { SourceMap } from './SourceMap.ts'
+import { getLocator } from './utils/getLocator.ts'
+import { getRelativePath } from './utils/getRelativePath.ts'
+import { isObject } from './utils/isObject.ts'
+import { Mappings } from './utils/Mappings.ts'
 
 const hasOwnProp = Object.prototype.hasOwnProperty
 
@@ -47,7 +47,7 @@ export interface DecodedSourceMapOrMissingContent extends Omit<DecodedSourceMap,
   sourcesContent: Array<string | null>
 }
 
-export default class Bundle {
+export class Bundle {
   /** @internal */
   declare intro: string
   /** @internal */

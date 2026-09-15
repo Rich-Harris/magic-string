@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import getRelativePath from './getRelativePath.ts'
+import { getRelativePath } from './getRelativePath.ts'
 
 describe('getRelativePath', () => {
   it('returns the sibling filename when in the same directory', () => {

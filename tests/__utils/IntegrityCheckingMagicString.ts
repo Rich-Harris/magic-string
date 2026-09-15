@@ -1,8 +1,8 @@
-import type Chunk from '../../src/Chunk.ts'
+import type { Chunk } from '../../src/Chunk.ts'
 import { assert } from 'vitest'
-import MagicString from '../../src/index.ts'
+import { MagicString } from '../../src/index.ts'
 
-class IntegrityCheckingMagicString extends MagicString {
+export class IntegrityCheckingMagicString extends MagicString {
   checkIntegrity() {
     let prevChunk: Chunk | null = null
     let chunk: Chunk | null = this.firstChunk
@@ -45,5 +45,3 @@ for (const key in MagicString.prototype) {
     }
   }
 }
-
-export default IntegrityCheckingMagicString

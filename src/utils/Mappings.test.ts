@@ -1,8 +1,8 @@
 import type { SourceLocation } from './getLocator.ts'
 import { assert, describe, it } from 'vitest'
-import BitSet from '../BitSet.ts'
-import Chunk from '../Chunk.ts'
-import Mappings from './Mappings.ts'
+import { BitSet } from '../BitSet.ts'
+import { Chunk } from '../Chunk.ts'
+import { Mappings } from './Mappings.ts'
 
 function loc(line: number, column: number): SourceLocation {
   return { line, column }

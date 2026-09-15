@@ -1,4 +1,4 @@
-export default function guessIndent(code: string): string | null {
+export function guessIndent(code: string): string | null {
   const lines = code.split('\n')
 
   const tabbed = lines.filter(line => /^\t+/.test(line))

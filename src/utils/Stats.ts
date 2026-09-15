@@ -1,6 +1,6 @@
 import process from 'node:process'
 
-export default class Stats {
+export class Stats {
   declare startTimes: Record<string, [number, number]>;
   [label: string]: unknown;
 

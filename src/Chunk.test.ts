@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import Chunk from './Chunk.ts'
+import { Chunk } from './Chunk.ts'
 
 describe('chunk', () => {
   describe('eachPrevious', () => {

@@ -1,5 +1,5 @@
-import type BitSet from '../BitSet.ts'
-import type Chunk from '../Chunk.ts'
+import type { BitSet } from '../BitSet.ts'
+import type { Chunk } from '../Chunk.ts'
 import type { SourceMapOptions, SourceMapRangeMappings, SourceMapSegment } from '../SourceMap.ts'
 import type { SourceLocation } from './getLocator.ts'
 
@@ -10,7 +10,7 @@ function isWordCode(code: number): boolean {
   return (code >= 97 && code <= 122) || (code >= 65 && code <= 90) || (code >= 48 && code <= 57) || code === 95
 }
 
-export default class Mappings {
+export class Mappings {
   declare hires: SourceMapOptions['hires']
   declare generatedCodeLine: number
   declare generatedCodeColumn: number

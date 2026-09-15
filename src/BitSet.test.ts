@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest'
-import BitSet from './BitSet.ts'
+import { BitSet } from './BitSet.ts'
 
 describe('bitSet', () => {
   it('tracks added bits', () => {

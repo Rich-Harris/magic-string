@@ -3,7 +3,7 @@ export interface SourceLocation {
   column: number
 }
 
-export default function getLocator(source: string): (index: number) => SourceLocation {
+export function getLocator(source: string): (index: number) => SourceLocation {
   const lineOffsets = [0]
 
   for (let i = source.indexOf('\n'); i !== -1; i = source.indexOf('\n', i + 1)) {

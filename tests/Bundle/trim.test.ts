@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 import { Bundle } from '../../src/index.ts'
-import MagicString from '../__utils/IntegrityCheckingMagicString.ts'
+import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 describe('bundle', () => {
   describe('trim', () => {
