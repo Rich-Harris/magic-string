@@ -98,6 +98,23 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'a[()]c;')
     })
 
+    it('should keep the insert at the end of a removed range when the range is split', () => {
+      const s = new MagicString('abcd')
+
+      s.appendLeft(3, 'X')
+      s.remove(1, 3)
+      assert.equal(s.toString(), 'aXd')
+
+      // an empty insert splits the removed range and must not change anything
+      s.appendRight(2, '')
+      assert.equal(s.toString(), 'aXd')
+
+      s.appendLeft(2, 'Y')
+      assert.equal(s.toString(), 'aYXd')
+
+      assert.equal(new MagicString('abcd').remove(1, 3).appendLeft(3, 'X').remove(2, 3).toString(), 'aXd')
+    })
+
     it('should preserve content appended at the edge of a removed range (#282)', () => {
       const s = new MagicString(
         '.prose pre{--at-apply:text-sm;--at-apply:p-5;--at-apply:p-6;}',
