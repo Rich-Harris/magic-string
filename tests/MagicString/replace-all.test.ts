@@ -157,6 +157,24 @@ describe('magicString', () => {
       assert.strictEqual(new MagicString('000').remove(0, 1).replaceAll(/0/g, '1').toString(), '11')
     })
 
+    it('skips empty matches inside removed content', () => {
+      const removed = () => new MagicString('abcd').remove(1, 3)
+      const indexes: number[] = []
+
+      assert.strictEqual(removed().replaceAll('', '-').toString(), '-a--d-')
+      // `/x*/g` matches the empty string at every index, as an empty search does
+      assert.strictEqual(
+        removed().replaceAll('', '-').toString(),
+        removed().replaceAll(/x*/g, '-').toString(),
+      )
+
+      removed().replaceAll('', (_match, index) => {
+        indexes.push(index)
+        return '-'
+      })
+      assert.deepEqual(indexes, [0, 1, 3, 4])
+    })
+
     it('finds removed content that lies before the last searched chunk', () => {
       // the insert at 5 leaves the chunk search past the removed range, so the
       // lookup for a match inside it has to walk backwards to find it

@@ -1578,6 +1578,11 @@ export class MagicString {
     // so it can neither find those ranges nor ever report -1 - step through them
     if (stringLength === 0) {
       for (let index = 0; index <= original.length; index += 1) {
+        // an empty match inside removed content is not in the output, so skip it
+        // and leave the replacer uncalled, as the regexp path does
+        if (this._hasRemovedContent(index, index))
+          continue
+
         const _replacement
           = typeof replacement === 'function'
             ? replacement('', index, original)
