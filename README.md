@@ -212,7 +212,7 @@ The fourth argument is optional. It can have a `storeName` property — if `true
 It may be preferred to use `s.update(...)` instead if you wish to avoid overwriting the appended/prepended content.
 
 > [!NOTE]
-> `overwrite`/`update`/`remove` operate on ranges of the **original** string, so they'll throw (e.g. `cannot overwrite across a split point`, `cannot split a chunk that has already been edited`) if the same range is edited more than once, or if you want to keep applying further transformations on top of already-modified content. If you run into this, or want to chain multiple rounds of edits on a single instance with an auto-combined sourcemap, see [magic-string-stack](https://github.com/antfu/magic-string-stack).
+> `overwrite`/`update`/`remove` operate on ranges of the **original** string, so they'll throw (e.g. `cannot overwrite across a split point`, `cannot split a chunk that has already been edited`) when an edit would split a chunk that was previously replaced with non-empty content, or when a replacement crosses moved chunks. If you run into this, or want to chain multiple rounds of edits on a single instance with an auto-combined sourcemap, see [magic-string-stack](https://github.com/antfu/magic-string-stack).
 
 ### s.prepend( content )
 
@@ -255,7 +255,7 @@ If `regexpOrString` is a regex, then it must have the global (`g`) flag set, or 
 
 ### s.remove( start, end )
 
-Removes the characters from `start` to `end` (of the original string, **not** the generated string). Content appended or prepended at positions strictly inside the range is removed along with it, while content attached at `start` or `end` is preserved — use `s.overwrite( start, end, '' )` to remove the range including its edge inserts. Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `this`.
+Removes the characters from `start` to `end` (of the original string, **not** the generated string). Content appended or prepended at positions strictly inside the range is removed along with it, while content attached at `start` or `end` is preserved — use `s.overwrite( start, end, '' )` to remove the range including its edge inserts. Repeated removals and removals with partially overlapping ranges are allowed. Returns `this`.
 
 ### s.reset( start, end )
 
