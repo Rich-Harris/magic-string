@@ -1,3 +1,14 @@
+## [1.4.2](https://github.com/Rich-Harris/magic-string/compare/v1.4.1...v1.4.2) (2026-09-23)
+
+### Bug Fixes
+
+* keep the outro when splitting a removed chunk ([#358](https://github.com/Rich-Harris/magic-string/issues/358)) ([2a665f6](https://github.com/Rich-Harris/magic-string/commit/2a665f61212808d5c8a8860c01214ab9824fe66a))
+* skip empty matches inside removed content in replaceAll ([#359](https://github.com/Rich-Harris/magic-string/issues/359)) ([2eb0f6f](https://github.com/Rich-Harris/magic-string/commit/2eb0f6f2b26f94d2dac62d6d5329d9744f57e9d3))
+
+### Performance Improvements
+
+* look up removed content without scanning every chunk ([#357](https://github.com/Rich-Harris/magic-string/issues/357)) ([ca9e867](https://github.com/Rich-Harris/magic-string/commit/ca9e867954065615becfef7b0af56dfedea097ec))
+
 ## [1.4.1](https://github.com/Rich-Harris/magic-string/compare/v1.4.0...v1.4.1) (2026-09-15)
 
 ### Bug Fixes
