@@ -946,7 +946,7 @@ export class MagicString {
    * Content appended or prepended at positions strictly inside the range is removed with it, while
    * content attached at `start` or `end` is preserved — use `s.overwrite(start, end, '')` to remove
    * the range including its edge inserts.
-   * Removing the same content twice, or making removals that partially overlap, will cause an error.
+   * Repeated removals and removals with partially overlapping ranges are allowed.
    */
   remove(start: number, end: number): this {
     start = start + this.offset
