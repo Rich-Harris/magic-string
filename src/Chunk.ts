@@ -136,7 +136,8 @@ export class Chunk {
       //   ✔️ edit    -> '' + 'test'
       //   ✖️ edit    -> 'test' + ''
       // TODO is this block necessary?...
-      newChunk.edit('', false)
+      // content only, so the outro moved over above is kept
+      newChunk.edit('', false, true)
       this.content = ''
     }
     else {
