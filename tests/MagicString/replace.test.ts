@@ -339,5 +339,32 @@ describe('magicString', () => {
       assert.strictEqual(new MagicString('00').remove(0, 2).replace('0', '1').toString(), '')
       assert.strictEqual(new MagicString('00').remove(0, 2).replace(/0/, '1').toString(), '')
     })
+
+    it('replaces a match over a range that one overwrite spread across several chunks', () => {
+      // `appendLeft(1, '')` inserts nothing but splits the range, so the
+      // replacement is stored on the first chunk and the second is emptied,
+      // which must not count as removed
+      assert.strictEqual(new MagicString('aa').update(0, 2, 'Q').replace('aa', 'P').toString(), 'P')
+      const s = new MagicString('aa').appendLeft(1, '').update(0, 2, 'Q')
+      assert.strictEqual(s.clone().replace('aa', 'P').toString(), 'P')
+      assert.strictEqual(s.clone().replace(/a+/, 'P').toString(), 'P')
+
+      // the emptied chunk may itself be split afterwards
+      const t = new MagicString('aaa').appendLeft(1, '').overwrite(0, 3, 'Q').appendLeft(2, '')
+      assert.strictEqual(t.replace('aaa', 'P').toString(), 'P')
+    })
+
+    it('skips a match over the rest of an overwritten range when the replacement is left out or gone', () => {
+      const create = () => new MagicString('abc').appendLeft(1, '').update(0, 3, 'Q')
+
+      // the match leaves out the first chunk, so the replacement would be doubled
+      assert.strictEqual(create().replace('bc', 'P').toString(), 'Q')
+      // editing the first chunk on its own drops the replacement for the rest
+      assert.strictEqual(create().update(0, 1, 'R').replace('abc', 'P').toString(), 'R')
+      assert.strictEqual(create().reset(0, 1).replace('abc', 'P').toString(), 'a')
+      // and removed content stays removed
+      assert.strictEqual(create().remove(1, 3).replace('abc', 'P').toString(), 'Q')
+      assert.strictEqual(create().update(1, 3, '').replace('abc', 'P').toString(), 'Q')
+    })
   })
 })

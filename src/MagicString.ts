@@ -851,9 +851,14 @@ export class MagicString {
         // Unless overwriting, inserts on these chunks are kept as they are on
         // `first`, so the result does not depend on where the range was split
         chunk.edit('', false, !overwrite)
+        // emptied, not removed: `first` holds the replacement for this chunk too
+        chunk.replacesUntil = -1
+        chunk.replacedFrom = start
       }
 
       first.edit(content, storeName, !overwrite)
+      first.replacesUntil = end
+      first.replacedFrom = -1
     }
     else {
       // must be inserting at the end
@@ -989,6 +994,8 @@ export class MagicString {
       if (chunk.end < end)
         chunk.outro = ''
       chunk.edit('', false, true)
+      chunk.replacesUntil = -1
+      chunk.replacedFrom = -1
 
       chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
     }
@@ -1442,8 +1449,17 @@ export class MagicString {
         this.lastSearchedChunk = chunk
     }
     while (chunk && chunk.start < end) {
-      if (chunk.content === '')
+      // A chunk emptied by an overwrite spanning several chunks is not removed:
+      // the replacement on the first of them stands for it. So it counts as
+      // present, unless the match leaves that first chunk out (overwriting the
+      // match would add a second replacement) or the first chunk has been
+      // edited since and its replacement no longer reaches this far
+      if (
+        chunk.content === ''
+        && (chunk.replacedFrom < start || this.byStart.get(chunk.replacedFrom)!.replacesUntil < chunk.end)
+      ) {
         return true
+      }
       chunk = this.byStart.get(chunk.end)
     }
     return false
