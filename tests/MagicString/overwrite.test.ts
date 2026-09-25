@@ -113,6 +113,19 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'a&^...!?defghijkl')
     })
 
+    it('preserves interior inserts with `contentOnly: true` when the range spans several chunks', () => {
+      const s = new MagicString('abcdefghijkl')
+
+      s.appendLeft(1, '&')
+      s.prependRight(1, '^')
+      s.appendLeft(3, '!')
+      s.prependRight(3, '?')
+      // an earlier edit inside the range splits it in two
+      s.overwrite(2, 3, 'C', { contentOnly: true })
+      s.overwrite(1, 3, '...', { contentOnly: true })
+      assert.equal(s.toString(), 'a&^...!?defghijkl')
+    })
+
     it('disallows overwriting partially overlapping moved content', () => {
       const s = new MagicString('abcdefghijkl')
 
