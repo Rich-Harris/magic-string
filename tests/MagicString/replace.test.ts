@@ -223,6 +223,15 @@ describe('magicString', () => {
       assert.strictEqual(new MagicString('abc').replace(regex, 'Z').toString(), 'Zbc')
     })
 
+    it('replaces the match when an offset is set', () => {
+      assert.strictEqual(new MagicString('hello world', { offset: 6 }).replace(/hello/, 'bye').toString(), 'bye world')
+      assert.strictEqual(new MagicString('hello world', { offset: 6 }).replace('hello', 'bye').toString(), 'bye world')
+      assert.strictEqual(new MagicString('hello world', { offset: 6 }).replace(/^/, '> ').toString(), '> hello world')
+      assert.strictEqual(new MagicString('hello world', { offset: 6 }).replace('', '> ').toString(), '> hello world')
+      assert.strictEqual(new MagicString('hello hello', { offset: 6 }).replaceAll('hello', 'bye').toString(), 'bye bye')
+      assert.strictEqual(new MagicString('ab', { offset: 1 }).replaceAll('', '-').toString(), '-a-b-')
+    })
+
     it('replace function offset', () => {
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_function_as_a_parameter
       function replacer(match: string, p1: string, p2: string, p3: string, offset: number, string: string, groups: Record<string, string> | undefined) {
