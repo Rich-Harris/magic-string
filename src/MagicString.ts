@@ -1486,10 +1486,10 @@ export class MagicString {
         // a zero-length match spans no characters, so there is no range to
         // overwrite - the replacement is an insertion at the matched position,
         // which is what `String.prototype.replace` does for an empty match
-        this.appendRight(match.index, replacement)
+        this.appendRight(match.index - this.offset, replacement)
       }
       else {
-        this.overwrite(match.index, match.index + match[0].length, replacement)
+        this.overwrite(match.index - this.offset, match.index + match[0].length - this.offset, replacement)
       }
       return true
     }
@@ -1545,10 +1545,10 @@ export class MagicString {
           // an empty search string matches the empty range at the start of the
           // string, which has no characters to overwrite - the replacement is an
           // insertion there, as it is for `String.prototype.replace`
-          this.appendRight(index, replacement)
+          this.appendRight(index - this.offset, replacement)
         }
         else {
-          this.overwrite(index, index + string.length, replacement)
+          this.overwrite(index - this.offset, index + string.length - this.offset, replacement)
         }
       }
       break
@@ -1588,7 +1588,7 @@ export class MagicString {
             ? replacement('', index, original)
             : expandReplacement(replacement, '', index, original, [], undefined)
         if (_replacement !== '')
-          this.appendRight(index, _replacement)
+          this.appendRight(index - this.offset, _replacement)
       }
 
       return this
@@ -1608,7 +1608,7 @@ export class MagicString {
           ? replacement(previous, index, original)
           : expandReplacement(replacement, previous, index, original, [], undefined)
       if (previous !== _replacement)
-        this.overwrite(index, index + stringLength, _replacement)
+        this.overwrite(index - this.offset, index + stringLength - this.offset, _replacement)
     }
 
     return this
