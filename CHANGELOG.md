@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/Rich-Harris/magic-string/compare/v1.4.2...v1.4.3) (2026-10-05)
+
+### Bug Fixes
+
+* preserve inserts when `update` spans several chunks ([#361](https://github.com/Rich-Harris/magic-string/issues/361)) ([fb89bad](https://github.com/Rich-Harris/magic-string/commit/fb89bad8837daf568648e3e1dde3284c61bdd1fb))
+* replace the matched text when an offset is set ([#362](https://github.com/Rich-Harris/magic-string/issues/362)) ([607e8e4](https://github.com/Rich-Harris/magic-string/commit/607e8e44a5cc8e0cef9476f15ddb59cbc10f99df))
+
 ## [1.4.2](https://github.com/Rich-Harris/magic-string/compare/v1.4.1...v1.4.2) (2026-09-23)
 
 ### Bug Fixes
