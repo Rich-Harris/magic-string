@@ -176,6 +176,32 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'a&^...!?defghijkl')
     })
 
+    it('preserves an insert at the end of a range that an earlier edit split', () => {
+      // the example from #120, where the `;` belongs to the `b` it follows
+      const s = new MagicString('a + b')
+
+      s.appendLeft(5, ';')
+      s.update(4, 5, 'c')
+      assert.equal(s.toString(), 'a + c;')
+
+      s.update(0, 5, 'd')
+      assert.equal(s.toString(), 'd;')
+    })
+
+    it('preserves inserts inside the range, after the new content', () => {
+      const s = new MagicString('abcdefghijkl')
+
+      s.prependRight(3, '[')
+      s.appendLeft(6, '<')
+      s.appendRight(6, '>')
+      s.appendLeft(9, ']')
+      s.update(3, 9, 'X')
+      assert.equal(s.toString(), 'abc[X<>]jkl')
+
+      s.update(3, 9, 'Y', { overwrite: true })
+      assert.equal(s.toString(), 'abcYjkl')
+    })
+
     it('disallows overwriting partially overlapping moved content', () => {
       const s = new MagicString('abcdefghijkl')
 

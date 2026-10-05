@@ -847,7 +847,10 @@ export class MagicString {
           throw new MagicStringError('cannot overwrite across a split point')
         }
         chunk = chunk.next
-        chunk.edit('', false)
+        // `first` takes the replacement and the rest of the range is emptied.
+        // Unless overwriting, inserts on these chunks are kept as they are on
+        // `first`, so the result does not depend on where the range was split
+        chunk.edit('', false, !overwrite)
       }
 
       first.edit(content, storeName, !overwrite)

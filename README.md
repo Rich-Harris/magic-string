@@ -296,6 +296,8 @@ Replaces the characters from `start` to `end` with `content`. The same restricti
 
 The fourth argument is optional. It can have a `storeName` property — if `true`, the original name will be stored for later inclusion in a sourcemap's `names` array — and an `overwrite` property which defaults to `false` and determines whether anything that was appended/prepended to the range will be overwritten along with the original content.
 
+Without `overwrite`, all of that content is kept, no matter how earlier edits have split the range: content attached at `start` stays in front of the new content, and the rest follows it in its original order.
+
 `s.update(start, end, content)` is equivalent to `s.overwrite(start, end, content, { contentOnly: true })`.
 
 ## Bundling
