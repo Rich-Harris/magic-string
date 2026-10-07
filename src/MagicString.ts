@@ -1171,8 +1171,8 @@ export class MagicString {
    */
   snip(start: number, end: number): this {
     const clone = this.clone()
-    clone.remove(0, start)
-    clone.remove(end, clone.original.length)
+    clone.remove(-clone.offset, start)
+    clone.remove(end, clone.original.length - clone.offset)
 
     return clone
   }
