@@ -36,5 +36,13 @@ describe('magicString', () => {
       snippet.overwrite(6, 9, 'GHI')
       assert.equal(snippet.toString(), 'defGHI')
     })
+
+    it('should respect the offset', () => {
+      const s = new MagicString('hello world', { offset: 6 })
+      s.overwrite(0, 1, 'W')
+
+      assert.equal(s.snip(0, 5).toString(), 'World')
+      assert.equal(s.snip(1, 3).toString(), 'or')
+    })
   })
 })
