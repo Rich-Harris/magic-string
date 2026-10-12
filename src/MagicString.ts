@@ -142,35 +142,35 @@ export class MagicString {
   declare public offset: number
 
   /** @internal */
-  declare private outro: string
+  declare outro: string
   /** @internal */
-  declare private intro: string
+  declare intro: string
   /** @internal */
-  declare private filename: string | undefined
+  declare filename: string | undefined
   /** @internal */
-  declare private ignoreList: boolean | undefined
+  declare ignoreList: boolean | undefined
   /** @internal */
-  declare private firstChunk: Chunk
+  declare firstChunk: Chunk
   /** @internal */
-  declare private lastChunk: Chunk
+  declare lastChunk: Chunk
   /** @internal */
-  declare private lastSearchedChunk: Chunk
+  declare lastSearchedChunk: Chunk
   /** @internal */
-  declare private byStart: Map<number, Chunk>
+  declare byStart: Map<number, Chunk>
   /** @internal */
-  declare private byEnd: Map<number, Chunk>
+  declare byEnd: Map<number, Chunk>
   /** @internal */
-  declare private sourcemapLocations: BitSet
+  declare sourcemapLocations: BitSet
   /** @internal */
-  declare private storedNames: Record<string, true>
+  declare storedNames: Record<string, true>
   /** @internal */
-  declare private indentStr: string | null | undefined
+  declare indentStr: string | null | undefined
   /** @internal */
-  declare private stats: Stats
+  declare stats: Stats
   /** @internal */
-  declare private hasMovedChunks: boolean
+  declare hasMovedChunks: boolean
   /** @internal */
-  declare private indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
+  declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
 
   constructor(string: string, options: MagicStringOptions = {}) {
     const chunk = new Chunk(0, string.length, string)
