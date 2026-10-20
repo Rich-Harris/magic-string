@@ -1433,6 +1433,13 @@ export class MagicString {
     // does, and walk forward through byStart. replace/replaceAll call this once
     // per match, so scanning the whole list from firstChunk made them quadratic.
     let chunk = this.byStart.get(start)
+    if (chunk && start === end) {
+      // An empty range at a chunk boundary overlaps neither chunk, but it lies
+      // inside removed content when the characters on both sides are removed,
+      // just as it does when no split separates them
+      const previous = this.byEnd.get(start)
+      return !!previous && previous.content === '' && chunk.content === ''
+    }
     if (!chunk) {
       chunk = this.lastSearchedChunk
       const searchForward = start >= chunk.end
