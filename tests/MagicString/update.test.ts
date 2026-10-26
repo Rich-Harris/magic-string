@@ -222,6 +222,7 @@ describe('magicString', () => {
       s.move(6, 9, 3)
       s.appendLeft(5, 'foo')
       assert.throws(() => s.update(4, 11, 'XX'), /cannot overwrite across a split point/)
+      assert.equal(s.toString(), 'abcghidefoofjkl')
     })
 
     it('allows later insertions at the end with overwrite option', () => {

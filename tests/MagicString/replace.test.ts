@@ -366,5 +366,12 @@ describe('magicString', () => {
       assert.strictEqual(create().remove(1, 3).replace('abc', 'P').toString(), 'Q')
       assert.strictEqual(create().update(1, 3, '').replace('abc', 'P').toString(), 'Q')
     })
+
+    it('skips an empty match between two removed ranges', () => {
+      // the lookahead matches at 2, which is removed whether [1, 3) went in one
+      // call or two
+      assert.strictEqual(new MagicString('abcd').remove(1, 3).replace(/(?=c)/, '-').toString(), 'ad')
+      assert.strictEqual(new MagicString('abcd').remove(1, 2).remove(2, 3).replace(/(?=c)/, '-').toString(), 'ad')
+    })
   })
 })

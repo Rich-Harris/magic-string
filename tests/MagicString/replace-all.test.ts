@@ -175,6 +175,29 @@ describe('magicString', () => {
       assert.deepEqual(indexes, [0, 1, 3, 4])
     })
 
+    it('skips empty matches between two removed ranges', () => {
+      // removing [1, 3) in two steps leaves a chunk boundary at 2, which is
+      // still inside removed content
+      const removed = () => new MagicString('abcd').remove(1, 2).remove(2, 3)
+      const indexes: number[] = []
+
+      assert.strictEqual(removed().replaceAll('', '-').toString(), '-a--d-')
+      assert.strictEqual(removed().replaceAll(/x*/g, '-').toString(), '-a--d-')
+
+      removed().replaceAll('', (_match, index) => {
+        indexes.push(index)
+        return '-'
+      })
+      assert.deepEqual(indexes, [0, 1, 3, 4])
+    })
+
+    it('skips empty matches inside removed content after a split', () => {
+      const removed = () => new MagicString('abcd').appendLeft(2, '').remove(1, 3)
+
+      assert.strictEqual(removed().replaceAll('', '-').toString(), '-a--d-')
+      assert.strictEqual(removed().replaceAll(/x*/g, '-').toString(), '-a--d-')
+    })
+
     it('finds removed content that lies before the last searched chunk', () => {
       // the insert at 5 leaves the chunk search past the removed range, so the
       // lookup for a match inside it has to walk backwards to find it

@@ -142,35 +142,35 @@ export class MagicString {
   declare public offset: number
 
   /** @internal */
-  declare private outro: string
+  declare outro: string
   /** @internal */
-  declare private intro: string
+  declare intro: string
   /** @internal */
-  declare private filename: string | undefined
+  declare filename: string | undefined
   /** @internal */
-  declare private ignoreList: boolean | undefined
+  declare ignoreList: boolean | undefined
   /** @internal */
-  declare private firstChunk: Chunk
+  declare firstChunk: Chunk
   /** @internal */
-  declare private lastChunk: Chunk
+  declare lastChunk: Chunk
   /** @internal */
-  declare private lastSearchedChunk: Chunk
+  declare lastSearchedChunk: Chunk
   /** @internal */
-  declare private byStart: Map<number, Chunk>
+  declare byStart: Map<number, Chunk>
   /** @internal */
-  declare private byEnd: Map<number, Chunk>
+  declare byEnd: Map<number, Chunk>
   /** @internal */
-  declare private sourcemapLocations: BitSet
+  declare sourcemapLocations: BitSet
   /** @internal */
-  declare private storedNames: Record<string, true>
+  declare storedNames: Record<string, true>
   /** @internal */
-  declare private indentStr: string | null | undefined
+  declare indentStr: string | null | undefined
   /** @internal */
-  declare private stats: Stats
+  declare stats: Stats
   /** @internal */
-  declare private hasMovedChunks: boolean
+  declare hasMovedChunks: boolean
   /** @internal */
-  declare private indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
+  declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
 
   constructor(string: string, options: MagicStringOptions = {}) {
     const chunk = new Chunk(0, string.length, string)
@@ -841,11 +841,18 @@ export class MagicString {
 
     /* v8 ignore else -- unreachable: a valid start/end always yields a `first` chunk */
     if (first) {
+      // check the whole range before editing it, so a call that throws
+      // leaves the string as it was
       let chunk = first
       while (chunk !== last) {
         if (chunk.next !== this.byStart.get(chunk.end)) {
           throw new MagicStringError('cannot overwrite across a split point')
         }
+        chunk = chunk.next
+      }
+
+      chunk = first
+      while (chunk !== last) {
         chunk = chunk.next
         // `first` takes the replacement and the rest of the range is emptied.
         // Unless overwriting, inserts on these chunks are kept as they are on
@@ -1178,8 +1185,8 @@ export class MagicString {
    */
   snip(start: number, end: number): this {
     const clone = this.clone()
-    clone.remove(0, start)
-    clone.remove(end, clone.original.length)
+    clone.remove(-clone.offset, start)
+    clone.remove(end, clone.original.length - clone.offset)
 
     return clone
   }
@@ -1440,6 +1447,13 @@ export class MagicString {
     // does, and walk forward through byStart. replace/replaceAll call this once
     // per match, so scanning the whole list from firstChunk made them quadratic.
     let chunk = this.byStart.get(start)
+    if (chunk && start === end) {
+      // An empty range at a chunk boundary overlaps neither chunk, but it lies
+      // inside removed content when the characters on both sides are removed,
+      // just as it does when no split separates them
+      const previous = this.byEnd.get(start)
+      return !!previous && previous.content === '' && chunk.content === ''
+    }
     if (!chunk) {
       chunk = this.lastSearchedChunk
       const searchForward = start >= chunk.end
