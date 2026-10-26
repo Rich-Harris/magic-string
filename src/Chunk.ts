@@ -9,6 +9,12 @@ export class Chunk {
   declare content: string
   declare storeName: boolean | undefined
   declare edited: boolean
+  // An overwrite that spans several chunks stores its replacement on the first
+  // of them and empties the rest. The first records where the overwritten range
+  // ends in `replacesUntil`, and the rest record where it starts in
+  // `replacedFrom`. Both are -1 otherwise
+  declare replacesUntil: number
+  declare replacedFrom: number
   declare previous: Chunk | null
   declare next: Chunk | null
 
@@ -23,6 +29,8 @@ export class Chunk {
     this.content = content
     this.storeName = false
     this.edited = false
+    this.replacesUntil = -1
+    this.replacedFrom = -1
 
     /* v8 ignore next 8 -- DEBUG is always true in tests */
     if (DEBUG) {
@@ -54,6 +62,8 @@ export class Chunk {
     chunk.content = this.content
     chunk.storeName = this.storeName
     chunk.edited = this.edited
+    chunk.replacesUntil = this.replacesUntil
+    chunk.replacedFrom = this.replacedFrom
 
     return chunk
   }
@@ -106,6 +116,8 @@ export class Chunk {
   reset(): void {
     this.intro = ''
     this.outro = ''
+    this.replacesUntil = -1
+    this.replacedFrom = -1
     if (this.edited) {
       this.content = this.original
       this.storeName = false
@@ -138,6 +150,8 @@ export class Chunk {
       // TODO is this block necessary?...
       // content only, so the outro moved over above is kept
       newChunk.edit('', false, true)
+      // if an overwrite emptied this chunk, its replacement stands for both halves
+      newChunk.replacedFrom = this.replacedFrom
       this.content = ''
     }
     else {

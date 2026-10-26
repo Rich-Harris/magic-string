@@ -207,5 +207,17 @@ describe('magicString', () => {
       assert.strictEqual(create().replaceAll(/0/g, '1').toString(), '--!--')
       assert.strictEqual(create().replace('0', '1').toString(), '--!--')
     })
+
+    it('replaces matches over a range that one overwrite spread across several chunks', () => {
+      // the first pass overwrites 'aa', which the insert of nothing has split,
+      // and the second pass matches the same range again
+      const s = new MagicString('aa').appendLeft(1, '')
+      s.replaceAll(/a+/g, 'P')
+      assert.strictEqual(s.replaceAll(/a+/g, 'Q').toString(), 'Q')
+
+      assert.strictEqual(new MagicString('aa').appendLeft(1, '').overwrite(0, 2, 'Q').replaceAll('aa', 'P').toString(), 'P')
+      // any earlier edit can split the range, here the removal
+      assert.strictEqual(new MagicString('abcd').remove(0, 1).update(0, 2, 'Q').replaceAll('ab', 'P').toString(), 'Pcd')
+    })
   })
 })
