@@ -1,3 +1,12 @@
+## [1.4.4](https://github.com/Rich-Harris/magic-string/compare/v1.4.3...v1.4.4) (2026-10-26)
+
+### Bug Fixes
+
+* don't treat chunks emptied by an overwrite as removed in `replace` ([#367](https://github.com/Rich-Harris/magic-string/issues/367)) ([aed5675](https://github.com/Rich-Harris/magic-string/commit/aed5675906311aba1acb9a133da1ac53f3f84d21))
+* keep the content when update throws across a split point ([#364](https://github.com/Rich-Harris/magic-string/issues/364)) ([f815ec4](https://github.com/Rich-Harris/magic-string/commit/f815ec4e2fd010fc47f09ebb2d1c2935cda0be8c))
+* respect the offset in snip ([#363](https://github.com/Rich-Harris/magic-string/issues/363)) ([bb5c6c2](https://github.com/Rich-Harris/magic-string/commit/bb5c6c21e52ebe9aa62eedbc45d3193b9d37c2c5))
+* skip empty matches at a chunk boundary inside removed content ([#366](https://github.com/Rich-Harris/magic-string/issues/366)) ([5aab3bd](https://github.com/Rich-Harris/magic-string/commit/5aab3bdd7e330316e6ee16f9f6241afb749b3984))
+
 ## [1.4.3](https://github.com/Rich-Harris/magic-string/compare/v1.4.2...v1.4.3) (2026-10-05)
 
 ### Bug Fixes
