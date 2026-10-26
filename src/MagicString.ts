@@ -841,11 +841,18 @@ export class MagicString {
 
     /* v8 ignore else -- unreachable: a valid start/end always yields a `first` chunk */
     if (first) {
+      // check the whole range before editing it, so a call that throws
+      // leaves the string as it was
       let chunk = first
       while (chunk !== last) {
         if (chunk.next !== this.byStart.get(chunk.end)) {
           throw new MagicStringError('cannot overwrite across a split point')
         }
+        chunk = chunk.next
+      }
+
+      chunk = first
+      while (chunk !== last) {
         chunk = chunk.next
         // `first` takes the replacement and the rest of the range is emptied.
         // Unless overwriting, inserts on these chunks are kept as they are on
