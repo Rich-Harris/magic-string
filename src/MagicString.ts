@@ -9,7 +9,6 @@ import { guessIndent } from './utils/guessIndent.ts'
 import { isObject } from './utils/isObject.ts'
 import { Mappings } from './utils/Mappings.ts'
 import { MappingsEncoder } from './utils/MappingsEncoder.ts'
-import { Stats } from './utils/Stats.ts'
 
 export type ExclusionRange = [number, number]
 
@@ -36,8 +35,6 @@ export interface UpdateOptions {
 }
 
 export type ReplacementFunction = (substring: string, ...args: any[]) => string
-
-declare const DEBUG: boolean
 
 const n = '\n'
 const NEWLINE_CHAR = '\n'.charCodeAt(0)
@@ -166,8 +163,6 @@ export class MagicString {
   /** @internal */
   declare indentStr: string | null | undefined
   /** @internal */
-  declare stats: Stats
-  /** @internal */
   declare hasMovedChunks: boolean
   /** @internal */
   declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
@@ -193,11 +188,6 @@ export class MagicString {
       offset: { writable: true, value: options.offset || 0 },
       hasMovedChunks: { writable: true, value: false },
     })
-
-    /* v8 ignore next 3 -- DEBUG is always true in tests */
-    if (DEBUG) {
-      Object.defineProperty(this, 'stats', { value: new Stats() })
-    }
   }
 
   /**
@@ -234,10 +224,6 @@ export class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('appendLeft')
-
     this._split(index)
 
     const chunk = this.byEnd.get(index)
@@ -249,9 +235,6 @@ export class MagicString {
       this.intro += content
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('appendLeft')
     return this
   }
 
@@ -270,10 +253,6 @@ export class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('appendRight')
-
     this._split(index)
 
     const chunk = this.byStart.get(index)
@@ -285,9 +264,6 @@ export class MagicString {
       this.outro += content
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('appendRight')
     return this
   }
 
@@ -655,10 +631,6 @@ export class MagicString {
       throw new MagicStringError('cannot move a selection inside itself')
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('move')
-
     this._split(start)
     this._split(end)
     this._split(index)
@@ -756,9 +728,6 @@ export class MagicString {
 
     this.hasMovedChunks = true
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('move')
     return this
   }
 
@@ -824,10 +793,6 @@ export class MagicString {
       throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('overwrite')
-
     this._split(start)
     this._split(end)
 
@@ -880,9 +845,6 @@ export class MagicString {
     first.replacesUntil = end
     first.replacedFrom = -1
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('overwrite')
     return this
   }
 
@@ -911,10 +873,6 @@ export class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('insertRight')
-
     this._split(index)
 
     const chunk = this.byEnd.get(index)
@@ -926,9 +884,6 @@ export class MagicString {
       this.intro = content + this.intro
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('insertRight')
     return this
   }
 
@@ -945,10 +900,6 @@ export class MagicString {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('insertRight')
-
     this._split(index)
 
     const chunk = this.byStart.get(index)
@@ -960,9 +911,6 @@ export class MagicString {
       this.outro = content + this.outro
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('insertRight')
     return this
   }
 
@@ -987,10 +935,6 @@ export class MagicString {
       throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('remove')
-
     this._split(start)
     this._split(end)
 
@@ -1010,9 +954,6 @@ export class MagicString {
       chunk = end > chunk.end ? this.byStart.get(chunk.end) : undefined
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('remove')
     return this
   }
 
@@ -1033,10 +974,6 @@ export class MagicString {
       throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('reset')
-
     this._split(start)
     this._split(end)
 
@@ -1048,9 +985,6 @@ export class MagicString {
       chunk = end > chunk.end ? this.byStart.get(chunk.end) : undefined
     }
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('reset')
     return this
   }
 
@@ -1203,10 +1137,6 @@ export class MagicString {
     if (this.byStart.get(index) || this.byEnd.get(index))
       return
 
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.time('_split')
-
     let chunk: Chunk | undefined = this.lastSearchedChunk
     let previousChunk: Chunk | undefined = chunk
     const searchForward = index > chunk.end
@@ -1245,9 +1175,6 @@ export class MagicString {
       this.lastChunk = newChunk
 
     this.lastSearchedChunk = chunk
-    /* v8 ignore next 2 -- DEBUG is always true in tests */
-    if (DEBUG)
-      this.stats.timeEnd('_split')
     return true
   }
 
