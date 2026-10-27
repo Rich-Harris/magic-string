@@ -9,7 +9,11 @@ export default defineConfig({
         'src/**/*.test.ts',
         'tests/**',
         'dist/**',
+        'benchmark/**',
       ],
+    },
+    benchmark: {
+      include: ['benchmark/**/*.bench.ts'],
     },
   },
 })
