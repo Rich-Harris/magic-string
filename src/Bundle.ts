@@ -68,7 +68,7 @@ export class Bundle {
   /** @internal */
   declare uniqueSources: UniqueSource[]
   /** @internal */
-  declare uniqueSourceIndexByFilename: Record<string, number>
+  declare uniqueSourceIndexByFilename: Map<string, number>
   declare indentExclusionRanges: ExclusionRange | ExclusionRange[] | undefined
 
   constructor(options: BundleOptions = {}) {
@@ -76,7 +76,7 @@ export class Bundle {
     this.separator = options.separator !== undefined ? options.separator : '\n'
     this.sources = []
     this.uniqueSources = []
-    this.uniqueSourceIndexByFilename = {}
+    this.uniqueSourceIndexByFilename = new Map()
   }
 
   /**
@@ -114,17 +114,15 @@ export class Bundle {
     }
 
     if (record.filename) {
-      if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, record.filename)) {
-        this.uniqueSourceIndexByFilename[record.filename] = this.uniqueSources.length
+      const index = this.uniqueSourceIndexByFilename.get(record.filename)
+      if (index === undefined) {
+        this.uniqueSourceIndexByFilename.set(record.filename, this.uniqueSources.length)
         this.uniqueSources.push({ filename: record.filename, content: content.original })
       }
-      else {
-        const uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[record.filename]]
-        if (content.original !== uniqueSource.content) {
-          throw new MagicStringError(
-            `duplicate filename "${record.filename}" with different content, use unique filenames`,
-          )
-        }
+      else if (content.original !== this.uniqueSources[index].content) {
+        throw new MagicStringError(
+          `duplicate filename "${record.filename}" with different content, use unique filenames`,
+        )
       }
     }
 
@@ -232,17 +230,12 @@ export class Bundle {
       }
       last = sourceLast
 
-      for (let index = 0; index < magicString.original.length; index += 1) {
-        if (magicString.sourcemapLocations.has(index))
+      magicString.sourcemapLocations.forEach((index) => {
+        // a location past this source's end would land in the next source's range
+        if (index < magicString.original.length)
           combined.sourcemapLocations.add(index + offset)
-      }
-      Object.keys(magicString.storedNames).forEach((name) => {
-        Object.defineProperty(combined.storedNames, name, {
-          writable: true,
-          value: true,
-          enumerable: true,
-        })
       })
+      magicString.storedNames.forEach(name => combined.storedNames.add(name))
       if (magicString.hasMovedChunks)
         hasMovedChunks = true
 
@@ -299,14 +292,11 @@ export class Bundle {
 
   /** @internal */
   _generateMappings(mappings: Mappings): { names: string[], x_google_ignoreList: number[] | undefined } {
-    const names: string[] = []
     let x_google_ignoreList: number[] | undefined
-    this.sources.forEach((source) => {
-      Object.keys(source.content.storedNames).forEach((name) => {
-        if (!names.includes(name))
-          names.push(name)
-      })
-    })
+    const storedNames = new Set<string>()
+    this.sources.forEach(source => source.content.storedNames.forEach(name => storedNames.add(name)))
+    const names = [...storedNames]
+    const nameIndex = new Map(names.map((name, i) => [name, i]))
 
     if (this.intro) {
       mappings.advance(this.intro)
@@ -318,7 +308,7 @@ export class Bundle {
         mappings.advance(source.separator)
       }
 
-      const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename[source.filename] : -1
+      const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename.get(source.filename) ?? -1 : -1
       const magicString = source.content
       const locate = getLocator(magicString.original)
 
@@ -338,7 +328,7 @@ export class Bundle {
               sourceIndex,
               chunk.content,
               loc,
-              chunk.storeName ? names.indexOf(magicString.original.slice(chunk.start, chunk.replacesUntil)) : -1,
+              chunk.storeName ? nameIndex.get(magicString.original.slice(chunk.start, chunk.replacesUntil)) ?? -1 : -1,
             )
           }
           else {
@@ -476,7 +466,7 @@ export class Bundle {
   length(): number {
     return this.sources.reduce((length, source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
-      return length + (i > 0 ? source.separator.length : 0) + source.content.toString().length
+      return length + (i > 0 ? source.separator.length : 0) + source.content.length() + source.content.intro.length + source.content.outro.length
     }, this.intro.length)
   }
 

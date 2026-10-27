@@ -165,6 +165,21 @@ describe('bundle', () => {
       assert.equal(loc.column, 24) // 16 (first source) + 8
     })
 
+    it('ignores sourcemap locations past the end of their source', () => {
+      const flatten = (location?: number) => {
+        const a = new MagicString('ab')
+        if (location !== undefined)
+          a.addSourcemapLocation(location)
+        const b = new Bundle()
+        b.addSource(a)
+        b.addSource(new MagicString('cd'))
+        return b.toMagicString().generateDecodedMap()
+      }
+
+      // 3 is past the end of 'ab' but would land on 'd' once offset into the bundle
+      assert.deepEqual(flatten(3), flatten())
+    })
+
     it('flattens sources that have moved chunks', () => {
       const a = new MagicString('abcdef')
       a.move(0, 3, 6)

@@ -414,9 +414,9 @@ describe('bundle', () => {
 
       b.addSource(new MagicString('aaa', { filename: 'a.js' }))
 
-      assert.deepEqual(b.generateDecodedMap().rangeMappings, [[]])
-      assert.deepEqual(b.generateDecodedMap({ hires: true }).rangeMappings, [[]])
-      assert.deepEqual(b.generateDecodedMap({ hires: 'boundary' }).rangeMappings, [[]])
+      assert.equal(b.generateDecodedMap().rangeMappings, undefined)
+      assert.equal(b.generateDecodedMap({ hires: true }).rangeMappings, undefined)
+      assert.equal(b.generateDecodedMap({ hires: 'boundary' }).rangeMappings, undefined)
 
       assert.equal(b.generateMap().rangeMappings, undefined)
       assert.equal(b.generateMap({ hires: true }).rangeMappings, undefined)
