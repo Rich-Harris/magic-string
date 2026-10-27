@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/npm/v/magic-string.svg"
        alt="npm version">
 </a>
-<a href="https://github.com/Rich-Harris/magic-string/blob/master/LICENSE.md">
+<a href="https://github.com/Rich-Harris/magic-string/blob/master/LICENSE">
   <img src="https://img.shields.io/npm/l/magic-string.svg"
        alt="license">
 </a>
@@ -88,7 +88,7 @@ s.offset = 6
 s.slice() === 'world'
 ```
 
-Indices must be integers; a negative index counts from the end of the original string. `update`, `overwrite`, `remove`, `reset`, `move` and the `append*`/`prepend*` methods throw a `MagicStringError` for an index outside the original string, while `slice` clamps like `String.prototype.slice`.
+Indices must be integers; a negative index counts from the end of the original string. `update`, `overwrite`, `remove`, `reset`, `move` and the `append*`/`prepend*` methods throw a `MagicStringError` for an index outside the original string, while `slice` clamps like `String.prototype.slice`. `addSourcemapLocation` and `indent`'s `exclude` ranges are not adjusted by `offset`.
 
 ## Hi-res mappings
 
@@ -143,6 +143,8 @@ The returned sourcemap has two (non-enumerable) methods attached for convenience
 code += `\n//# sourceMappingURL=${map.toUrl()}`
 ```
 
+The returned object is an instance of the exported `SourceMap` class.
+
 ### s.getIndentString()
 
 Returns the indentation string guessed from the original content, falling back to a single tab character. This is the value `s.indent()` uses when no prefix is supplied.
@@ -167,7 +169,7 @@ s.indent('  ')
 s.toString() // '  var a = 1;\n  debugger;\n  var b = 2;'
 ```
 
-The `options` argument can have an `exclude` property, which is an array of `[start, end]` character ranges. These ranges will be excluded from the indentation - useful for (e.g.) multiline strings.
+The `options` argument can have an `exclude` property, which is an array of `[start, end]` character ranges. These ranges will be excluded from the indentation - useful for (e.g.) multiline strings. It can also have an `indentStart` property (default `true`); when `false`, the first line is left unindented, which is what `Bundle` uses to join sources that do not start on a fresh line.
 
 ### s.isEmpty()
 
@@ -442,6 +444,46 @@ s.prepend('(function () {\n').append('\n}());')
 ```
 
 The returned string's `original` is the concatenation of every source's `original`, and all existing edits, inserts, intros, outros and separators are preserved, so `s.toString()` equals `bundle.toString()` and `s.generateMap()` maps back to that combined original. Because a `MagicString` maps to a single source, per-source `filename`s are not carried over - call `bundle.generateMap()` before flattening if you need the multi-source mapping.
+
+### bundle.clone()
+
+Returns an independent copy of the bundle: every source's `MagicString` is cloned, so later edits to either bundle do not affect the other.
+
+### bundle.generateDecodedMap( options )
+
+Generates a sourcemap object with raw mappings in array form, rather than encoded as a string. Takes the same options as `bundle.generateMap()`.
+
+### bundle.getIndentString()
+
+Returns the most common indent string among the sources, falling back to a tab.
+
+### bundle.isEmpty()
+
+Returns true if the bundle's output is empty (disregarding white space).
+
+### bundle.length()
+
+Returns the length of the bundle's output; it equals `bundle.toString().length`, unlike `s.length()`.
+
+### bundle.trim([ charType ])
+
+Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start and end. Returns `this`.
+
+### bundle.trimStart([ charType ])
+
+Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start. Returns `this`.
+
+### bundle.trimEnd([ charType ])
+
+Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the end. Returns `this`.
+
+### bundle.trimLines()
+
+Removes empty lines from the start and end. Returns `this`.
+
+## Errors
+
+Every error thrown by magic-string is a `MagicStringError` (exported), a subclass of `Error` whose message starts with `[MagicString]`.
 
 ## License
 
