@@ -20,10 +20,10 @@ Verification baseline at `abdc931`: `pnpm run typecheck` ✔, `pnpm run lint` �
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001 | Compile `src/` under `strict: true` with no new type assertions | P1 | M | — | IN PROGRESS — PR #371 |
+| 001 | Compile `src/` under `strict: true` with no new type assertions | P1 | M | — | DONE — #371 |
 | 002 | Remove the dead `DEBUG`/`Stats` timing instrumentation | P1 | S | — | IN PROGRESS — PR #372 |
-| 003 | Validate indices the same way in every index-taking method | P1 | M | 001, 002 | IN PROGRESS — PR #373 (includes 001's move guard) |
-| 004 | Emit the stored name for every `storeName` overwrite (split ranges, legacy `overwrite(…, true)`) | P1 | S | 001 (soft) | IN PROGRESS — PR #374 |
+| 003 | Validate indices the same way in every index-taking method | P1 | M | 001, 002 | DONE — #373 |
+| 004 | Emit the stored name for every `storeName` overwrite (split ranges, legacy `overwrite(…, true)`) | P1 | S | 001 (soft) | DONE — #374 |
 | 005 | Make `Bundle.addSource()` store its own record instead of mutating the caller's object | P1 | S | 001 (soft) | IN PROGRESS — PR #375 |
 | 006 | Fix `indent({ exclude })` on moved edited chunks; carry state through `toMagicString()`; CRLF intro indent | P2 | S | 005 (soft) | TODO |
 | 009 | Benchmark the hot paths on `vitest bench`, with a CI run on every PR | P2 | M | — | TODO |
