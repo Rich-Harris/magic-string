@@ -1,3 +1,18 @@
+## [1.4.5](https://github.com/Rich-Harris/magic-string/compare/v1.4.4...v1.4.5) (2026-10-27)
+
+### Bug Fixes
+
+* **bundle:** stop addSource mutating the caller's source description ([#375](https://github.com/Rich-Harris/magic-string/issues/375)) ([c14d303](https://github.com/Rich-Harris/magic-string/commit/c14d30358a50b8363b8433ab27f2629bdfac32d6))
+* keep the stored name when an overwritten range was split ([#374](https://github.com/Rich-Harris/magic-string/issues/374)) ([729cbb2](https://github.com/Rich-Harris/magic-string/commit/729cbb2db4d499647b8aa9772fb15c6deb42305a))
+* reject non-integer and out-of-range indices consistently ([#373](https://github.com/Rich-Harris/magic-string/issues/373)) ([02dfc82](https://github.com/Rich-Harris/magic-string/commit/02dfc82bcb2b548e464f0b2a303223bf7c6ce566))
+* respect indent exclusions on moved edits and CRLF bundle intros ([#377](https://github.com/Rich-Harris/magic-string/issues/377)) ([280bc3e](https://github.com/Rich-Harris/magic-string/commit/280bc3e0b78480b0a434cc425c3199fc7d5a0e9e))
+* shift replacesUntil and replacedFrom in Bundle#toMagicString ([#369](https://github.com/Rich-Harris/magic-string/issues/369)) ([ab6e912](https://github.com/Rich-Harris/magic-string/commit/ab6e9122ab1878e626001ac59207de1a2d99471a)), closes [Bundle#toMagicString](https://github.com/Bundle/issues/toMagicString)
+
+### Performance Improvements
+
+* cut allocations and quadratic lookups on the sourcemap and bundle paths ([#379](https://github.com/Rich-Harris/magic-string/issues/379)) ([d081246](https://github.com/Rich-Harris/magic-string/commit/d081246d1455f9da919cb74b18c166caaeffb01a))
+* find the slice start chunk without scanning the list ([#378](https://github.com/Rich-Harris/magic-string/issues/378)) ([6ab6b04](https://github.com/Rich-Harris/magic-string/commit/6ab6b048f1da7b829ef82175ea303f74f641f1e0))
+
 ## [1.4.4](https://github.com/Rich-Harris/magic-string/compare/v1.4.3...v1.4.4) (2026-10-26)
 
 ### Bug Fixes
