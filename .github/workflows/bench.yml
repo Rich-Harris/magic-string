@@ -1,0 +1,20 @@
+name: Benchmark
+
+on:
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: sxzz/workflows/setup-js@main
+        with:
+          persist-credentials: false
+      - run: pnpm run bench | tee bench.txt
+        shell: bash
+      - run: |
+          { echo '### Benchmark'; echo; echo '```'; cat bench.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
