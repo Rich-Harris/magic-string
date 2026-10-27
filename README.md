@@ -119,7 +119,7 @@ Appends the specified `content` at the `index` in the original string. If a rang
 
 ### s.clone()
 
-Does what you'd expect.
+Returns an independent copy, including edits, intro/outro, sourcemap locations, stored names, indent exclusion ranges, `offset`, `filename` and `ignoreList`; later edits to either string do not affect the other.
 
 ### s.generateDecodedMap( options )
 
@@ -255,7 +255,7 @@ The differences from [`String.replace`](<(https://developer.mozilla.org/en-US/do
 ### s.replaceAll( regexpOrString, substitution )
 
 Same as `s.replace`, but replace all matched strings instead of just one.
-If `regexpOrString` is a regex, then it must have the global (`g`) flag set, or a `TypeError` is thrown. Matches the behavior of the builtin [`String.property.replaceAll`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll). Returns `this`.
+If `regexpOrString` is a regex, then it must have the global (`g`) flag set, or a `MagicStringError` (`[MagicString] replaceAll() requires a global RegExp`) is thrown where the builtin would throw a `TypeError`. Otherwise matches the behavior of the builtin [`String.property.replaceAll`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll). Returns `this`.
 
 ### s.remove( start, end )
 
