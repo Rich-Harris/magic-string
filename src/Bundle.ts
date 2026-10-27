@@ -230,7 +230,11 @@ export class Bundle {
       }
       last = sourceLast
 
-      magicString.sourcemapLocations.forEach(index => combined.sourcemapLocations.add(index + offset))
+      magicString.sourcemapLocations.forEach((index) => {
+        // a location past this source's end would land in the next source's range
+        if (index < magicString.original.length)
+          combined.sourcemapLocations.add(index + offset)
+      })
       magicString.storedNames.forEach(name => combined.storedNames.add(name))
       if (magicString.hasMovedChunks)
         hasMovedChunks = true
