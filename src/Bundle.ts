@@ -199,6 +199,11 @@ export class Bundle {
         const chunk = originalChunk.clone()
         chunk.start += offset
         chunk.end += offset
+        // these record positions in the source's original too
+        if (chunk.replacesUntil !== -1)
+          chunk.replacesUntil += offset
+        if (chunk.replacedFrom !== -1)
+          chunk.replacedFrom += offset
         chunk.previous = previous
         chunk.next = null
         if (previous)

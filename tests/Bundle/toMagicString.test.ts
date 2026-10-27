@@ -178,6 +178,30 @@ describe('bundle', () => {
       assertIntegrity(flat)
     })
 
+    it('shifts a multi-chunk overwrite in a later source', () => {
+      const a = new MagicString('foo bar')
+      a.appendLeft(4, '')
+      a.overwrite(0, 7, 'baz')
+      const b = new Bundle({ separator: '' })
+      b.addSource(new MagicString('let '))
+      b.addSource(a)
+
+      const flat = b.toMagicString()
+      flat.replace('foo bar', 'qux')
+      assert.strictEqual(flat.toString(), 'let qux')
+
+      const c = new MagicString('xxyy zz')
+      c.appendLeft(4, '')
+      c.overwrite(2, 7, 'Q')
+      const b2 = new Bundle({ separator: '' })
+      b2.addSource(new MagicString('foo bar '))
+      b2.addSource(c)
+
+      const flat2 = b2.toMagicString()
+      flat2.replace(/o bar xxyy zz/, '!')
+      assert.strictEqual(flat2.toString(), 'fo!')
+    })
+
     it('keeps move() cycle-safety after flattening a moved source', () => {
       const a = new MagicString('abcdefgh')
       a.move(0, 2, 8) // reorders the chunk list to 'cdefghab'
