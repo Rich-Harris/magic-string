@@ -25,6 +25,15 @@ interface BundleSourceDescription {
   separator?: string
 }
 
+// what `sources` holds: every field resolved once in addSource
+interface BundleSource {
+  filename: string | undefined
+  content: MagicString
+  ignoreList: boolean | undefined
+  indentExclusionRanges: ExclusionRange | ExclusionRange[] | undefined
+  separator: string
+}
+
 interface UniqueSource {
   filename: string
   content: string
@@ -55,7 +64,7 @@ export class Bundle {
   /** @internal */
   declare separator: string
   /** @internal */
-  declare sources: BundleSourceDescription[]
+  declare sources: BundleSource[]
   /** @internal */
   declare uniqueSources: UniqueSource[]
   /** @internal */
@@ -93,36 +102,33 @@ export class Bundle {
       throw new MagicStringError('addSource() requires a `content` property that is a MagicString')
     }
 
-    if (!hasOwnProp.call(source, 'filename'))
-      source.filename = source.content.filename
-    if (!hasOwnProp.call(source, 'ignoreList'))
-      source.ignoreList = source.content.ignoreList
-    if (!hasOwnProp.call(source, 'indentExclusionRanges'))
-      source.indentExclusionRanges = source.content.indentExclusionRanges
-    if (!hasOwnProp.call(source, 'separator'))
-      source.separator = undefined
-
-    if (source.separator === undefined) {
-      // TODO there's a bunch of this sort of thing, needs cleaning up
-      source.separator = this.separator
+    const content = source.content
+    const record: BundleSource = {
+      content,
+      filename: hasOwnProp.call(source, 'filename') ? source.filename : content.filename,
+      ignoreList: hasOwnProp.call(source, 'ignoreList') ? source.ignoreList : content.ignoreList,
+      indentExclusionRanges: hasOwnProp.call(source, 'indentExclusionRanges')
+        ? source.indentExclusionRanges
+        : content.indentExclusionRanges,
+      separator: source.separator ?? this.separator,
     }
 
-    if (source.filename) {
-      if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, source.filename)) {
-        this.uniqueSourceIndexByFilename[source.filename] = this.uniqueSources.length
-        this.uniqueSources.push({ filename: source.filename, content: source.content.original })
+    if (record.filename) {
+      if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, record.filename)) {
+        this.uniqueSourceIndexByFilename[record.filename] = this.uniqueSources.length
+        this.uniqueSources.push({ filename: record.filename, content: content.original })
       }
       else {
-        const uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[source.filename]]
-        if (source.content.original !== uniqueSource.content) {
+        const uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[record.filename]]
+        if (content.original !== uniqueSource.content) {
           throw new MagicStringError(
-            `duplicate filename "${source.filename}" with different content, use unique filenames`,
+            `duplicate filename "${record.filename}" with different content, use unique filenames`,
           )
         }
       }
     }
 
-    this.sources.push(source)
+    this.sources.push(record)
     return this
   }
 
@@ -177,10 +183,7 @@ export class Bundle {
 
     for (const [i, source] of this.sources.entries()) {
       const magicString = source.content
-      const separator = i > 0
-        /* v8 ignore next -- addSource always normalizes source.separator */
-        ? (source.separator !== undefined ? source.separator : this.separator)
-        : ''
+      const separator = i > 0 ? source.separator : ''
 
       // A source with no original contributes only inserted text (its intro, any
       // appends, its outro), which has no place in the combined coordinate space,
@@ -312,8 +315,7 @@ export class Bundle {
     this.sources.forEach((source, i) => {
       if (i > 0) {
         // mirrors toString(): a source can override the bundle separator
-        /* v8 ignore next -- addSource always normalizes source.separator */
-        mappings.advance(source.separator !== undefined ? source.separator : this.separator)
+        mappings.advance(source.separator)
       }
 
       const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename[source.filename] : -1
@@ -421,9 +423,7 @@ export class Bundle {
     let trailingNewline = !this.intro || this.intro.slice(-1) === '\n'
 
     this.sources.forEach((source, i) => {
-      /* v8 ignore next -- addSource always normalizes source.separator */
-      const separator = source.separator !== undefined ? source.separator : this.separator
-      const indentStart = trailingNewline || (i > 0 && /\r?\n$/.test(separator))
+      const indentStart = trailingNewline || (i > 0 && /\r?\n$/.test(source.separator))
 
       source.content.indent(indentStr, {
         exclude: source.indentExclusionRanges,
@@ -452,9 +452,7 @@ export class Bundle {
   toString(): string {
     const body = this.sources
       .map((source, i) => {
-        /* v8 ignore next -- addSource always normalizes source.separator */
-        const separator = source.separator !== undefined ? source.separator : this.separator
-        const str = (i > 0 ? separator : '') + source.content.toString()
+        const str = (i > 0 ? source.separator : '') + source.content.toString()
 
         return str
       })
@@ -468,10 +466,7 @@ export class Bundle {
       return false
     if (this.sources.some((source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
-      /* v8 ignore next -- addSource always normalizes source.separator */
-      const separator = source.separator !== undefined ? source.separator : this.separator
-
-      return (i > 0 && separator.trim() !== '') || !source.content.isEmpty()
+      return (i > 0 && source.separator.trim() !== '') || !source.content.isEmpty()
     })) {
       return false
     }
@@ -481,10 +476,7 @@ export class Bundle {
   length(): number {
     return this.sources.reduce((length, source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
-      /* v8 ignore next -- addSource always normalizes source.separator */
-      const separator = source.separator !== undefined ? source.separator : this.separator
-
-      return length + (i > 0 ? separator.length : 0) + source.content.toString().length
+      return length + (i > 0 ? source.separator.length : 0) + source.content.toString().length
     }, this.intro.length)
   }
 
@@ -506,9 +498,7 @@ export class Bundle {
 
         if (i > 0) {
           // mirrors toString(): every source but the first is preceded by a separator
-          /* v8 ignore next -- addSource always normalizes source.separator */
-          const separator = source.separator !== undefined ? source.separator : this.separator
-          source.separator = separator.replace(rx, '')
+          source.separator = source.separator.replace(rx, '')
 
           if (source.separator) {
             break
@@ -536,9 +526,7 @@ export class Bundle {
 
       if (i > 0) {
         // mirrors toString(): every source but the first is preceded by a separator
-        /* v8 ignore next -- addSource always normalizes source.separator */
-        const separator = source.separator !== undefined ? source.separator : this.separator
-        source.separator = separator.replace(rx, '')
+        source.separator = source.separator.replace(rx, '')
 
         if (source.separator) {
           return this

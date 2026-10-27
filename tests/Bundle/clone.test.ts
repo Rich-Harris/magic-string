@@ -1,14 +1,15 @@
-import type { ExclusionRange } from '../../src/index.ts'
+import type { MagicString as BaseMagicString, ExclusionRange } from '../../src/index.ts'
 import { assert, describe, it } from 'vitest'
 import { Bundle } from '../../src/index.ts'
 import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 interface BundleInternals extends Bundle {
   sources: Array<{
-    content: MagicString
-    filename?: string
-    ignoreList?: boolean
-    indentExclusionRanges?: ExclusionRange | ExclusionRange[]
+    content: BaseMagicString
+    filename: string | undefined
+    ignoreList: boolean | undefined
+    indentExclusionRanges: ExclusionRange | ExclusionRange[] | undefined
+    separator: string
   }>
 }
 
