@@ -1046,8 +1046,11 @@ export class MagicString {
   }
 
   /**
-   * Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string.
-   * Throws error if the indices are for characters that were already removed.
+   * Returns the content of the generated string that corresponds to the slice
+   * between `start` and `end` of the original string, walking the generated
+   * string from the chunk holding `start` to the chunk holding `end`. Throws
+   * if either index falls inside replaced content. After `move()`, a range
+   * whose end now comes before its start in the output yields `''`.
    */
   slice(start: number = 0, end: number = this.original.length - this.offset): string {
     start = this._resolveIndex(start)

@@ -266,7 +266,7 @@ It can be used to restore previously removed characters and discard unwanted cha
 
 ### s.slice( start, end )
 
-Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string. Throws error if the indices are for characters that were already removed.
+Returns the content of the generated string that corresponds to the slice between `start` and `end` of the original string. Throws error if the indices are for characters that were already removed. After `s.move(...)`, the slice follows the generated order: if the content at `end` now sits before the content at `start`, the result is `''`.
 
 ### s.snip( start, end )
 
