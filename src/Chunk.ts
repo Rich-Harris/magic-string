@@ -1,5 +1,3 @@
-declare const DEBUG: boolean
-
 export class Chunk {
   declare start: number
   declare end: number
@@ -32,18 +30,8 @@ export class Chunk {
     this.replacesUntil = -1
     this.replacedFrom = -1
 
-    /* v8 ignore next 8 -- DEBUG is always true in tests */
-    if (DEBUG) {
-      // we make these non-enumerable, for sanity while debugging
-      Object.defineProperties(this, {
-        previous: { writable: true, value: null },
-        next: { writable: true, value: null },
-      })
-    }
-    else {
-      this.previous = null
-      this.next = null
-    }
+    this.previous = null
+    this.next = null
   }
 
   appendLeft(content: string): void {
