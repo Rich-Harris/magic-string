@@ -68,7 +68,7 @@ export class Bundle {
   /** @internal */
   declare uniqueSources: UniqueSource[]
   /** @internal */
-  declare uniqueSourceIndexByFilename: Record<string, number>
+  declare uniqueSourceIndexByFilename: Map<string, number>
   declare indentExclusionRanges: ExclusionRange | ExclusionRange[] | undefined
 
   constructor(options: BundleOptions = {}) {
@@ -76,7 +76,7 @@ export class Bundle {
     this.separator = options.separator !== undefined ? options.separator : '\n'
     this.sources = []
     this.uniqueSources = []
-    this.uniqueSourceIndexByFilename = {}
+    this.uniqueSourceIndexByFilename = new Map()
   }
 
   /**
@@ -114,17 +114,15 @@ export class Bundle {
     }
 
     if (record.filename) {
-      if (!hasOwnProp.call(this.uniqueSourceIndexByFilename, record.filename)) {
-        this.uniqueSourceIndexByFilename[record.filename] = this.uniqueSources.length
+      const index = this.uniqueSourceIndexByFilename.get(record.filename)
+      if (index === undefined) {
+        this.uniqueSourceIndexByFilename.set(record.filename, this.uniqueSources.length)
         this.uniqueSources.push({ filename: record.filename, content: content.original })
       }
-      else {
-        const uniqueSource = this.uniqueSources[this.uniqueSourceIndexByFilename[record.filename]]
-        if (content.original !== uniqueSource.content) {
-          throw new MagicStringError(
-            `duplicate filename "${record.filename}" with different content, use unique filenames`,
-          )
-        }
+      else if (content.original !== this.uniqueSources[index].content) {
+        throw new MagicStringError(
+          `duplicate filename "${record.filename}" with different content, use unique filenames`,
+        )
       }
     }
 
@@ -306,7 +304,7 @@ export class Bundle {
         mappings.advance(source.separator)
       }
 
-      const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename[source.filename] : -1
+      const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename.get(source.filename) ?? -1 : -1
       const magicString = source.content
       const locate = getLocator(magicString.original)
 

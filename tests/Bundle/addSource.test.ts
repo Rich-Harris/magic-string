@@ -109,5 +109,15 @@ describe('bundle', () => {
       assert.equal(b1.toString(), 'a;x')
       assert.equal(b2.toString(), 'a\nx')
     })
+
+    it('treats a filename of __proto__ like any other', () => {
+      const b = new Bundle()
+      b.addSource(new MagicString('a', { filename: '__proto__' }))
+      b.addSource(new MagicString('a', { filename: '__proto__' }))
+
+      const map = b.generateDecodedMap()
+      assert.deepEqual(map.sources, ['__proto__'])
+      assert.deepEqual(map.mappings[1], [[0, 0, 0, 0]])
+    })
   })
 })
