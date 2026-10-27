@@ -119,5 +119,19 @@ describe('bundle', () => {
       b.trimEnd()
       assert.equal(b.toString(), 'Y  \nX')
     })
+
+    it('does not trim the separator of a sibling bundle given the same description', () => {
+      const description = { content: new MagicString(''), separator: ' \n' }
+      const b1 = new Bundle()
+      const b2 = new Bundle()
+
+      b1.addSource(new MagicString('a')).addSource(description)
+      b2.addSource(new MagicString('a')).addSource(description)
+
+      b1.trimEnd()
+
+      assert.equal(b1.toString(), 'a')
+      assert.equal(b2.toString(), 'a \n')
+    })
   })
 })

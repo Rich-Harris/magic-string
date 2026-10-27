@@ -1,14 +1,15 @@
-import type { ExclusionRange } from '../../src/index.ts'
+import type { MagicString as BaseMagicString, ExclusionRange } from '../../src/index.ts'
 import { assert, describe, it } from 'vitest'
 import { Bundle } from '../../src/index.ts'
 import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 interface BundleInternals extends Bundle {
   sources: Array<{
-    content: MagicString
-    filename?: string
-    ignoreList?: boolean
-    indentExclusionRanges?: ExclusionRange | ExclusionRange[]
+    content: BaseMagicString
+    filename: string | undefined
+    ignoreList: boolean | undefined
+    indentExclusionRanges: ExclusionRange | ExclusionRange[] | undefined
+    separator: string
   }>
 }
 
@@ -86,6 +87,27 @@ describe('bundle', () => {
 
       b.addSource(foo1)
       assert.doesNotThrow(() => b.addSource(foo2))
+    })
+
+    it('does not mutate the description object it is given', () => {
+      const b = new Bundle({ separator: ';' })
+      const description = { content: new MagicString('x', { filename: 'x.js' }) }
+
+      b.addSource(description)
+
+      assert.deepEqual(Object.keys(description), ['content'])
+    })
+
+    it('does not share state between bundles given the same description', () => {
+      const description = { content: new MagicString('x') }
+      const b1 = new Bundle({ separator: ';' })
+      const b2 = new Bundle({ separator: '\n' })
+
+      b1.addSource(new MagicString('a')).addSource(description)
+      b2.addSource(new MagicString('a')).addSource(description)
+
+      assert.equal(b1.toString(), 'a;x')
+      assert.equal(b2.toString(), 'a\nx')
     })
   })
 })
