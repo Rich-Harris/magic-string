@@ -167,5 +167,39 @@ describe('magicString', () => {
       const s = new MagicString('abcdef')
       assert.equal(s.slice(-2), 'ef')
     })
+
+    it('returns the same result however the string has been split', () => {
+      const unsplit = new MagicString('abcdefghij')
+      const split = new MagicString('abcdefghij')
+      for (let i = 1; i < 10; i += 1)
+        split.appendLeft(i, '')
+      split.appendLeft(3, '<').appendRight(7, '>')
+      unsplit.appendLeft(3, '<').appendRight(7, '>')
+
+      for (let start = 0; start <= 10; start += 1) {
+        for (let end = 0; end <= 10; end += 1)
+          assert.equal(split.slice(start, end), unsplit.slice(start, end), `slice(${start}, ${end})`)
+      }
+    })
+
+    it('returns an empty string when start is not before end', () => {
+      const s = new MagicString('abcde')
+      s.appendLeft(2, 'X')
+
+      assert.equal(s.slice(2, 2), '')
+      assert.equal(s.slice(4, 2), '')
+      assert.equal(s.slice(5, 5), '')
+      assert.equal(s.slice(5), '')
+    })
+
+    it('returns an empty string for the whole range when the end precedes the start in the output', () => {
+      const s = new MagicString('abcdef')
+      s.move(0, 3, 6)
+
+      assert.equal(s.toString(), 'defabc')
+      assert.equal(s.slice(), '')
+      assert.equal(s.slice(0, 3), 'abc')
+      assert.equal(s.slice(3, 6), 'def')
+    })
   })
 })
