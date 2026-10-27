@@ -3,13 +3,20 @@ export interface SourceLocation {
   column: number
 }
 
-export function getLocator(source: string): (index: number) => SourceLocation {
+// ECMAScript LineTerminatorSequence: LF, CR, CRLF, LS (U+2028) and PS (U+2029)
+export const LINE_TERMINATOR = /\r\n?|[\n\u2028\u2029]/g
+
+/** The index at which each line of `source` starts. */
+export function getLineOffsets(source: string): number[] {
   const lineOffsets = [0]
-
-  for (let i = source.indexOf('\n'); i !== -1; i = source.indexOf('\n', i + 1)) {
-    lineOffsets.push(i + 1)
+  LINE_TERMINATOR.lastIndex = 0
+  while (LINE_TERMINATOR.test(source)) {
+    lineOffsets.push(LINE_TERMINATOR.lastIndex)
   }
+  return lineOffsets
+}
 
+export function getLocator(lineOffsets: number[]): (index: number) => SourceLocation {
   return function locate(index: number): SourceLocation {
     let i = 0
     let j = lineOffsets.length

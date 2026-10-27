@@ -2,6 +2,7 @@ import type { SourceLocation } from './getLocator.ts'
 import { assert, describe, it } from 'vitest'
 import { BitSet } from '../BitSet.ts'
 import { Chunk } from '../Chunk.ts'
+import { getLineOffsets } from './getLocator.ts'
 import { Mappings } from './Mappings.ts'
 import { MappingsEncoder, SEGMENTS_PER_FLUSH } from './MappingsEncoder.ts'
 
@@ -99,7 +100,7 @@ describe('mappings', () => {
       const chunk = new Chunk(0, original.length, original)
       const location = loc(0, 0)
 
-      mappings.addUneditedChunk(0, chunk, original, location, new BitSet())
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), location, new BitSet())
 
       assert.deepEqual(mappings.raw, [
         [[0, 0, 0, 0]],
@@ -115,7 +116,7 @@ describe('mappings', () => {
       const locations = new BitSet()
       locations.add(2)
 
-      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), locations)
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), loc(0, 0), locations)
 
       assert.deepEqual(mappings.raw, [
         [[0, 0, 0, 0], [2, 0, 0, 2]],
@@ -127,7 +128,7 @@ describe('mappings', () => {
       const original = 'ab\ncd'
       const chunk = new Chunk(0, original.length, original)
 
-      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), loc(0, 0), new BitSet())
 
       assert.deepEqual(mappings.raw, [
         [[0, 0, 0, 0], [1, 0, 0, 1]],
@@ -140,7 +141,7 @@ describe('mappings', () => {
       const original = 'ab cd'
       const chunk = new Chunk(0, original.length, original)
 
-      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), loc(0, 0), new BitSet())
 
       assert.deepEqual(mappings.raw, [
         [[0, 0, 0, 0], [2, 0, 0, 2], [3, 0, 0, 3]],
@@ -152,7 +153,7 @@ describe('mappings', () => {
       const original = 'abcd'
       const chunk = new Chunk(0, original.length, original)
 
-      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), loc(0, 0), new BitSet())
 
       assert.deepEqual(mappings.raw, [
         [[0, 0, 0, 0], [3, 0, 0, 3]],
@@ -168,7 +169,7 @@ describe('mappings', () => {
       const original = 'ab\ncd'
       const chunk = new Chunk(0, original.length, original)
 
-      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), loc(0, 0), new BitSet())
 
       assert.equal(mappings.raw.length, 1)
       assert.equal(mappings.generatedCodeLine, 1)
@@ -182,7 +183,7 @@ describe('mappings', () => {
       const original = 'a'.repeat(SEGMENTS_PER_FLUSH + 2)
       const chunk = new Chunk(0, original.length, original)
 
-      mappings.addUneditedChunk(0, chunk, original, loc(0, 0), new BitSet())
+      mappings.addUneditedChunk(0, chunk, original, getLineOffsets(original), loc(0, 0), new BitSet())
 
       assert.isBelow(mappings.rawSegments.length, SEGMENTS_PER_FLUSH)
       assert.equal(encoder.finish(mappings.rawSegments), `AAAA${',CAAC'.repeat(SEGMENTS_PER_FLUSH + 1)}`)
