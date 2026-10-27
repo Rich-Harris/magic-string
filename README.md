@@ -88,6 +88,8 @@ s.offset = 6
 s.slice() === 'world'
 ```
 
+Indices must be integers; a negative index counts from the end of the original string. `update`, `overwrite`, `remove`, `reset`, `move` and the `append*`/`prepend*` methods throw a `MagicStringError` for an index outside the original string, while `slice` clamps like `String.prototype.slice`.
+
 ## Hi-res mappings
 
 The `hires` option (passed to `generateMap`/`generateDecodedMap`) controls how granular sourcemap mappings are:
