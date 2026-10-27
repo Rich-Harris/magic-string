@@ -1055,15 +1055,25 @@ export class MagicString {
 
     let result = ''
 
-    // find start chunk
-    let chunk: Chunk | null = this.firstChunk
-    while (chunk && (chunk.start > start || chunk.end <= start)) {
-      // found end chunk before start
-      if ((chunk.start < end && chunk.end >= end) || (end === 0 && chunk.start === 0)) {
-        return result
+    let chunk: Chunk | null | undefined
+    if (this.hasMovedChunks) {
+      // chunks are no longer in original order, so "the chunk holding `end`
+      // comes before the chunk holding `start`" has to be discovered by walking
+      // the output: that case yields an empty slice
+      chunk = this.firstChunk
+      while (chunk && (chunk.start > start || chunk.end <= start)) {
+        if ((chunk.start < end && chunk.end >= end) || (end === 0 && chunk.start === 0)) {
+          return result
+        }
+        chunk = chunk.next
       }
-
-      chunk = chunk.next
+    }
+    else {
+      // in original order the end chunk precedes the start chunk exactly when
+      // start >= end, which is the empty slice
+      if (start >= end)
+        return result
+      chunk = this._chunkAt(start)
     }
 
     if (chunk && chunk.edited && chunk.start !== start) {
@@ -1134,6 +1144,26 @@ export class MagicString {
       return Math.max(0, resolved + this.original.length)
     }
     return resolved
+  }
+
+  /**
+   * The chunk whose original range holds `index` (`chunk.start <= index < chunk.end`),
+   * or `undefined` when `index` is at or past the end. Searches from the last
+   * visited chunk so that scans over nearby indices stay cheap.
+   *
+   * @internal
+   */
+  _chunkAt(index: number): Chunk | undefined {
+    let chunk = this.byStart.get(index)
+    if (chunk)
+      return chunk
+    chunk = this.lastSearchedChunk
+    const searchForward = index >= chunk.end
+    while (chunk && !chunk.contains(index))
+      chunk = searchForward ? this.byStart.get(chunk.end) : this.byEnd.get(chunk.start)
+    if (chunk)
+      this.lastSearchedChunk = chunk
+    return chunk
   }
 
   /** @internal */
@@ -1386,22 +1416,15 @@ export class MagicString {
     // the one holding `start`, searching from the last visited chunk as _split
     // does, and walk forward through byStart. replace/replaceAll call this once
     // per match, so scanning the whole list from firstChunk made them quadratic.
-    let chunk = this.byStart.get(start)
-    if (chunk && start === end) {
+    const atBoundary = this.byStart.get(start)
+    if (atBoundary && start === end) {
       // An empty range at a chunk boundary overlaps neither chunk, but it lies
       // inside removed content when the characters on both sides are removed,
       // just as it does when no split separates them
       const previous = this.byEnd.get(start)
-      return !!previous && previous.content === '' && chunk.content === ''
+      return !!previous && previous.content === '' && atBoundary.content === ''
     }
-    if (!chunk) {
-      chunk = this.lastSearchedChunk
-      const searchForward = start >= chunk.end
-      while (chunk && !chunk.contains(start))
-        chunk = searchForward ? this.byStart.get(chunk.end) : this.byEnd.get(chunk.start)
-      if (chunk)
-        this.lastSearchedChunk = chunk
-    }
+    let chunk = this._chunkAt(start)
     while (chunk && chunk.start < end) {
       // A chunk emptied by an overwrite spanning several chunks is not removed:
       // the replacement on the first of them stands for it. So it counts as
