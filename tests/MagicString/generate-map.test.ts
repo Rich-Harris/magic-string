@@ -627,6 +627,15 @@ describe('magicString', () => {
       assert.equal(map.rangeMappings, 'A;B')
     })
 
+    it('does not emit rangeMappings unless hires is experimental-range', () => {
+      const s = new MagicString('a\nb')
+
+      assert.equal(s.generateDecodedMap().rangeMappings, undefined)
+      assert.equal(s.generateDecodedMap({ hires: true }).rangeMappings, undefined)
+      assert.deepEqual(s.generateDecodedMap({ hires: 'experimental-range' }).rangeMappings, [[0], []])
+      assert.equal(s.generateMap({ hires: true }).rangeMappings, undefined)
+    })
+
     it('generates a correct source map with update using a content containing a new line', () => {
       const s = new MagicString('foobar')
       s.update(3, 4, '\nbb')

@@ -18,7 +18,7 @@ export class Mappings {
   declare generatedCodeColumn: number
   declare raw: FullSegment[][]
   declare rawSegments: FullSegment[]
-  declare rawRangeMappings: SourceMapRangeMappings
+  declare rawRangeMappings: SourceMapRangeMappings | undefined
   declare rawRangeMappingsIndices: number[]
   declare encoder: MappingsEncoder | null
 
@@ -28,8 +28,10 @@ export class Mappings {
     this.generatedCodeColumn = 0
     this.raw = []
     this.rawSegments = this.raw[this.generatedCodeLine] = []
-    this.rawRangeMappings = []
-    this.rawRangeMappingsIndices = this.rawRangeMappings[this.generatedCodeLine] = []
+    this.rawRangeMappingsIndices = []
+    // only the experimental-range mode produces range mappings; the other modes
+    // must not pay for a per-line array nor advertise an empty `rangeMappings`
+    this.rawRangeMappings = hires === 'experimental-range' ? [this.rawRangeMappingsIndices] : undefined
     this.encoder = encoder
   }
 
@@ -45,7 +47,8 @@ export class Mappings {
       this.generatedCodeLine += 1
     }
     this.generatedCodeColumn = 0
-    this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
+    if (this.rawRangeMappings)
+      this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
   }
 
   addEdit(sourceIndex: number, content: string, loc: SourceLocation, nameIndex: number): void {
