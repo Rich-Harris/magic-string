@@ -4,10 +4,15 @@ import type { MagicString } from '../MagicString.ts'
 import type { SourceMapOptions, SourceMapRangeMappings } from '../SourceMap.ts'
 import type { SourceLocation } from './getLocator.ts'
 import type { FullSegment, MappingsEncoder } from './MappingsEncoder.ts'
-import { getLocator } from './getLocator.ts'
+import { getLineOffsets, getLocator, LINE_TERMINATOR } from './getLocator.ts'
 import { SEGMENTS_PER_FLUSH } from './MappingsEncoder.ts'
 
-const NEWLINE_CHAR = 10
+const LF = 10
+const CR = 13
+
+function isLineTerminator(code: number): boolean {
+  return code === LF || code === CR || code === 0x2028 || code === 0x2029
+}
 
 // equivalent to /\w/ without the `u` flag, which only matches ASCII word characters
 function isWordCode(code: number): boolean {
@@ -23,6 +28,9 @@ export class Mappings {
   declare rawRangeMappings: SourceMapRangeMappings | undefined
   declare rawRangeMappingsIndices: number[]
   declare encoder: MappingsEncoder | null
+  // whether the generated code so far ends with a CR, so a leading LF of the
+  // next piece completes that CRLF instead of starting another line
+  declare afterCR: boolean
 
   constructor(hires: SourceMapOptions['hires'], encoder: MappingsEncoder | null = null) {
     this.hires = hires
@@ -35,6 +43,12 @@ export class Mappings {
     // must not pay for a per-line array nor advertise an empty `rangeMappings`
     this.rawRangeMappings = hires === 'experimental-range' ? [this.rawRangeMappingsIndices] : undefined
     this.encoder = encoder
+    this.afterCR = false
+  }
+
+  /** Whether `code` is the LF of a CRLF whose generated line already ended. */
+  private completesCRLF(code: number): boolean {
+    return this.afterCR && code === LF
   }
 
   private nextLine(): void {
@@ -61,7 +75,8 @@ export class Mappings {
    */
   addMagicString(magicString: MagicString, sourceIndex: number, nameIndex: Map<string, number>): void {
     const { original } = magicString
-    const locate = getLocator(original)
+    const lineOffsets = getLineOffsets(original)
+    const locate = getLocator(lineOffsets)
 
     if (magicString.intro)
       this.advance(magicString.intro)
@@ -78,7 +93,7 @@ export class Mappings {
         this.addEdit(sourceIndex, chunk.content, locate(chunk.start), name ?? -1)
       }
       else {
-        this.addUneditedChunk(sourceIndex, chunk, original, locate(chunk.start), magicString.sourcemapLocations)
+        this.addUneditedChunk(sourceIndex, chunk, original, lineOffsets, locate(chunk.start), magicString.sourcemapLocations)
       }
 
       if (chunk.outro.length)
@@ -90,54 +105,45 @@ export class Mappings {
   }
 
   addEdit(sourceIndex: number, content: string, loc: SourceLocation, nameIndex: number): void {
-    if (content.length) {
-      const contentLengthMinusOne = content.length - 1
-      let contentLineEnd = content.indexOf('\n', 0)
-      let previousContentLineEnd = -1
-      // Loop through each line in the content and add a segment, but stop if the last line is empty,
-      // else code afterwards would fill one line too many
-      while (contentLineEnd >= 0 && contentLengthMinusOne > contentLineEnd) {
-        const segment: FullSegment = [
-          this.generatedCodeColumn,
-          sourceIndex,
-          loc.line,
-          loc.column,
-        ]
-        if (nameIndex >= 0) {
-          segment.push(nameIndex)
-        }
-        this.rawSegments.push(segment)
+    if (!content.length)
+      return
 
-        this.nextLine()
-
-        previousContentLineEnd = contentLineEnd
-        contentLineEnd = content.indexOf('\n', contentLineEnd + 1)
-      }
-
-      const segment: FullSegment = [
-        this.generatedCodeColumn,
-        sourceIndex,
-        loc.line,
-        loc.column,
-      ]
-      if (nameIndex >= 0) {
+    let lineStart = this.completesCRLF(content.charCodeAt(0)) ? 1 : 0
+    LINE_TERMINATOR.lastIndex = lineStart
+    // add a segment for each line in the content, except the empty one after a
+    // trailing line terminator, else code afterwards would fill one line too many
+    do {
+      const segment: FullSegment = [this.generatedCodeColumn, sourceIndex, loc.line, loc.column]
+      if (nameIndex >= 0)
         segment.push(nameIndex)
-      }
       this.rawSegments.push(segment)
 
-      this.advance(content.slice(previousContentLineEnd + 1))
-    }
+      if (!LINE_TERMINATOR.test(content))
+        break
+      this.nextLine()
+      lineStart = LINE_TERMINATOR.lastIndex
+    } while (lineStart < content.length)
+
+    this.generatedCodeColumn += content.length - lineStart
+    this.afterCR = content.charCodeAt(content.length - 1) === CR
   }
 
   addUneditedChunk(
     sourceIndex: number,
     chunk: Chunk,
     original: string,
+    lineOffsets: number[],
     loc: SourceLocation,
     sourcemapLocations: BitSet,
   ): void {
     const end = chunk.end
     let i = chunk.start
+
+    if (i < end && this.completesCRLF(original.charCodeAt(i))) {
+      loc.line += 1
+      loc.column = 0
+      i += 1
+    }
 
     if (this.hires) {
       const boundary = this.hires === 'boundary'
@@ -155,10 +161,13 @@ export class Mappings {
           this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
         }
         const code = original.charCodeAt(i)
-        if (code === NEWLINE_CHAR) {
-          loc.line += 1
-          loc.column = 0
-          this.nextLine()
+        if (isLineTerminator(code)) {
+          // the LF of a CRLF: the CR already ended the line
+          if (code !== LF || i === chunk.start || original.charCodeAt(i - 1) !== CR) {
+            loc.line += 1
+            loc.column = 0
+            this.nextLine()
+          }
           charInHiresBoundary = false
         }
         else {
@@ -198,9 +207,9 @@ export class Mappings {
       // char by char
       const bits = sourcemapLocations.bits
       while (i < end) {
-        let newline = original.indexOf('\n', i)
-        if (newline === -1 || newline > end)
-          newline = end
+        const nextLineStart = loc.line + 1 < lineOffsets.length ? lineOffsets[loc.line + 1] : Infinity
+        const terminatorLength = original.charCodeAt(nextLineStart - 1) === LF && original.charCodeAt(nextLineStart - 2) === CR ? 2 : 1
+        const newline = Math.min(nextLineStart - terminatorLength, end)
         if (newline > i) {
           this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
           for (let w = (i + 1) >> 5, last = (newline - 1) >> 5; w <= last; w++) {
@@ -226,21 +235,24 @@ export class Mappings {
         loc.line += 1
         loc.column = 0
         this.nextLine()
-        i = newline + 1
+        i = nextLineStart
       }
     }
+
+    if (end > chunk.start)
+      this.afterCR = original.charCodeAt(end - 1) === CR
   }
 
   advance(str: string): void {
-    if (!str)
-      return
-
-    const lastNewline = str.lastIndexOf('\n')
-
-    for (let i = str.indexOf('\n'); i !== -1; i = str.indexOf('\n', i + 1)) {
+    let lineStart = this.completesCRLF(str.charCodeAt(0)) ? 1 : 0
+    LINE_TERMINATOR.lastIndex = lineStart
+    while (LINE_TERMINATOR.test(str)) {
       this.nextLine()
+      lineStart = LINE_TERMINATOR.lastIndex
     }
 
-    this.generatedCodeColumn += str.length - lastNewline - 1
+    this.generatedCodeColumn += str.length - lineStart
+    if (str.length)
+      this.afterCR = str.charCodeAt(str.length - 1) === CR
   }
 }

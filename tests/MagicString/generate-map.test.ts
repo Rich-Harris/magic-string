@@ -711,6 +711,41 @@ describe('magicString', () => {
       )
     })
 
+    it('treats every ECMAScript line terminator as a line break (#368)', () => {
+      const hiresModes = [false, true, 'boundary', 'experimental-range'] as const
+
+      for (const hires of hiresModes) {
+        const expected = new MagicString('a\nb').generateMap({ hires }).mappings
+        for (const terminator of ['\r', '\r\n', '\u2028', '\u2029']) {
+          const map = new MagicString(`a${terminator}b`).generateMap({ hires })
+          assert.equal(map.mappings, expected, `hires: ${hires}, terminator: ${JSON.stringify(terminator)}`)
+        }
+      }
+    })
+
+    it('counts line terminators in inserted and replacement content', () => {
+      const s = new MagicString('ab\rcd')
+      s.prepend('x\u2028')
+      s.overwrite(1, 2, 'B\r\nB')
+
+      const smc = new SourceMapConsumer(s.generateMap({ hires: true }) as unknown as RawSourceMap)
+      const loc = smc.originalPositionFor({ line: 4, column: 0 })
+      assert.equal(loc.line, 2)
+      assert.equal(loc.column, 0)
+    })
+
+    it('counts a CRLF split across chunks as one line break', () => {
+      for (const hires of [false, true] as const) {
+        const s = new MagicString('ab\r\ncd')
+        s.overwrite(0, 3, 'AB\r')
+
+        const smc = new SourceMapConsumer(s.generateMap({ hires }) as unknown as RawSourceMap)
+        const loc = smc.originalPositionFor({ line: 2, column: 0 })
+        assert.equal(loc.line, 2, `hires: ${hires}`)
+        assert.equal(loc.column, 0, `hires: ${hires}`)
+      }
+    })
+
     it('generates the same mappings as encoding the decoded map, for every hires mode', () => {
       const hiresModes = [false, true, 'boundary', 'experimental-range'] as const
 

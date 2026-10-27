@@ -3,7 +3,7 @@ import { BitSet } from './BitSet.ts'
 import { Chunk } from './Chunk.ts'
 import { MagicStringError } from './MagicStringError.ts'
 import { SourceMap } from './SourceMap.ts'
-import { getLocator } from './utils/getLocator.ts'
+import { getLineOffsets, getLocator } from './utils/getLocator.ts'
 import { getRelativePath } from './utils/getRelativePath.ts'
 import { guessIndent } from './utils/guessIndent.ts'
 import { isObject } from './utils/isObject.ts'
@@ -1173,7 +1173,7 @@ export class MagicString {
   _splitChunk(chunk: Chunk, index: number): true {
     if (chunk.edited && chunk.content.length) {
       // zero-length edited chunks are a special case (overlapping replacements)
-      const loc = getLocator(this.original)(index)
+      const loc = getLocator(getLineOffsets(this.original))(index)
       throw new MagicStringError(
         `cannot split a chunk that has already been edited (${loc.line}:${loc.column} – "${chunk.original}")`,
       )
