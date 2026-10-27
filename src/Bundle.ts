@@ -93,10 +93,14 @@ export class Bundle {
       throw new MagicStringError('addSource() requires a `content` property that is a MagicString')
     }
 
-    ['filename', 'ignoreList', 'indentExclusionRanges', 'separator'].forEach((option) => {
-      if (!hasOwnProp.call(source, option))
-        source[option] = source.content[option]
-    })
+    if (!hasOwnProp.call(source, 'filename'))
+      source.filename = source.content.filename
+    if (!hasOwnProp.call(source, 'ignoreList'))
+      source.ignoreList = source.content.ignoreList
+    if (!hasOwnProp.call(source, 'indentExclusionRanges'))
+      source.indentExclusionRanges = source.content.indentExclusionRanges
+    if (!hasOwnProp.call(source, 'separator'))
+      source.separator = undefined
 
     if (source.separator === undefined) {
       // TODO there's a bunch of this sort of thing, needs cleaning up
@@ -387,24 +391,18 @@ export class Bundle {
   }
 
   getIndentString(): string {
-    const indentStringCounts = {}
+    const indentStringCounts = new Map<string, number>()
 
     this.sources.forEach((source) => {
       const indentStr = source.content._getRawIndentString()
 
-      if (indentStr === null)
+      if (indentStr == null)
         return
 
-      if (!indentStringCounts[indentStr])
-        indentStringCounts[indentStr] = 0
-      indentStringCounts[indentStr] += 1
+      indentStringCounts.set(indentStr, (indentStringCounts.get(indentStr) ?? 0) + 1)
     })
 
-    return (
-      Object.keys(indentStringCounts).sort((a, b) => {
-        return indentStringCounts[b] - indentStringCounts[a]
-      })[0] || '\t'
-    )
+    return [...indentStringCounts.entries()].sort(([, a], [, b]) => b - a)[0]?.[0] ?? '\t'
   }
 
   indent(indentStr?: string): this {
