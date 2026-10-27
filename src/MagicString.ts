@@ -514,8 +514,12 @@ export class MagicString {
         chunk.intro = indentPiece(chunk.intro)
 
       if (chunk.edited) {
-        if (!isExcluded[charIndex]) {
+        if (!isExcluded[chunk.start]) {
           chunk.content = indentPiece(chunk.content)
+        }
+        else if (chunk.content) {
+          // excluded content is left as is, but still decides whether what follows starts a line
+          shouldIndentNextCharacter = chunk.content[chunk.content.length - 1] === '\n'
         }
       }
       else if (options.exclude) {

@@ -107,5 +107,13 @@ describe('bundle', () => {
       const b = new Bundle()
       assert.strictEqual(b.indent(''), b)
     })
+
+    it('should not indent the carriage return of a blank CRLF line in the intro', () => {
+      const b = new Bundle({ intro: 'a\r\n\r\nb\n' })
+      b.addSource(new MagicString('x'))
+
+      b.indent('  ')
+      assert.equal(b.toString(), '  a\r\n\r\n  b\n  x')
+    })
   })
 })

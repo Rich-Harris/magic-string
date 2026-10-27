@@ -436,7 +436,7 @@ export class Bundle {
     if (this.intro) {
       this.intro
         = indentStr
-          + this.intro.replace(/^[^\n]/gm, (match, index) => {
+          + this.intro.replace(/^[^\r\n]/gm, (match, index) => {
             return index > 0 ? indentStr + match : match
           })
     }
