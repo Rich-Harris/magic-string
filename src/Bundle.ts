@@ -171,7 +171,7 @@ export class Bundle {
     const byEnd = new Map<number, Chunk>()
     let hasMovedChunks = false
 
-    this.sources.forEach((source, i) => {
+    for (const [i, source] of this.sources.entries()) {
       const magicString = source.content
       const separator = i > 0
         /* v8 ignore next -- addSource always normalizes source.separator */
@@ -183,7 +183,7 @@ export class Bundle {
       // so fold it into the text waiting in front of the next real chunk.
       if (magicString.original.length === 0) {
         pending += separator + magicString.toString()
-        return
+        continue
       }
 
       pending += separator + magicString.intro
@@ -235,9 +235,9 @@ export class Bundle {
         hasMovedChunks = true
 
       offset += magicString.original.length
-    })
+    }
 
-    if (!first) {
+    if (!first || !last) {
       // every source was empty (or there were none): keep the default empty chunk
       // and hang all the inserted text off the string-level intro
       combined.intro = pending
@@ -245,7 +245,7 @@ export class Bundle {
     }
 
     if (pending)
-      last!.outro += pending
+      last.outro += pending
 
     combined.firstChunk = first
     combined.lastChunk = last
