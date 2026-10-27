@@ -128,19 +128,12 @@ export class Chunk {
     this.end = index
 
     if (this.edited) {
-      // after split we should save the edit content record into the correct chunk
-      // to make sure sourcemap correct
-      // For example:
-      // '  test'.trim()
-      //     split   -> '  ' + 'test'
-      //   ✔️ edit    -> '' + 'test'
-      //   ✖️ edit    -> 'test' + ''
-      // TODO is this block necessary?...
-      // content only, so the outro moved over above is kept
+      // only an emptied edited chunk can be split (see MagicString#_splitChunk);
+      // the new chunk must stay empty too, or it would resurrect removed text.
+      // Content only, so the outro moved over above is kept
       newChunk.edit('', false, true)
       // if an overwrite emptied this chunk, its replacement stands for both halves
       newChunk.replacedFrom = this.replacedFrom
-      this.content = ''
     }
     else {
       this.content = originalBefore

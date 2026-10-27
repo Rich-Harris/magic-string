@@ -167,6 +167,9 @@ export class MagicString {
   /** @internal */
   declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
 
+  /**
+   * Wraps `string` for editing; every index passed to the editing methods refers to this original string.
+   */
   constructor(string: string, options: MagicStringOptions = {}) {
     const chunk = new Chunk(0, string.length, string)
 
@@ -268,7 +271,10 @@ export class MagicString {
   }
 
   /**
-   * Does what you'd expect.
+   * Returns an independent copy: the chunk list, string-level intro/outro,
+   * sourcemap locations, stored names, indent exclusion ranges, `offset`,
+   * `filename` and `ignoreList` are all copied; later edits to either string
+   * do not affect the other.
    */
   clone(): this {
     const cloned = new MagicString(this.original, {
@@ -351,41 +357,8 @@ export class MagicString {
 
   /** @internal */
   _generateMappings(mappings: Mappings): string[] {
-    const sourceIndex = 0
     const names = [...this.storedNames]
-    const nameIndex = new Map(names.map((name, i) => [name, i]))
-    const locate = getLocator(this.original)
-
-    if (this.intro) {
-      mappings.advance(this.intro)
-    }
-
-    this.firstChunk.eachNext((chunk) => {
-      const loc = locate(chunk.start)
-
-      if (chunk.intro.length)
-        mappings.advance(chunk.intro)
-
-      if (chunk.edited) {
-        mappings.addEdit(
-          sourceIndex,
-          chunk.content,
-          loc,
-          chunk.storeName ? nameIndex.get(this.original.slice(chunk.start, chunk.replacesUntil)) ?? -1 : -1,
-        )
-      }
-      else {
-        mappings.addUneditedChunk(sourceIndex, chunk, this.original, loc, this.sourcemapLocations)
-      }
-
-      if (chunk.outro.length)
-        mappings.advance(chunk.outro)
-    })
-
-    if (this.outro) {
-      mappings.advance(this.outro)
-    }
-
+    mappings.addMagicString(this, 0, new Map(names.map((name, i) => [name, i])))
     return names
   }
 
@@ -415,6 +388,10 @@ export class MagicString {
     return this.indentStr
   }
 
+  /**
+   * Returns the indentation string guessed from the original content, falling back to a single tab character.
+   * This is the value `s.indent()` uses when no prefix is supplied.
+   */
   getIndentString(): string {
     this._ensureindentStr()
     return this.indentStr ?? '\t'
@@ -986,6 +963,9 @@ export class MagicString {
     return this
   }
 
+  /**
+   * Returns the last character of the generated string, or `''` if it is empty.
+   */
   lastChar(): string {
     if (this.outro.length)
       return this.outro[this.outro.length - 1]
@@ -1004,38 +984,41 @@ export class MagicString {
     return ''
   }
 
+  /**
+   * Returns everything after the last newline in the generated string, or the whole string if there is no newline.
+   */
   lastLine(): string {
     let lineIndex = this.outro.lastIndexOf(n)
     if (lineIndex !== -1)
-      return this.outro.substr(lineIndex + 1)
+      return this.outro.slice(lineIndex + 1)
     let lineStr = this.outro
     let chunk: Chunk | null = this.lastChunk
     while (chunk) {
       if (chunk.outro.length > 0) {
         lineIndex = chunk.outro.lastIndexOf(n)
         if (lineIndex !== -1)
-          return chunk.outro.substr(lineIndex + 1) + lineStr
+          return chunk.outro.slice(lineIndex + 1) + lineStr
         lineStr = chunk.outro + lineStr
       }
 
       if (chunk.content.length > 0) {
         lineIndex = chunk.content.lastIndexOf(n)
         if (lineIndex !== -1)
-          return chunk.content.substr(lineIndex + 1) + lineStr
+          return chunk.content.slice(lineIndex + 1) + lineStr
         lineStr = chunk.content + lineStr
       }
 
       if (chunk.intro.length > 0) {
         lineIndex = chunk.intro.lastIndexOf(n)
         if (lineIndex !== -1)
-          return chunk.intro.substr(lineIndex + 1) + lineStr
+          return chunk.intro.slice(lineIndex + 1) + lineStr
         lineStr = chunk.intro + lineStr
       }
       chunk = chunk.previous
     }
     lineIndex = this.intro.lastIndexOf(n)
     if (lineIndex !== -1)
-      return this.intro.substr(lineIndex + 1) + lineStr
+      return this.intro.slice(lineIndex + 1) + lineStr
     return this.intro + lineStr
   }
 
@@ -1247,6 +1230,11 @@ export class MagicString {
     return true
   }
 
+  /**
+   * Returns the length of the generated string, counting only content attached to the original characters.
+   * Content outside the string body (`s.prepend()`/`s.append()`, and inserts before the first or after the last
+   * character) is not counted, so this can differ from `s.toString().length`.
+   */
   length(): number {
     let chunk: Chunk | null = this.firstChunk
     let length = 0
