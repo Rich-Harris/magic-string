@@ -467,7 +467,7 @@ export class Bundle {
   length(): number {
     return this.sources.reduce((length, source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
-      return length + (i > 0 ? source.separator.length : 0) + source.content.toString().length
+      return length + (i > 0 ? source.separator.length : 0) + source.content.length() + source.content.intro.length + source.content.outro.length
     }, this.intro.length)
   }
 
