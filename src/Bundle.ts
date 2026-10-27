@@ -16,7 +16,7 @@ export interface BundleOptions {
   separator?: string
 }
 
-interface BundleSourceDescription {
+export interface BundleSourceDescription {
   filename?: string
   content: MagicString
   ignoreList?: boolean
