@@ -83,24 +83,31 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'x4213')
     })
 
-    it('should append/prepend at end of string when index is out of upper bound', () => {
+    it('should throw when the index is out of upper bound', () => {
       const s = new MagicString('x')
-      s.prependLeft(6, 'A')
-      s.appendLeft(6, 'B')
-      s.prependRight(6, 'C')
-      s.appendRight(6, 'D')
 
-      assert.equal(s.toString(), 'ABxCD')
+      assert.throws(() => s.prependLeft(6, 'A'), /index 6 is out of bounds/)
+      assert.throws(() => s.appendLeft(6, 'B'), /index 6 is out of bounds/)
+      assert.throws(() => s.prependRight(6, 'C'), /index 6 is out of bounds/)
+      assert.throws(() => s.appendRight(6, 'D'), /index 6 is out of bounds/)
+      assert.equal(s.toString(), 'x')
     })
 
-    it('should append/prepend on empty string when index is out of upper bound', () => {
-      const s = new MagicString('')
-      s.prependLeft(6, 'A')
-      s.appendLeft(6, 'B')
-      s.prependRight(6, 'C')
-      s.appendRight(6, 'D')
+    it('should append/prepend at the end of the string when index equals its length', () => {
+      const s = new MagicString('x')
+      s.prependLeft(1, 'A')
+      s.appendLeft(1, 'B')
+      s.prependRight(1, 'C')
+      s.appendRight(1, 'D')
 
-      assert.equal(s.toString(), 'ABCD')
+      assert.equal(s.toString(), 'xABCD')
+    })
+
+    it('should throw on an empty string when the index is out of upper bound', () => {
+      const s = new MagicString('')
+
+      assert.throws(() => s.appendLeft(6, 'A'), /index 6 is out of bounds/)
+      assert.throws(() => s.appendRight(6, 'D'), /index 6 is out of bounds/)
     })
   })
 
@@ -114,6 +121,21 @@ describe('magicString', () => {
       const s = new MagicString('abcdefghijkl')
       // @ts-expect-error runtime validation is the subject of this test
       assert.throws(() => s.appendLeft(0, []), MagicStringError)
+    })
+
+    it('should resolve a negative index from the end', () => {
+      assert.equal(new MagicString('abc').appendLeft(-1, 'X').toString(), 'abXc')
+    })
+
+    it('should throw on a non-integer index', () => {
+      const s = new MagicString('abc')
+      assert.throws(() => s.appendLeft(1.5, 'X'), /must be an integer, got 1.5/)
+    })
+
+    it('should apply the offset before validating', () => {
+      const s = new MagicString('abc', { offset: 1 })
+      assert.equal(s.appendLeft(2, 'X').toString(), 'abcX')
+      assert.throws(() => s.appendLeft(3, 'X'), /index 4 is out of bounds/)
     })
   })
 

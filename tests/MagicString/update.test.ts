@@ -112,6 +112,13 @@ describe('magicString', () => {
       assert.throws(() => s.update(0, 4, 'x'), /end 4 is out of bounds/)
     })
 
+    it('should throw when an index is not an integer', () => {
+      const s = new MagicString('abcdef')
+      assert.throws(() => s.update(Number.NaN, 2, 'X'), /index must be an integer, got NaN/)
+      assert.throws(() => s.update(1.5, 3, 'X'), /got 1.5/)
+      assert.equal(s.toString(), 'abcdef')
+    })
+
     it('should resolve a negative end index relative to the string length', () => {
       const s = new MagicString('abcdefghijkl')
       s.update(9, -1, 'XYZ')

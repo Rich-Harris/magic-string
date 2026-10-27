@@ -152,5 +152,20 @@ describe('magicString', () => {
       assert.equal(s.slice(4, 0), 'e')
       assert.equal(s.slice(1, 0), '')
     })
+
+    it('should throw when an index is not an integer', () => {
+      const s = new MagicString('abcdef')
+      assert.throws(() => s.slice(0.5, 3), /must be an integer/)
+    })
+
+    it('should clamp an end past the original length', () => {
+      const s = new MagicString('abcdef')
+      assert.equal(s.slice(0, 100), 'abcdef')
+    })
+
+    it('should resolve a negative start from the end', () => {
+      const s = new MagicString('abcdef')
+      assert.equal(s.slice(-2), 'ef')
+    })
   })
 })

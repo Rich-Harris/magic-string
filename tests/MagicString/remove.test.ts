@@ -186,5 +186,11 @@ describe('magicString', () => {
       // -1 resolves to 12, which is past `end`
       assert.throws(() => s.remove(-1, 5), /end must be greater than start \(start: 12, end: 5\)/)
     })
+
+    it('should throw when an index is not an integer', () => {
+      const s = new MagicString('abcdef')
+      assert.throws(() => s.remove(Number.NaN, 2), /must be an integer/)
+      assert.equal(s.toString(), 'abcdef')
+    })
   })
 })

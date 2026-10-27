@@ -60,6 +60,12 @@ describe('magicString', () => {
       assert.throws(() => s.reset(9, 5), /end must be greater than start/)
     })
 
+    it('should throw when an index is not an integer', () => {
+      const s = new MagicString('abcdef')
+      assert.throws(() => s.reset(Number.NaN, 2), /must be an integer/)
+      assert.equal(s.toString(), 'abcdef')
+    })
+
     it('should reset overlapping ranges', () => {
       const s1 = new MagicString('abcdefghijkl')
 

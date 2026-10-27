@@ -94,6 +94,24 @@ describe('magicString', () => {
       assert.throws(() => s.move(3, 6, 6), /cannot move a selection inside itself/)
     })
 
+    it('should throw a MagicStringError when the range is out of bounds', () => {
+      const s = new MagicString('abc')
+
+      assert.throws(() => s.move(5, 7, 0), MagicStringError)
+      assert.throws(() => s.move(5, 7, 0), /out of bounds/)
+      assert.equal(s.toString(), 'abc')
+    })
+
+    it('should throw when the target index is out of bounds', () => {
+      const s = new MagicString('abcdef')
+      assert.throws(() => s.move(0, 3, 100), /out of bounds/)
+      assert.equal(s.toString(), 'abcdef')
+    })
+
+    it('should resolve negative indices from the end', () => {
+      assert.equal(new MagicString('abcdef').move(-2, -1, 0).toString(), 'eabcdf')
+    })
+
     it('refuses to move a range an earlier move has split', () => {
       // The second move's range spans chunks the first move separated, so they
       // are no longer a forward run in the list. Splicing them anyway used to

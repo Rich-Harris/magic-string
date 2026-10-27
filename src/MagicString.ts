@@ -225,7 +225,10 @@ export class MagicString {
    * See also `s.prependLeft(...)`.
    */
   appendLeft(index: number, content: string): this {
-    index = index + this.offset
+    index = this._resolveIndex(index)
+    if (index < 0 || index > this.original.length) {
+      throw new MagicStringError(`index ${index} is out of bounds`)
+    }
 
     if (typeof content !== 'string') {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
@@ -258,7 +261,10 @@ export class MagicString {
    * See also `s.prependRight(...)`.
    */
   appendRight(index: number, content: string): this {
-    index = index + this.offset
+    index = this._resolveIndex(index)
+    if (index < 0 || index > this.original.length) {
+      throw new MagicStringError(`index ${index} is out of bounds`)
+    }
 
     if (typeof content !== 'string') {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
@@ -632,13 +638,19 @@ export class MagicString {
    * mirroring the `appendLeft`/`appendRight` distinction.
    */
   move(start: number, end: number, index: number, affinity: 'left' | 'right' = 'right'): this {
-    start = start + this.offset
-    end = end + this.offset
-    index = index + this.offset
+    start = this._resolveIndex(start)
+    end = this._resolveIndex(end)
+    index = this._resolveIndex(index)
 
     if (start === end)
       return this
 
+    if (start < 0 || end > this.original.length || index < 0 || index > this.original.length) {
+      throw new MagicStringError(`range ${start}–${end} is out of bounds`)
+    }
+    if (start > end) {
+      throw new MagicStringError(`end must be greater than start (start: ${start}, end: ${end})`)
+    }
     if (index >= start && index <= end) {
       throw new MagicStringError('cannot move a selection inside itself')
     }
@@ -781,18 +793,11 @@ export class MagicString {
    * the content is overwritten, or anything that was appended/prepended to the range as well.
    */
   update(start: number, end: number, content: string, options?: boolean | UpdateOptions): this {
-    start = start + this.offset
-    end = end + this.offset
+    start = this._resolveIndex(start)
+    end = this._resolveIndex(end)
 
     if (typeof content !== 'string') {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
-    }
-
-    if (this.original.length !== 0) {
-      if (start < 0)
-        start = Math.max(0, start + this.original.length)
-      if (end < 0)
-        end = Math.max(0, end + this.original.length)
     }
 
     if (start < 0) {
@@ -888,7 +893,10 @@ export class MagicString {
    * Same as `s.appendLeft(...)`, except that the inserted content will go *before* any previous appends or prepends at index
    */
   prependLeft(index: number, content: string): this {
-    index = index + this.offset
+    index = this._resolveIndex(index)
+    if (index < 0 || index > this.original.length) {
+      throw new MagicStringError(`index ${index} is out of bounds`)
+    }
 
     if (typeof content !== 'string') {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
@@ -919,7 +927,10 @@ export class MagicString {
    * Same as `s.appendRight(...)`, except that the inserted content will go *before* any previous appends or prepends at `index`
    */
   prependRight(index: number, content: string): this {
-    index = index + this.offset
+    index = this._resolveIndex(index)
+    if (index < 0 || index > this.original.length) {
+      throw new MagicStringError(`index ${index} is out of bounds`)
+    }
 
     if (typeof content !== 'string') {
       throw new MagicStringError(`content must be a string, got ${typeof content}`)
@@ -954,15 +965,8 @@ export class MagicString {
    * Repeated removals and removals with partially overlapping ranges are allowed.
    */
   remove(start: number, end: number): this {
-    start = start + this.offset
-    end = end + this.offset
-
-    if (this.original.length !== 0) {
-      if (start < 0)
-        start = Math.max(0, start + this.original.length)
-      if (end < 0)
-        end = Math.max(0, end + this.original.length)
-    }
+    start = this._resolveIndex(start)
+    end = this._resolveIndex(end)
 
     if (start === end)
       return this
@@ -1007,15 +1011,8 @@ export class MagicString {
    * Reset the modified characters from `start` to `end` (of the original string, **not** the generated string).
    */
   reset(start: number, end: number): this {
-    start = start + this.offset
-    end = end + this.offset
-
-    if (this.original.length !== 0) {
-      if (start < 0)
-        start = Math.max(0, start + this.original.length)
-      if (end < 0)
-        end = Math.max(0, end + this.original.length)
-    }
+    start = this._resolveIndex(start)
+    end = this._resolveIndex(end)
 
     if (start === end)
       return this
@@ -1106,15 +1103,8 @@ export class MagicString {
    * Throws error if the indices are for characters that were already removed.
    */
   slice(start: number = 0, end: number = this.original.length - this.offset): string {
-    start = start + this.offset
-    end = end + this.offset
-
-    if (this.original.length !== 0) {
-      if (start < 0)
-        start = Math.max(0, start + this.original.length)
-      if (end < 0)
-        end = Math.max(0, end + this.original.length)
-    }
+    start = this._resolveIndex(start)
+    end = this._resolveIndex(end)
 
     let result = ''
 
@@ -1179,6 +1169,24 @@ export class MagicString {
     clone.remove(end, clone.original.length - clone.offset)
 
     return clone
+  }
+
+  /**
+   * Applies `offset`, resolves a negative index from the end of `original` as
+   * `update`/`remove` always have, and rejects anything that is not an integer.
+   * Bounds are checked by the caller, because the methods report them differently.
+   *
+   * @internal
+   */
+  _resolveIndex(index: number): number {
+    const resolved = index + this.offset
+    if (!Number.isInteger(resolved)) {
+      throw new MagicStringError(`index must be an integer, got ${index}`)
+    }
+    if (resolved < 0 && this.original.length !== 0) {
+      return Math.max(0, resolved + this.original.length)
+    }
+    return resolved
   }
 
   /** @internal */
