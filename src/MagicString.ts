@@ -351,41 +351,8 @@ export class MagicString {
 
   /** @internal */
   _generateMappings(mappings: Mappings): string[] {
-    const sourceIndex = 0
     const names = [...this.storedNames]
-    const nameIndex = new Map(names.map((name, i) => [name, i]))
-    const locate = getLocator(this.original)
-
-    if (this.intro) {
-      mappings.advance(this.intro)
-    }
-
-    this.firstChunk.eachNext((chunk) => {
-      const loc = locate(chunk.start)
-
-      if (chunk.intro.length)
-        mappings.advance(chunk.intro)
-
-      if (chunk.edited) {
-        mappings.addEdit(
-          sourceIndex,
-          chunk.content,
-          loc,
-          chunk.storeName ? nameIndex.get(this.original.slice(chunk.start, chunk.replacesUntil)) ?? -1 : -1,
-        )
-      }
-      else {
-        mappings.addUneditedChunk(sourceIndex, chunk, this.original, loc, this.sourcemapLocations)
-      }
-
-      if (chunk.outro.length)
-        mappings.advance(chunk.outro)
-    })
-
-    if (this.outro) {
-      mappings.advance(this.outro)
-    }
-
+    mappings.addMagicString(this, 0, new Map(names.map((name, i) => [name, i])))
     return names
   }
 

@@ -4,7 +4,6 @@ import type { DecodedSourceMap, SourceMapOptions } from './SourceMap.ts'
 import { MagicString } from './MagicString.ts'
 import { MagicStringError } from './MagicStringError.ts'
 import { SourceMap } from './SourceMap.ts'
-import { getLocator } from './utils/getLocator.ts'
 import { getRelativePath } from './utils/getRelativePath.ts'
 import { isObject } from './utils/isObject.ts'
 import { Mappings } from './utils/Mappings.ts'
@@ -309,49 +308,7 @@ export class Bundle {
       }
 
       const sourceIndex = source.filename ? this.uniqueSourceIndexByFilename.get(source.filename) ?? -1 : -1
-      const magicString = source.content
-      const locate = getLocator(magicString.original)
-
-      if (magicString.intro) {
-        mappings.advance(magicString.intro)
-      }
-
-      magicString.firstChunk.eachNext((chunk) => {
-        const loc = locate(chunk.start)
-
-        if (chunk.intro.length)
-          mappings.advance(chunk.intro)
-
-        if (source.filename) {
-          if (chunk.edited) {
-            mappings.addEdit(
-              sourceIndex,
-              chunk.content,
-              loc,
-              chunk.storeName ? nameIndex.get(magicString.original.slice(chunk.start, chunk.replacesUntil)) ?? -1 : -1,
-            )
-          }
-          else {
-            mappings.addUneditedChunk(
-              sourceIndex,
-              chunk,
-              magicString.original,
-              loc,
-              magicString.sourcemapLocations,
-            )
-          }
-        }
-        else {
-          mappings.advance(chunk.content)
-        }
-
-        if (chunk.outro.length)
-          mappings.advance(chunk.outro)
-      })
-
-      if (magicString.outro) {
-        mappings.advance(magicString.outro)
-      }
+      mappings.addMagicString(source.content, sourceIndex, nameIndex)
 
       if (source.ignoreList && sourceIndex !== -1) {
         if (x_google_ignoreList === undefined) {

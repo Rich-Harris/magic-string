@@ -1,8 +1,10 @@
 import type { BitSet } from '../BitSet.ts'
 import type { Chunk } from '../Chunk.ts'
+import type { MagicString } from '../MagicString.ts'
 import type { SourceMapOptions, SourceMapRangeMappings } from '../SourceMap.ts'
 import type { SourceLocation } from './getLocator.ts'
 import type { FullSegment, MappingsEncoder } from './MappingsEncoder.ts'
+import { getLocator } from './getLocator.ts'
 import { SEGMENTS_PER_FLUSH } from './MappingsEncoder.ts'
 
 const NEWLINE_CHAR = 10
@@ -49,6 +51,42 @@ export class Mappings {
     this.generatedCodeColumn = 0
     if (this.rawRangeMappings)
       this.rawRangeMappings[this.generatedCodeLine] = this.rawRangeMappingsIndices = []
+  }
+
+  /**
+   * Emits the mappings for one MagicString: its intro, every chunk (with the
+   * chunk's own intro/outro) and its outro. `sourceIndex === -1` means the
+   * string has no source of its own, so its content only advances the
+   * generated position without mapping anything.
+   */
+  addMagicString(magicString: MagicString, sourceIndex: number, nameIndex: Map<string, number>): void {
+    const { original } = magicString
+    const locate = getLocator(original)
+
+    if (magicString.intro)
+      this.advance(magicString.intro)
+
+    magicString.firstChunk.eachNext((chunk) => {
+      if (chunk.intro.length)
+        this.advance(chunk.intro)
+
+      if (sourceIndex === -1) {
+        this.advance(chunk.content)
+      }
+      else if (chunk.edited) {
+        const name = chunk.storeName ? nameIndex.get(original.slice(chunk.start, chunk.replacesUntil)) : undefined
+        this.addEdit(sourceIndex, chunk.content, locate(chunk.start), name ?? -1)
+      }
+      else {
+        this.addUneditedChunk(sourceIndex, chunk, original, locate(chunk.start), magicString.sourcemapLocations)
+      }
+
+      if (chunk.outro.length)
+        this.advance(chunk.outro)
+    })
+
+    if (magicString.outro)
+      this.advance(magicString.outro)
   }
 
   addEdit(sourceIndex: number, content: string, loc: SourceLocation, nameIndex: number): void {
