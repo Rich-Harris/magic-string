@@ -11,6 +11,25 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcdeFGHijkl')
     })
 
+    it('should warn and treat `true` as the legacy storeName option', () => {
+      const s = new MagicString('abcdefghijkl')
+      const warn = console.warn
+      let warned = 0
+      console.warn = () => {
+        warned += 1
+      }
+      try {
+        s.overwrite(3, 4, 'D', true)
+        s.overwrite(6, 7, 'G', true)
+      }
+      finally {
+        console.warn = warn
+      }
+      assert.isAtMost(warned, 1)
+      assert.equal(s.toString(), 'abcDefGhijkl')
+      assert.deepEqual(s.generateDecodedMap().names, ['d', 'g'])
+    })
+
     it('should throw an error if overlapping replacements are attempted', () => {
       const s = new MagicString('abcdefghijkl')
 
