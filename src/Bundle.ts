@@ -93,10 +93,14 @@ export class Bundle {
       throw new MagicStringError('addSource() requires a `content` property that is a MagicString')
     }
 
-    ['filename', 'ignoreList', 'indentExclusionRanges', 'separator'].forEach((option) => {
-      if (!hasOwnProp.call(source, option))
-        source[option] = source.content[option]
-    })
+    if (!hasOwnProp.call(source, 'filename'))
+      source.filename = source.content.filename
+    if (!hasOwnProp.call(source, 'ignoreList'))
+      source.ignoreList = source.content.ignoreList
+    if (!hasOwnProp.call(source, 'indentExclusionRanges'))
+      source.indentExclusionRanges = source.content.indentExclusionRanges
+    if (!hasOwnProp.call(source, 'separator'))
+      source.separator = undefined
 
     if (source.separator === undefined) {
       // TODO there's a bunch of this sort of thing, needs cleaning up
@@ -171,7 +175,7 @@ export class Bundle {
     const byEnd = new Map<number, Chunk>()
     let hasMovedChunks = false
 
-    this.sources.forEach((source, i) => {
+    for (const [i, source] of this.sources.entries()) {
       const magicString = source.content
       const separator = i > 0
         /* v8 ignore next -- addSource always normalizes source.separator */
@@ -183,7 +187,7 @@ export class Bundle {
       // so fold it into the text waiting in front of the next real chunk.
       if (magicString.original.length === 0) {
         pending += separator + magicString.toString()
-        return
+        continue
       }
 
       pending += separator + magicString.intro
@@ -235,9 +239,9 @@ export class Bundle {
         hasMovedChunks = true
 
       offset += magicString.original.length
-    })
+    }
 
-    if (!first) {
+    if (!first || !last) {
       // every source was empty (or there were none): keep the default empty chunk
       // and hang all the inserted text off the string-level intro
       combined.intro = pending
@@ -245,7 +249,7 @@ export class Bundle {
     }
 
     if (pending)
-      last!.outro += pending
+      last.outro += pending
 
     combined.firstChunk = first
     combined.lastChunk = last
@@ -387,24 +391,18 @@ export class Bundle {
   }
 
   getIndentString(): string {
-    const indentStringCounts = {}
+    const indentStringCounts = new Map<string, number>()
 
     this.sources.forEach((source) => {
       const indentStr = source.content._getRawIndentString()
 
-      if (indentStr === null)
+      if (indentStr == null)
         return
 
-      if (!indentStringCounts[indentStr])
-        indentStringCounts[indentStr] = 0
-      indentStringCounts[indentStr] += 1
+      indentStringCounts.set(indentStr, (indentStringCounts.get(indentStr) ?? 0) + 1)
     })
 
-    return (
-      Object.keys(indentStringCounts).sort((a, b) => {
-        return indentStringCounts[b] - indentStringCounts[a]
-      })[0] || '\t'
-    )
+    return [...indentStringCounts.entries()].sort(([, a], [, b]) => b - a)[0]?.[0] ?? '\t'
   }
 
   indent(indentStr?: string): this {

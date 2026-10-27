@@ -295,14 +295,14 @@ export class MagicString {
       offset: this.offset,
     })
 
-    let originalChunk = this.firstChunk
+    let originalChunk: Chunk | null = this.firstChunk
     let clonedChunk = (cloned.firstChunk = cloned.lastSearchedChunk = originalChunk.clone())
 
     while (originalChunk) {
       cloned.byStart.set(clonedChunk.start, clonedChunk)
       cloned.byEnd.set(clonedChunk.end, clonedChunk)
 
-      const nextOriginalChunk = originalChunk.next
+      const nextOriginalChunk: Chunk | null = originalChunk.next
       const nextClonedChunk = nextOriginalChunk && nextOriginalChunk.clone()
 
       if (nextClonedChunk) {
@@ -434,7 +434,7 @@ export class MagicString {
 
   getIndentString(): string {
     this._ensureindentStr()
-    return this.indentStr === null ? '\t' : this.indentStr
+    return this.indentStr ?? '\t'
   }
 
   /**
@@ -504,8 +504,9 @@ export class MagicString {
     this.intro = indentPiece(this.intro)
 
     let charIndex = 0
-    let chunk = this.firstChunk
+    let chunk: Chunk | null = this.firstChunk
 
+    // only called from the loop below, while `chunk` is non-null
     const indentAt = (index: number) => {
       shouldIndentNextCharacter = false
 
@@ -652,6 +653,9 @@ export class MagicString {
 
     const first = this.byStart.get(start)
     const last = this.byEnd.get(end)
+    if (!first || !last) {
+      throw new MagicStringError(`range ${start}–${end} is out of bounds`)
+    }
 
     // The splicing below assumes the chunks spanning [start, end) are still a
     // forward run in the current list. An earlier move can have interleaved a
@@ -662,7 +666,7 @@ export class MagicString {
     // Only move() reorders chunks, so this is skipped until one has run, which
     // keeps the common single-move case free of the walk.
     if (this.hasMovedChunks) {
-      let cursor = first
+      let cursor: Chunk | null = first
       while (cursor !== last) {
         cursor = cursor.next
         if (!cursor || cursor.start < start || cursor.end > end) {
@@ -723,10 +727,10 @@ export class MagicString {
     if (newRight)
       newRight.previous = last
 
-    if (!first.previous)
-      this.firstChunk = last.next
-    if (!last.next) {
-      this.lastChunk = first.previous
+    if (!oldLeft)
+      this.firstChunk = oldRight! // the range is not the whole string: `index` would be inside it
+    if (!oldRight) {
+      this.lastChunk = oldLeft! // same reason
       this.lastChunk.next = null
     }
 
@@ -836,45 +840,31 @@ export class MagicString {
       })
     }
 
-    const first = this.byStart.get(start)
-    const last = this.byEnd.get(end)
+    const first = this.byStart.get(start)! // start < end <= original.length, so _split(start) left a chunk here
 
-    /* v8 ignore else -- unreachable: a valid start/end always yields a `first` chunk */
-    if (first) {
-      // check the whole range before editing it, so a call that throws
-      // leaves the string as it was
-      let chunk = first
-      while (chunk !== last) {
-        if (chunk.next !== this.byStart.get(chunk.end)) {
-          throw new MagicStringError('cannot overwrite across a split point')
-        }
-        chunk = chunk.next
+    // check the whole range before editing it, so a call that throws
+    // leaves the string as it was
+    for (let chunk = first; chunk.end < end;) {
+      const next = chunk.next
+      if (next === null || next !== this.byStart.get(chunk.end)) {
+        throw new MagicStringError('cannot overwrite across a split point')
       }
-
-      chunk = first
-      while (chunk !== last) {
-        chunk = chunk.next
-        // `first` takes the replacement and the rest of the range is emptied.
-        // Unless overwriting, inserts on these chunks are kept as they are on
-        // `first`, so the result does not depend on where the range was split
-        chunk.edit('', false, !overwrite)
-        // emptied, not removed: `first` holds the replacement for this chunk too
-        chunk.replacesUntil = -1
-        chunk.replacedFrom = start
-      }
-
-      first.edit(content, storeName, !overwrite)
-      first.replacesUntil = end
-      first.replacedFrom = -1
+      chunk = next
     }
-    else {
-      // must be inserting at the end
-      const newChunk = new Chunk(start, end, '').edit(content, storeName)
 
-      // TODO last chunk in the array may not be the last chunk, if it's moved...
-      last.next = newChunk
-      newChunk.previous = last
+    for (let chunk = first.next; chunk !== null && chunk.start < end; chunk = chunk.next) {
+      // `first` takes the replacement and the rest of the range is emptied.
+      // Unless overwriting, inserts on these chunks are kept as they are on
+      // `first`, so the result does not depend on where the range was split
+      chunk.edit('', false, !overwrite)
+      // emptied, not removed: `first` holds the replacement for this chunk too
+      chunk.replacesUntil = -1
+      chunk.replacedFrom = start
     }
+
+    first.edit(content, storeName, !overwrite)
+    first.replacesUntil = end
+    first.replacedFrom = -1
 
     /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
@@ -1004,7 +994,7 @@ export class MagicString {
       chunk.replacesUntil = -1
       chunk.replacedFrom = -1
 
-      chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
+      chunk = end > chunk.end ? this.byStart.get(chunk.end) : undefined
     }
 
     /* v8 ignore next 2 -- DEBUG is always true in tests */
@@ -1049,7 +1039,7 @@ export class MagicString {
     while (chunk) {
       chunk.reset()
 
-      chunk = end > chunk.end ? this.byStart.get(chunk.end) : null
+      chunk = end > chunk.end ? this.byStart.get(chunk.end) : undefined
     }
 
     /* v8 ignore next 2 -- DEBUG is always true in tests */
@@ -1129,7 +1119,7 @@ export class MagicString {
     let result = ''
 
     // find start chunk
-    let chunk = this.firstChunk
+    let chunk: Chunk | null = this.firstChunk
     while (chunk && (chunk.start > start || chunk.end <= start)) {
       // found end chunk before start
       if ((chunk.start < end && chunk.end >= end) || (end === 0 && chunk.start === 0)) {
@@ -1200,8 +1190,8 @@ export class MagicString {
     if (DEBUG)
       this.stats.time('_split')
 
-    let chunk = this.lastSearchedChunk
-    let previousChunk = chunk
+    let chunk: Chunk | undefined = this.lastSearchedChunk
+    let previousChunk: Chunk | undefined = chunk
     const searchForward = index > chunk.end
 
     while (chunk) {
@@ -1250,7 +1240,7 @@ export class MagicString {
   toString(): string {
     let str = this.intro
 
-    let chunk = this.firstChunk
+    let chunk: Chunk | null = this.firstChunk
     while (chunk) {
       str += chunk.toString()
       chunk = chunk.next
@@ -1314,7 +1304,7 @@ export class MagicString {
     if (this.outro.length)
       return true
 
-    let chunk = this.lastChunk
+    let chunk: Chunk | null = this.lastChunk
 
     do {
       const end = chunk.end
@@ -1322,13 +1312,14 @@ export class MagicString {
 
       // if chunk was trimmed, we have a new lastChunk
       if (chunk.end !== end) {
+        const next = chunk.next! // chunk.trimEnd() just split this chunk, so a successor exists
         if (this.lastChunk === chunk) {
-          this.lastChunk = chunk.next
+          this.lastChunk = next
         }
 
         this.byEnd.set(chunk.end, chunk)
-        this.byStart.set(chunk.next.start, chunk.next)
-        this.byEnd.set(chunk.next.end, chunk.next)
+        this.byStart.set(next.start, next)
+        this.byEnd.set(next.end, next)
       }
 
       if (aborted)
@@ -1358,20 +1349,21 @@ export class MagicString {
     if (this.intro.length)
       return true
 
-    let chunk = this.firstChunk
+    let chunk: Chunk | null = this.firstChunk
 
     do {
       const end = chunk.end
       const aborted = chunk.trimStart(rx)
 
       if (chunk.end !== end) {
+        const next = chunk.next! // chunk.trimStart() just split this chunk, so a successor exists
         // special case...
         if (chunk === this.lastChunk)
-          this.lastChunk = chunk.next
+          this.lastChunk = next
 
         this.byEnd.set(chunk.end, chunk)
-        this.byStart.set(chunk.next.start, chunk.next)
-        this.byEnd.set(chunk.next.end, chunk.next)
+        this.byStart.set(next.start, next)
+        this.byEnd.set(next.end, next)
       }
 
       if (aborted)
@@ -1481,12 +1473,12 @@ export class MagicString {
 
   /** @internal */
   _replaceRegexp(searchValue: RegExp, replacement: string | ReplacementFunction): this {
-    function getReplacement(match: RegExpMatchArray, str: string): string {
+    function getReplacement(match: RegExpMatchArray, index: number, str: string): string {
       if (typeof replacement === 'string') {
         return expandReplacement(
           replacement,
           match[0],
-          match.index,
+          index,
           str,
           match.slice(1),
           match.groups,
@@ -1497,8 +1489,8 @@ export class MagicString {
         // when the pattern actually has named groups - passing an `undefined`
         // there unconditionally shifts the last argument a replacer sees
         return match.groups === undefined
-          ? replacement(match[0], ...match.slice(1), match.index, str)
-          : replacement(match[0], ...match.slice(1), match.index, str, match.groups)
+          ? replacement(match[0], ...match.slice(1), index, str)
+          : replacement(match[0], ...match.slice(1), index, str, match.groups)
       }
     }
     // Returns true once a surviving match has been handled, so a non-global
@@ -1511,7 +1503,7 @@ export class MagicString {
       if (this._hasRemovedContent(match.index, match.index + match[0].length))
         return false
 
-      const replacement = getReplacement(match, this.original)
+      const replacement = getReplacement(match, match.index, this.original)
       if (replacement === match[0])
         return true
 

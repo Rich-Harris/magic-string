@@ -1,8 +1,17 @@
 import { assert, describe, it } from 'vitest'
+import { MagicStringError } from '../../src/index.ts'
 import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 describe('magicString', () => {
   describe('move', () => {
+    it('should throw a MagicStringError when the range is out of bounds', () => {
+      const s = new MagicString('abc')
+
+      assert.throws(() => s.move(5, 7, 0), MagicStringError)
+      assert.throws(() => s.move(5, 7, 0), /out of bounds/)
+      assert.equal(s.toString(), 'abc')
+    })
+
     it('moves content from the start', () => {
       const s = new MagicString('abcdefghijkl')
       s.move(0, 3, 6)
