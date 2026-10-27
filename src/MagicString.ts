@@ -159,7 +159,7 @@ export class MagicString {
   /** @internal */
   declare sourcemapLocations: BitSet
   /** @internal */
-  declare storedNames: Record<string, true>
+  declare storedNames: Set<string>
   /** @internal */
   declare indentStr: string | null | undefined
   /** @internal */
@@ -182,7 +182,7 @@ export class MagicString {
       filename: { writable: true, value: options.filename },
       indentExclusionRanges: { writable: true, value: options.indentExclusionRanges },
       sourcemapLocations: { writable: true, value: new BitSet() },
-      storedNames: { writable: true, value: {} },
+      storedNames: { writable: true, value: new Set<string>() },
       indentStr: { writable: true, value: undefined },
       ignoreList: { writable: true, value: options.ignoreList },
       offset: { writable: true, value: options.offset || 0 },
@@ -306,7 +306,7 @@ export class MagicString {
     }
 
     cloned.sourcemapLocations = new BitSet(this.sourcemapLocations)
-    cloned.storedNames = { ...this.storedNames }
+    cloned.storedNames = new Set(this.storedNames)
 
     cloned.intro = this.intro
     cloned.outro = this.outro
@@ -352,7 +352,8 @@ export class MagicString {
   /** @internal */
   _generateMappings(mappings: Mappings): string[] {
     const sourceIndex = 0
-    const names = Object.keys(this.storedNames)
+    const names = [...this.storedNames]
+    const nameIndex = new Map(names.map((name, i) => [name, i]))
     const locate = getLocator(this.original)
 
     if (this.intro) {
@@ -370,7 +371,7 @@ export class MagicString {
           sourceIndex,
           chunk.content,
           loc,
-          chunk.storeName ? names.indexOf(this.original.slice(chunk.start, chunk.replacesUntil)) : -1,
+          chunk.storeName ? nameIndex.get(this.original.slice(chunk.start, chunk.replacesUntil)) ?? -1 : -1,
         )
       }
       else {
@@ -814,14 +815,8 @@ export class MagicString {
     const storeName = optionObject.storeName || false
     const overwrite = optionObject.overwrite || false
 
-    if (storeName) {
-      const original = this.original.slice(start, end)
-      Object.defineProperty(this.storedNames, original, {
-        writable: true,
-        value: true,
-        enumerable: true,
-      })
-    }
+    if (storeName)
+      this.storedNames.add(this.original.slice(start, end))
 
     const first = this.byStart.get(start)! // start < end <= original.length, so _split(start) left a chunk here
 

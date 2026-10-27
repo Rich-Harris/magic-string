@@ -236,13 +236,7 @@ export class Bundle {
         if (magicString.sourcemapLocations.has(index))
           combined.sourcemapLocations.add(index + offset)
       }
-      Object.keys(magicString.storedNames).forEach((name) => {
-        Object.defineProperty(combined.storedNames, name, {
-          writable: true,
-          value: true,
-          enumerable: true,
-        })
-      })
+      magicString.storedNames.forEach(name => combined.storedNames.add(name))
       if (magicString.hasMovedChunks)
         hasMovedChunks = true
 
@@ -299,14 +293,11 @@ export class Bundle {
 
   /** @internal */
   _generateMappings(mappings: Mappings): { names: string[], x_google_ignoreList: number[] | undefined } {
-    const names: string[] = []
     let x_google_ignoreList: number[] | undefined
-    this.sources.forEach((source) => {
-      Object.keys(source.content.storedNames).forEach((name) => {
-        if (!names.includes(name))
-          names.push(name)
-      })
-    })
+    const storedNames = new Set<string>()
+    this.sources.forEach(source => source.content.storedNames.forEach(name => storedNames.add(name)))
+    const names = [...storedNames]
+    const nameIndex = new Map(names.map((name, i) => [name, i]))
 
     if (this.intro) {
       mappings.advance(this.intro)
@@ -338,7 +329,7 @@ export class Bundle {
               sourceIndex,
               chunk.content,
               loc,
-              chunk.storeName ? names.indexOf(magicString.original.slice(chunk.start, chunk.replacesUntil)) : -1,
+              chunk.storeName ? nameIndex.get(magicString.original.slice(chunk.start, chunk.replacesUntil)) ?? -1 : -1,
             )
           }
           else {
