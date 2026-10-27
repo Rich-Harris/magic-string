@@ -388,7 +388,7 @@ export class MagicString {
           sourceIndex,
           chunk.content,
           loc,
-          chunk.storeName ? names.indexOf(chunk.original) : -1,
+          chunk.storeName ? names.indexOf(this.original.slice(chunk.start, chunk.replacesUntil)) : -1,
         )
       }
       else {
@@ -762,6 +762,15 @@ export class MagicString {
     content: string,
     options?: boolean | OverwriteOptions,
   ): this {
+    if (options === true) {
+      if (!warned.storeName) {
+        console.warn(
+          'The final argument to magicString.overwrite(...) should be an options object. See https://github.com/rich-harris/magic-string',
+        )
+        warned.storeName = true
+      }
+      return this.update(start, end, content, { storeName: true, overwrite: true })
+    }
     const optionObject = typeof options === 'object' && options ? options : {}
     return this.update(start, end, content, {
       ...optionObject,

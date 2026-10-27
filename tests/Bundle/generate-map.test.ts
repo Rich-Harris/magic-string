@@ -239,6 +239,18 @@ describe('bundle', () => {
       assert.equal(loc.name, 'two')
     })
 
+    it('should recover original names when the overwritten range was split earlier', () => {
+      const b = new Bundle()
+      const one = new MagicString('function one () {}', { filename: 'one.js' })
+      one.appendLeft(10, '')
+      one.overwrite(9, 12, 'uno', { storeName: true })
+      b.addSource(one)
+
+      const decoded = b.generateDecodedMap()
+      assert.deepEqual(decoded.names, ['one'])
+      assert.deepEqual(decoded.mappings[0].find(segment => segment[0] === 9), [9, 0, 0, 9, 0])
+    })
+
     it('should not duplicate a name shared by multiple sources', () => {
       const b = new Bundle()
 

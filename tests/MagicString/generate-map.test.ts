@@ -181,6 +181,30 @@ describe('magicString', () => {
       assert.equal(loc.name, 'Foo')
     })
 
+    it('should recover the original name when the overwritten range was split earlier', () => {
+      const s = new MagicString('function Foo () {}')
+
+      s.appendLeft(10, '')
+      s.overwrite(9, 12, 'Bar', { storeName: true })
+
+      const map = s.generateMap({ file: 'output.js', source: 'input.js' })
+      const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
+
+      assert.deepEqual(map.names, ['Foo'])
+      assert.equal(smc.originalPositionFor({ line: 1, column: 9 }).name, 'Foo')
+    })
+
+    it('should recover the original name after part of the range was removed', () => {
+      const s = new MagicString('foo.bar')
+
+      s.remove(3, 4)
+      s.overwrite(0, 7, 'baz', { storeName: true })
+
+      const decoded = s.generateDecodedMap()
+      assert.deepEqual(decoded.names, ['foo.bar'])
+      assert.deepEqual(decoded.mappings, [[[0, 0, 0, 0, 0]]])
+    })
+
     it('should generate one segment per replacement', () => {
       const s = new MagicString('var answer = 42')
       s.overwrite(4, 10, 'number', { storeName: true })
