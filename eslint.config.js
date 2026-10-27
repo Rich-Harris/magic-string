@@ -3,6 +3,6 @@ import { antfu } from '@antfu/eslint-config'
 
 export default antfu().append(
   {
-    ignores: ['benchmark/data*.js', 'example/app*.js'],
+    ignores: ['benchmark/data*.js'],
   },
 )
