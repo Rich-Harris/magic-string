@@ -96,6 +96,15 @@ describe('magicString', () => {
       assert.equal(s.toString(), '  abc\n>>def')
     })
 
+    it('should not indent an excluded edited chunk that was moved', () => {
+      const s = new MagicString('abc\ndef')
+      s.overwrite(4, 7, 'X\nY')
+      s.move(4, 7, 0)
+
+      s.indent('  ', { exclude: [[4, 7]] })
+      assert.equal(s.toString(), 'X\nYabc\n')
+    })
+
     it('should not indent excluded edited content', () => {
       const s = new MagicString('abc\ndef\nghi')
       s.overwrite(4, 7, 'XXX')
