@@ -653,6 +653,9 @@ export class MagicString {
 
     const first = this.byStart.get(start)
     const last = this.byEnd.get(end)
+    if (!first || !last) {
+      throw new MagicStringError(`range ${start}–${end} is out of bounds`)
+    }
 
     // The splicing below assumes the chunks spanning [start, end) are still a
     // forward run in the current list. An earlier move can have interleaved a
@@ -663,7 +666,7 @@ export class MagicString {
     // Only move() reorders chunks, so this is skipped until one has run, which
     // keeps the common single-move case free of the walk.
     if (this.hasMovedChunks) {
-      let cursor = first
+      let cursor: Chunk | null = first
       while (cursor !== last) {
         cursor = cursor.next
         if (!cursor || cursor.start < start || cursor.end > end) {
@@ -724,10 +727,10 @@ export class MagicString {
     if (newRight)
       newRight.previous = last
 
-    if (!first.previous)
-      this.firstChunk = last.next
-    if (!last.next) {
-      this.lastChunk = first.previous
+    if (!oldLeft)
+      this.firstChunk = oldRight! // the range is not the whole string: `index` would be inside it
+    if (!oldRight) {
+      this.lastChunk = oldLeft! // same reason
       this.lastChunk.next = null
     }
 
@@ -837,45 +840,31 @@ export class MagicString {
       })
     }
 
-    const first = this.byStart.get(start)
-    const last = this.byEnd.get(end)
+    const first = this.byStart.get(start)! // start < end <= original.length, so _split(start) left a chunk here
 
-    /* v8 ignore else -- unreachable: a valid start/end always yields a `first` chunk */
-    if (first) {
-      // check the whole range before editing it, so a call that throws
-      // leaves the string as it was
-      let chunk = first
-      while (chunk !== last) {
-        if (chunk.next !== this.byStart.get(chunk.end)) {
-          throw new MagicStringError('cannot overwrite across a split point')
-        }
-        chunk = chunk.next
+    // check the whole range before editing it, so a call that throws
+    // leaves the string as it was
+    for (let chunk = first; chunk.end < end;) {
+      const next = chunk.next
+      if (next === null || next !== this.byStart.get(chunk.end)) {
+        throw new MagicStringError('cannot overwrite across a split point')
       }
-
-      chunk = first
-      while (chunk !== last) {
-        chunk = chunk.next
-        // `first` takes the replacement and the rest of the range is emptied.
-        // Unless overwriting, inserts on these chunks are kept as they are on
-        // `first`, so the result does not depend on where the range was split
-        chunk.edit('', false, !overwrite)
-        // emptied, not removed: `first` holds the replacement for this chunk too
-        chunk.replacesUntil = -1
-        chunk.replacedFrom = start
-      }
-
-      first.edit(content, storeName, !overwrite)
-      first.replacesUntil = end
-      first.replacedFrom = -1
+      chunk = next
     }
-    else {
-      // must be inserting at the end
-      const newChunk = new Chunk(start, end, '').edit(content, storeName)
 
-      // TODO last chunk in the array may not be the last chunk, if it's moved...
-      last.next = newChunk
-      newChunk.previous = last
+    for (let chunk = first.next; chunk !== null && chunk.start < end; chunk = chunk.next) {
+      // `first` takes the replacement and the rest of the range is emptied.
+      // Unless overwriting, inserts on these chunks are kept as they are on
+      // `first`, so the result does not depend on where the range was split
+      chunk.edit('', false, !overwrite)
+      // emptied, not removed: `first` holds the replacement for this chunk too
+      chunk.replacesUntil = -1
+      chunk.replacedFrom = start
     }
+
+    first.edit(content, storeName, !overwrite)
+    first.replacesUntil = end
+    first.replacedFrom = -1
 
     /* v8 ignore next 2 -- DEBUG is always true in tests */
     if (DEBUG)
