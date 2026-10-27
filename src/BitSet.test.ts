@@ -35,4 +35,15 @@ describe('bitSet', () => {
     assert.equal(clone.has(9), true)
     assert.equal(set.has(9), false)
   })
+
+  it('visits set bits in ascending order', () => {
+    const set = new BitSet()
+    for (const n of [70, 0, 31, 32, 5])
+      set.add(n)
+
+    const visited: number[] = []
+    set.forEach(n => visited.push(n))
+
+    assert.deepEqual(visited, [0, 5, 31, 32, 70])
+  })
 })

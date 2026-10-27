@@ -232,10 +232,7 @@ export class Bundle {
       }
       last = sourceLast
 
-      for (let index = 0; index < magicString.original.length; index += 1) {
-        if (magicString.sourcemapLocations.has(index))
-          combined.sourcemapLocations.add(index + offset)
-      }
+      magicString.sourcemapLocations.forEach(index => combined.sourcemapLocations.add(index + offset))
       magicString.storedNames.forEach(name => combined.storedNames.add(name))
       if (magicString.hasMovedChunks)
         hasMovedChunks = true
