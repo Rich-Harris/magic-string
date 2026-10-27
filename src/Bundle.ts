@@ -129,6 +129,10 @@ export class Bundle {
     return this
   }
 
+  /**
+   * Appends `str` as a new source without a filename. Only `options.separator` is read, and it defaults to `''`
+   * rather than to the bundle separator.
+   */
   append(str: string, options?: BundleOptions): this {
     this.addSource({
       content: new MagicString(str),
@@ -138,6 +142,10 @@ export class Bundle {
     return this
   }
 
+  /**
+   * Returns an independent copy of the bundle: every source's `MagicString` is cloned, so later edits to either
+   * bundle do not affect the other.
+   */
   clone(): this {
     const bundle = new Bundle({
       intro: this.intro,
@@ -261,6 +269,10 @@ export class Bundle {
     return combined
   }
 
+  /**
+   * Generates a sourcemap object with raw mappings in array form, rather than encoded as a string.
+   * Takes the same options as `generateMap`.
+   */
   generateDecodedMap(options: BundleSourceMapOptions = {}): DecodedSourceMapOrMissingContent {
     const mappings = new Mappings(options.hires)
     const { names, x_google_ignoreList } = this._generateMappings(mappings)
@@ -272,6 +284,10 @@ export class Bundle {
     }
   }
 
+  /**
+   * Generates a version 3 sourcemap covering every source that has a `filename`.
+   * Options are as per `MagicString#generateMap`, except that `includeContent` can also be a per-source function.
+   */
   generateMap(
     options: BundleSourceMapOptions = {},
   ): Omit<SourceMap, 'sourcesContent'> & { sourcesContent: Array<string | null> } {
@@ -344,6 +360,9 @@ export class Bundle {
     }
   }
 
+  /**
+   * Returns the most common indent string among the sources, falling back to a tab.
+   */
   getIndentString(): string {
     const indentStringCounts = new Map<string, number>()
 
@@ -359,6 +378,10 @@ export class Bundle {
     return [...indentStringCounts.entries()].sort(([, a], [, b]) => b - a)[0]?.[0] ?? '\t'
   }
 
+  /**
+   * Prefixes each line of every source and of the intro with `indentStr`, guessed with `getIndentString()`
+   * when not supplied. Each source's `indentExclusionRanges` are left unindented.
+   */
   indent(indentStr?: string): this {
     if (!arguments.length) {
       indentStr = this.getIndentString()
@@ -391,11 +414,17 @@ export class Bundle {
     return this
   }
 
+  /**
+   * Prepends `str` to the bundle's intro.
+   */
   prepend(str: string): this {
     this.intro = str + this.intro
     return this
   }
 
+  /**
+   * Returns the intro followed by every source's generated string, joined by their separators.
+   */
   toString(): string {
     const body = this.sources
       .map((source, i) => {
@@ -408,6 +437,9 @@ export class Bundle {
     return this.intro + body
   }
 
+  /**
+   * Returns true if the bundle's output is empty (disregarding white space).
+   */
   isEmpty(): boolean {
     if (this.intro.length && this.intro.trim())
       return false
@@ -420,6 +452,9 @@ export class Bundle {
     return true
   }
 
+  /**
+   * Returns the length of the bundle's output; unlike `MagicString#length`, this equals `bundle.toString().length`.
+   */
   length(): number {
     return this.sources.reduce((length, source, i) => {
       // mirrors toString(): every source but the first is preceded by a separator
@@ -427,14 +462,23 @@ export class Bundle {
     }, this.intro.length)
   }
 
+  /**
+   * Removes empty lines from the start and end.
+   */
   trimLines(): this {
     return this.trim('[\\r\\n]')
   }
 
+  /**
+   * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start and end.
+   */
   trim(charType?: string): this {
     return this.trimStart(charType).trimEnd(charType)
   }
 
+  /**
+   * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the start.
+   */
   trimStart(charType?: string): this {
     const rx = new RegExp(`^${charType || '\\s'}+`)
     this.intro = this.intro.replace(rx, '')
@@ -461,6 +505,9 @@ export class Bundle {
     return this
   }
 
+  /**
+   * Trims content matching `charType` (defaults to `\s`, i.e. whitespace) from the end.
+   */
   trimEnd(charType?: string): this {
     const rx = new RegExp(`${charType || '\\s'}+$`)
 

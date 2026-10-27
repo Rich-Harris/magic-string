@@ -167,6 +167,9 @@ export class MagicString {
   /** @internal */
   declare indentExclusionRanges: MagicStringOptions['indentExclusionRanges']
 
+  /**
+   * Wraps `string` for editing; every index passed to the editing methods refers to this original string.
+   */
   constructor(string: string, options: MagicStringOptions = {}) {
     const chunk = new Chunk(0, string.length, string)
 
@@ -268,7 +271,10 @@ export class MagicString {
   }
 
   /**
-   * Does what you'd expect.
+   * Returns an independent copy: the chunk list, string-level intro/outro,
+   * sourcemap locations, stored names, indent exclusion ranges, `offset`,
+   * `filename` and `ignoreList` are all copied; later edits to either string
+   * do not affect the other.
    */
   clone(): this {
     const cloned = new MagicString(this.original, {
@@ -382,6 +388,10 @@ export class MagicString {
     return this.indentStr
   }
 
+  /**
+   * Returns the indentation string guessed from the original content, falling back to a single tab character.
+   * This is the value `s.indent()` uses when no prefix is supplied.
+   */
   getIndentString(): string {
     this._ensureindentStr()
     return this.indentStr ?? '\t'
@@ -953,6 +963,9 @@ export class MagicString {
     return this
   }
 
+  /**
+   * Returns the last character of the generated string, or `''` if it is empty.
+   */
   lastChar(): string {
     if (this.outro.length)
       return this.outro[this.outro.length - 1]
@@ -971,6 +984,9 @@ export class MagicString {
     return ''
   }
 
+  /**
+   * Returns everything after the last newline in the generated string, or the whole string if there is no newline.
+   */
   lastLine(): string {
     let lineIndex = this.outro.lastIndexOf(n)
     if (lineIndex !== -1)
@@ -1214,6 +1230,11 @@ export class MagicString {
     return true
   }
 
+  /**
+   * Returns the length of the generated string, counting only content attached to the original characters.
+   * Content outside the string body (`s.prepend()`/`s.append()`, and inserts before the first or after the last
+   * character) is not counted, so this can differ from `s.toString().length`.
+   */
   length(): number {
     let chunk: Chunk | null = this.firstChunk
     let length = 0
