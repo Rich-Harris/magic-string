@@ -453,7 +453,7 @@ export class MagicString {
     options = options || {}
 
     // Process exclusion ranges
-    const isExcluded: Record<number, boolean> = {}
+    const isExcluded = new BitSet()
 
     if (options.exclude) {
       const exclusions
@@ -461,9 +461,8 @@ export class MagicString {
           ? [options.exclude as ExclusionRange]
           : (options.exclude as ExclusionRange[])
       exclusions.forEach((exclusion) => {
-        for (let i = exclusion[0]; i < exclusion[1]; i += 1) {
-          isExcluded[i] = true
-        }
+        for (let i = exclusion[0]; i < exclusion[1]; i += 1)
+          isExcluded.add(i)
       })
     }
 
@@ -511,11 +510,11 @@ export class MagicString {
 
       // content added with `appendRight`/`prependRight` is emitted before the
       // chunk itself, so it has to be indented before the chunk is walked
-      if (!isExcluded[chunk.start])
+      if (!isExcluded.has(chunk.start))
         chunk.intro = indentPiece(chunk.intro)
 
       if (chunk.edited) {
-        if (!isExcluded[chunk.start]) {
+        if (!isExcluded.has(chunk.start)) {
           chunk.content = indentPiece(chunk.content)
         }
         else if (chunk.content) {
@@ -527,7 +526,7 @@ export class MagicString {
         charIndex = chunk.start
 
         while (charIndex < end) {
-          if (!isExcluded[charIndex]) {
+          if (!isExcluded.has(charIndex)) {
             const char = this.original.charCodeAt(charIndex)
 
             if (char === NEWLINE_CHAR) {
@@ -568,7 +567,7 @@ export class MagicString {
       }
 
       // ...and content added with `appendLeft`/`prependLeft` is emitted after it
-      if (!isExcluded[chunk.end - 1])
+      if (!isExcluded.has(chunk.end - 1))
         chunk.outro = indentPiece(chunk.outro)
 
       charIndex = chunk.end
