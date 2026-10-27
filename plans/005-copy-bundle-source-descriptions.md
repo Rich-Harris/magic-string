@@ -153,6 +153,9 @@ lines 177-178 (`toMagicString`), 306-307 (`_generateMappings`), 421-422
 - `tests/Bundle/addSource.test.ts` (new tests; update the local `BundleInternals`
   type if needed)
 - `tests/Bundle/trim.test.ts` (one new test)
+- `tests/Bundle/clone.test.ts` — only its local `BundleInternals` type, which
+  (like the one in `addSource.test.ts`) must gain `separator: string` and type
+  `content` as the base `MagicString` once `sources` is `BundleSource[]`
 
 **Out of scope**:
 - `src/MagicString.ts`, `src/index.ts` (type re-exports are plan 010).
@@ -199,12 +202,13 @@ Add to `tests/Bundle/addSource.test.ts` inside `describe('addSource')`:
     })
 ```
 
-Add to `tests/Bundle/trim.test.ts` inside `describe('trimEnd')` (or the
-closest existing `describe`):
+Add to `tests/Bundle/trim.test.ts` inside `describe('trim')` (content is
+shared by reference on purpose, so the test isolates the *separator* with an
+empty content that trimming leaves untouched):
 
 ```ts
-    it('does not trim a sibling bundle that was given the same description', () => {
-      const description = { content: new MagicString('  ') }
+    it('does not trim the separator of a sibling bundle given the same description', () => {
+      const description = { content: new MagicString(''), separator: ' \n' }
       const b1 = new Bundle()
       const b2 = new Bundle()
 
@@ -214,7 +218,7 @@ closest existing `describe`):
       b1.trimEnd()
 
       assert.equal(b1.toString(), 'a')
-      assert.equal(b2.toString(), 'a\n  ')
+      assert.equal(b2.toString(), 'a \n')
     })
 ```
 

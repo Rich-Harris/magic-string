@@ -31,7 +31,7 @@ compiled to `false`), not the tests, not any doc. The labels are already wrong
 (`prependLeft` and `prependRight` both time `'insertRight'`; `update` times
 `'overwrite'`; `_split` starts a timer that `_splitChunk` ends, so an early
 return leaves it dangling) — nobody noticed because nobody looks. The cost is
-real: ~60 lines of noise across the hottest file, 22 `/* v8 ignore … DEBUG */`
+real: ~60 lines of noise across the hottest file, 19 `/* v8 ignore … DEBUG */`
 comments that exist only to excuse it from coverage, every test paying two
 `hrtime` calls per call, and the test build exercising a `Chunk` shape
 (non-enumerable `previous`/`next`) that production never sees. Removing it
@@ -41,11 +41,11 @@ depends on tree-shaking.
 ## Current state
 
 - `src/utils/Stats.ts` — the timer class (`import process from 'node:process'`).
-- `src/utils/Stats.test.ts` — its unit test (2 tests).
+- `src/utils/Stats.test.ts` — its unit test (3 tests).
 - `src/MagicString.ts` — `declare const DEBUG: boolean` (line 40);
   `declare stats: Stats` field (~line 169); constructor
   `Object.defineProperty(this, 'stats', { value: new Stats() })` under `if (DEBUG)`
-  (lines 197-200); 20 `if (DEBUG) this.stats.time*(...)` pairs, each preceded by
+  (lines 197-200); 18 `if (DEBUG) this.stats.time*(...)` sites, each preceded by
   `/* v8 ignore next 2 -- DEBUG is always true in tests */` at lines 234, 249,
   267, 282, 645, 743, 809, 879, 907, 922, 938, 953, 987, 1010, 1040, 1055,
   1199, 1241 (at `abdc931`); `import { Stats } from './utils/Stats.ts'` (line 12).
@@ -100,7 +100,7 @@ it, and `v8 ignore next 2 -- match.index…` in `_replaceRegexp`).
 |-----------|-------------------------------|---------------------|
 | Install   | `pnpm install`                | exit 0              |
 | Typecheck | `pnpm run typecheck`          | exit 0              |
-| Tests     | `pnpm test`                   | all pass; count drops by 2 (Stats tests removed) |
+| Tests     | `pnpm test`                   | all pass; count drops by 3 (Stats tests removed) |
 | Coverage  | `pnpm exec vitest run --coverage` | `All files` ≥ 99.5 % statements |
 | Lint      | `pnpm run lint`               | exit 0              |
 | Build     | `pnpm run build`              | `✔ Build complete`  |
@@ -136,7 +136,7 @@ it, and `v8 ignore next 2 -- match.index…` in `_replaceRegexp`).
 ### Step 1: Baseline
 
 `pnpm install && pnpm test` → note the total test count (461 at `abdc931`).
-`grep -c "if (DEBUG)" src/MagicString.ts` → `20` (19 timer sites + the constructor).
+`grep -c "if (DEBUG)" src/MagicString.ts` → `19` (18 timer sites + the constructor).
 
 ### Step 2: Strip `MagicString.ts`
 
@@ -186,8 +186,8 @@ was `Stats.ts`).
 
 `pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build`.
 
-**Verify**: typecheck/lint exit 0; tests: `Test Files 40 passed`, `Tests 459 passed`
-(461 − 2 Stats tests; if plan 001 landed first, 460); build completes and
+**Verify**: typecheck/lint exit 0; tests: `Test Files 40 passed`, `Tests 458 passed`
+(461 − 3 Stats tests; if plan 001 landed first, 459); build completes and
 `grep -c "hrtime\|node:process" dist/index.mjs` → `0`.
 
 `pnpm exec vitest run --coverage` → `All files` statements ≥ 99.5 %, and the
@@ -197,7 +197,7 @@ was `Stats.ts`).
 
 - No new tests: this plan deletes dead code and must not change behaviour. The
   existing 459 tests are the characterization net.
-- Deleted: `src/utils/Stats.test.ts` (2 tests).
+- Deleted: `src/utils/Stats.test.ts` (3 tests).
 - Verification: `pnpm test` → all pass; `pnpm exec vitest run src/index.test.ts`
   → 3 pass (bundle shape unchanged).
 
@@ -214,7 +214,7 @@ was `Stats.ts`).
 
 Stop and report back (do not improvise) if:
 
-- `grep -c "if (DEBUG)" src/MagicString.ts` at step 1 is not `20`, or `Stats`
+- `grep -c "if (DEBUG)" src/MagicString.ts` at step 1 is not `19`, or `Stats`
   is referenced from any file other than `src/MagicString.ts` and its own test.
 - Any test other than the two deleted `Stats` tests changes outcome.
 - `src/index.test.ts` "keeps MagicString internal state non-enumerable" fails

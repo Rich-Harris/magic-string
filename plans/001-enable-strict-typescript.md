@@ -241,7 +241,9 @@ Run `pnpm install && pnpm run typecheck && pnpm test`. Then run
 For each site below, change the declaration of the loop variable rather than
 adding `!`:
 
-- `clone()` ~line 298: `let originalChunk: Chunk | null = this.firstChunk`.
+- `clone()` ~line 298: `let originalChunk: Chunk | null = this.firstChunk`, and annotate
+  `const nextOriginalChunk: Chunk | null = originalChunk.next` (otherwise TS7022:
+  implicit `any` from the self-referencing initializer).
 - `indent()` ~line 507: `let chunk: Chunk | null = this.firstChunk`. The
   `indentAt` closure already uses `chunk!` — keep those four (they are inside a
   closure invoked only while `chunk` is non-null; add one comment above the
@@ -282,10 +284,13 @@ adding `!`:
   call and the two `replacement(...)` calls), and call it as
   `getReplacement(match, match.index, this.original)` after the null guard.
   Do not use `!`.
-- `Bundle.toMagicString()` line 251: `first`/`last` are narrowed by the
-  `if (!first) return combined` guard at 240, but `last` is not. Replace the
-  two `!` at 248 and the assignment at 251 by narrowing both at once:
-  `if (!first || !last) { combined.intro = pending; return combined }`.
+- `Bundle.toMagicString()` line 251: `first`/`last` are assigned inside a
+  `this.sources.forEach(...)` callback, which TypeScript does not follow, so
+  after any guard they narrow to `never`. Convert the `forEach` to
+  `for (const [i, source] of this.sources.entries())` (the empty-source
+  `return` becomes `continue`), then narrow both at once with
+  `if (!first || !last) { combined.intro = pending; return combined }` and drop
+  the `!` at 248.
 
 **Verify**: `pnpm exec tsc --strict 2>&1 | grep -c "error TS"` → a number ≤ 26
 (only `move`, `update`, and the two `Bundle` indexing groups remain).
