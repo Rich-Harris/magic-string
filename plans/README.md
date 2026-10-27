@@ -21,18 +21,32 @@ Verification baseline at `abdc931`: `pnpm run typecheck` ✔, `pnpm run lint` �
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 001 | Compile `src/` under `strict: true` with no new type assertions | P1 | M | — | DONE — #371 |
-| 002 | Remove the dead `DEBUG`/`Stats` timing instrumentation | P1 | S | — | IN PROGRESS — PR #372 |
+| 002 | Remove the dead `DEBUG`/`Stats` timing instrumentation | P1 | S | — | DONE — #372 |
 | 003 | Validate indices the same way in every index-taking method | P1 | M | 001, 002 | DONE — #373 |
 | 004 | Emit the stored name for every `storeName` overwrite (split ranges, legacy `overwrite(…, true)`) | P1 | S | 001 (soft) | DONE — #374 |
-| 005 | Make `Bundle.addSource()` store its own record instead of mutating the caller's object | P1 | S | 001 (soft) | IN PROGRESS — PR #375 |
-| 006 | Fix `indent({ exclude })` on moved edited chunks; carry state through `toMagicString()`; CRLF intro indent | P2 | S | 005 (soft) | TODO |
-| 009 | Benchmark the hot paths on `vitest bench`, with a CI run on every PR | P2 | M | — | TODO |
-| 007 | `slice()` start lookup in O(1) when nothing has moved; document the moved-content rule | P2 | M | 003 (soft), 009 (measure) | TODO |
-| 008 | Remove avoidable allocations and O(n²) lookups (names index, `Bundle.length`, range mappings, indent BitSet, `__proto__` filename) | P2 | M | 004, 005, 009 (measure) | TODO |
-| 010 | Share the chunk→mappings walk; drop stale leftovers and `example/`; sync README/JSDoc/type exports | P3 | M | 004, 005, 008 | TODO |
-| 011 | Spike: reference edit model + seeded random edit sequences; triage divergences | P2 | M | 003 (soft) | TODO |
+| 005 | Make `Bundle.addSource()` store its own record instead of mutating the caller's object | P1 | S | 001 (soft) | DONE — #375 |
+| 006 | Fix `indent({ exclude })` on moved edited chunks; carry state through `toMagicString()`; CRLF intro indent | P2 | S | 005 (soft) | IN PROGRESS — PR #377 (step 3 dropped, see notes) |
+| 009 | Benchmark the hot paths on `vitest bench`, with a CI run on every PR | P2 | M | — | IN PROGRESS — PR #380 |
+| 007 | `slice()` start lookup in O(1) when nothing has moved; document the moved-content rule | P2 | M | 003 (soft), 009 (measure) | IN PROGRESS — PR #378 |
+| 008 | Remove avoidable allocations and O(n²) lookups (names index, `Bundle.length`, range mappings, indent BitSet, `__proto__` filename) | P2 | M | 004, 005, 009 (measure) | IN PROGRESS — PR #379 |
+| 010 | Share the chunk→mappings walk; drop stale leftovers and `example/`; sync README/JSDoc/type exports | P3 | M | 004, 005, 008 | IN PROGRESS — PR #382 (stacked on #379) |
+| 011 | Spike: reference edit model + seeded random edit sequences; triage divergences | P2 | M | 003 (soft) | IN PROGRESS — PR #381 (no divergences; 2 open questions in tests/fuzz/FINDINGS.md) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
+
+## Corrections learned during execution
+
+- 006: step 2's one-token fix also needs excluded edited content to update the
+  line-start flag (otherwise the following text is indented mid-line). Step 3
+  was wrong: `MagicString.indent()` never reads its own `indentExclusionRanges`,
+  so `toMagicString()` dropping them has no effect; step 3.1 landed separately
+  as #369.
+- 008 part E: keep the `index < original.length` bound when copying
+  sourcemap locations, or out-of-range locations leak into the next source.
+- 009: vitest 5 moved `bench` onto the test context (`it(name, async ({ bench }) => bench.compare(...))`),
+  tables only print with `--reporter=verbose` off-TTY, and it *does* support
+  stored baselines (`writeResult`/`bench.from()`). The CI step needs `shell: bash` for `pipefail`.
+- 011: `slice` throws for an anchor inside *any* edited chunk, removed ones included; default sequence count is 1000 (3000 took ~9 s).
 
 ## Dependency notes
 
