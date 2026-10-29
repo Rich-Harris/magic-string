@@ -373,5 +373,11 @@ describe('magicString', () => {
       assert.strictEqual(new MagicString('abcd').remove(1, 3).replace(/(?=c)/, '-').toString(), 'ad')
       assert.strictEqual(new MagicString('abcd').remove(1, 2).remove(2, 3).replace(/(?=c)/, '-').toString(), 'ad')
     })
+
+    it('replaces an empty match in an empty string', () => {
+      assert.strictEqual(new MagicString('').replace(/x?/, 'b').toString(), ''.replace(/x?/, 'b'))
+      assert.strictEqual(new MagicString('').replace(/a*/g, 'b').toString(), ''.replace(/a*/g, 'b'))
+      assert.strictEqual(new MagicString('').replaceAll(/x*/g, 'b').toString(), ''.replaceAll(/x*/g, 'b'))
+    })
   })
 })

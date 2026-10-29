@@ -1405,9 +1405,10 @@ export class MagicString {
     if (atBoundary && start === end) {
       // An empty range at a chunk boundary overlaps neither chunk, but it lies
       // inside removed content when the characters on both sides are removed,
-      // just as it does when no split separates them
+      // just as it does when no split separates them. An empty original is a
+      // single empty chunk on both sides of 0, and nothing in it was removed
       const previous = this.byEnd.get(start)
-      return !!previous && previous.content === '' && atBoundary.content === ''
+      return !!previous && previous !== atBoundary && previous.content === '' && atBoundary.content === ''
     }
     let chunk = this._chunkAt(start)
     while (chunk && chunk.start < end) {
