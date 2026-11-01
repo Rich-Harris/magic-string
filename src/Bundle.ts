@@ -400,7 +400,10 @@ export class Bundle {
         indentStart, // : trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
       })
 
-      trailingNewline = source.content.lastChar() === '\n'
+      // an empty source adds nothing, so the next one starts wherever this one
+      // would have: at the start of a line if `indentStart` says so
+      const lastChar = source.content.lastChar()
+      trailingNewline = lastChar === '' ? indentStart : lastChar === '\n'
     })
 
     if (this.intro) {
