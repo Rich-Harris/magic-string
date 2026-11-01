@@ -806,7 +806,10 @@ export class MagicString {
       chunk = next
     }
 
-    for (let chunk = first.next; chunk !== null && chunk.start < end; chunk = chunk.next) {
+    // walk the range itself, as the check above does: once `first` has been
+    // moved, the chunk after it in the output can be one from before `start`
+    for (let chunk = first; chunk.end < end;) {
+      chunk = chunk.next! // the check above found a successor for every chunk in the range
       // `first` takes the replacement and the rest of the range is emptied.
       // Unless overwriting, inserts on these chunks are kept as they are on
       // `first`, so the result does not depend on where the range was split
