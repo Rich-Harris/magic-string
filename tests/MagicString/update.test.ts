@@ -232,6 +232,16 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcghidefoofjkl')
     })
 
+    it('leaves the content around a moved range alone', () => {
+      // after the move, the chunk after the range in the output starts before
+      // it in the original, and must not be taken for part of the range
+      assert.equal(new MagicString('ab').move(1, 2, 0).update(1, 2, 'P').toString(), 'Pa')
+      assert.equal(new MagicString('abc').move(1, 2, 0).update(1, 2, 'P').toString(), 'Pac')
+      assert.equal(new MagicString('abc').move(2, 3, 0).update(2, 3, 'P').toString(), 'Pab')
+      assert.equal(new MagicString('abcd').move(2, 4, 0).update(2, 4, 'P').toString(), 'Pab')
+      assert.equal(new MagicString('ab').move(1, 2, 0).replace('b', 'P').toString(), 'Pa')
+    })
+
     it('allows later insertions at the end with overwrite option', () => {
       const s = new MagicString('abcdefg')
 
