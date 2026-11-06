@@ -733,6 +733,29 @@ describe('magicString', () => {
       }
     })
 
+    it('maps every chunk of a line with many edits', () => {
+      const n = 20
+      const s = new MagicString(`${'a;'.repeat(n)}\n${'a;'.repeat(n)}`)
+      for (let k = 0; k < 2 * n; k++) {
+        const start = k * 2 + (k < n ? 0 : 1)
+        s.overwrite(start, start + 1, 'bb')
+      }
+
+      const line = (l: number) => Array.from({ length: n }, (_, k) => [[3 * k, 0, l, 2 * k], [3 * k + 2, 0, l, 2 * k + 1]]).flat()
+      assert.deepEqual(s.generateDecodedMap().mappings, [line(0), line(1)])
+    })
+
+    it('finds the line breaks of chunks moved before earlier ones', () => {
+      const s = new MagicString('ab\ncd\nef')
+      s.move(6, 8, 0)
+
+      assert.deepEqual(s.generateDecodedMap().mappings, [
+        [[0, 0, 2, 0], [2, 0, 0, 0]],
+        [[0, 0, 1, 0]],
+        [],
+      ])
+    })
+
     it('generates correct mappings that are larger than the encoder buffer', () => {
       // one segment per character, far exceeding the 16KB encoder buffer
       const wide = new MagicString('a'.repeat(20000))

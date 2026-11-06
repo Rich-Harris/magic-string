@@ -668,6 +668,18 @@ describe('bundle', () => {
       assert.equal(map.sourcesContent[1], null)
     })
 
+    it('finds the line breaks of each source on its own', () => {
+      const b = new Bundle()
+        .addSource({ filename: 'a.js', content: new MagicString('ab') })
+        .addSource({ filename: 'b.js', content: new MagicString('cd\nef') })
+
+      assert.deepEqual(b.generateDecodedMap().mappings, [
+        [[0, 0, 0, 0]],
+        [[0, 1, 0, 0]],
+        [[0, 1, 1, 0]],
+      ])
+    })
+
     it('keeps the mappings intact when includeContent generates another map', () => {
       // includeContent runs while the bundle's own mappings are still being encoded,
       // and a map generated inside it used to overwrite the encoder's pending output
