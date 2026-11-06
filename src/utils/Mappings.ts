@@ -23,6 +23,10 @@ export class Mappings {
   declare rawRangeMappings: SourceMapRangeMappings | undefined
   declare rawRangeMappingsIndices: number[]
   declare encoder: MappingsEncoder | null
+  // the last `original.indexOf('\n', newlineSearchFrom)`, reused by the lo-res
+  // walk so many chunks on one long line don't each rescan it to its end
+  declare newlineSearchFrom: number
+  declare newlineIndex: number
 
   constructor(hires: SourceMapOptions['hires'], encoder: MappingsEncoder | null = null) {
     this.hires = hires
@@ -35,6 +39,8 @@ export class Mappings {
     // must not pay for a per-line array nor advertise an empty `rangeMappings`
     this.rawRangeMappings = hires === 'experimental-range' ? [this.rawRangeMappingsIndices] : undefined
     this.encoder = encoder
+    this.newlineSearchFrom = Infinity
+    this.newlineIndex = -1
   }
 
   private nextLine(): void {
@@ -62,6 +68,8 @@ export class Mappings {
   addMagicString(magicString: MagicString, sourceIndex: number, nameIndex: Map<string, number>): void {
     const { original } = magicString
     const locate = getLocator(original)
+    // the cached newline search belongs to the previous string
+    this.newlineSearchFrom = Infinity
 
     if (magicString.intro)
       this.advance(magicString.intro)
@@ -198,7 +206,7 @@ export class Mappings {
       // char by char
       const bits = sourcemapLocations.bits
       while (i < end) {
-        let newline = original.indexOf('\n', i)
+        let newline = this.nextNewline(original, i)
         if (newline === -1 || newline > end)
           newline = end
         if (newline > i) {
@@ -229,6 +237,16 @@ export class Mappings {
         i = newline + 1
       }
     }
+  }
+
+  // `original.indexOf('\n', i)`, answered from the previous search when `i`
+  // lies between where that search started and the newline it found
+  private nextNewline(original: string, i: number): number {
+    if (i < this.newlineSearchFrom || (this.newlineIndex !== -1 && i > this.newlineIndex)) {
+      this.newlineSearchFrom = i
+      this.newlineIndex = original.indexOf('\n', i)
+    }
+    return this.newlineIndex
   }
 
   advance(str: string): void {
