@@ -393,17 +393,25 @@ export class Bundle {
     let trailingNewline = !this.intro || this.intro.slice(-1) === '\n'
 
     this.sources.forEach((source, i) => {
-      const indentStart = trailingNewline || (i > 0 && /\r?\n$/.test(source.separator))
+      // `trailingNewline` tracks whether the output so far ends a line. A
+      // separator is output too: one ending in a newline starts a line, and one
+      // with other visible text continues it
+      if (i > 0) {
+        if (/\n$/.test(source.separator))
+          trailingNewline = true
+        else if (/\S/.test(source.separator))
+          trailingNewline = false
+      }
 
       source.content.indent(indentStr, {
         exclude: source.indentExclusionRanges,
-        indentStart, // : trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+        indentStart: trailingNewline,
       })
 
-      // an empty source adds nothing, so the next one starts wherever this one
-      // would have: at the start of a line if `indentStart` says so
+      // an empty source leaves the output as it was
       const lastChar = source.content.lastChar()
-      trailingNewline = lastChar === '' ? indentStart : lastChar === '\n'
+      if (lastChar !== '')
+        trailingNewline = lastChar === '\n'
     })
 
     if (this.intro) {

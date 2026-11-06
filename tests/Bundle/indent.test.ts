@@ -145,5 +145,32 @@ describe('bundle', () => {
       b.addSource(new MagicString('b'))
       assert.equal(b.indent('>').toString(), '>ab')
     })
+
+    it('does not indent the source after an empty one whose separator continues the line', () => {
+      const b = new Bundle({ separator: '' })
+      b.addSource(new MagicString('a\n'))
+      b.addSource({ separator: ';', content: new MagicString('') })
+      b.addSource(new MagicString('b\nc'))
+      assert.equal(b.indent('>').toString(), '>a\n;b\n>c')
+
+      // a separator that ends a line still starts the next one
+      const c = new Bundle({ separator: '' })
+      c.addSource(new MagicString('a'))
+      c.addSource({ separator: ';\n', content: new MagicString('') })
+      c.addSource(new MagicString('b'))
+      assert.equal(c.indent('>').toString(), '>a;\n>b')
+    })
+
+    it('does not indent a source after a separator that continues the line', () => {
+      const b = new Bundle({ separator: '' })
+      b.addSource(new MagicString('a\n'))
+      b.addSource({ separator: ';', content: new MagicString('b\nc') })
+      assert.equal(b.indent('>').toString(), '>a\n;b\n>c')
+
+      const c = new Bundle({ separator: '' })
+      c.addSource(new MagicString(''))
+      c.addSource({ separator: ';', content: new MagicString('a') })
+      assert.equal(c.indent('>').toString(), ';a')
+    })
   })
 })
