@@ -1,4 +1,4 @@
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 import { MagicStringError } from '../../src/index.ts'
 import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
@@ -11,8 +11,10 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcdeFGHijkl')
     })
 
-    it('should warn and treat `true` as the legacy storeName option', () => {
-      const s = new MagicString('abcdefghijkl')
+    it('should warn and treat `true` as the legacy storeName option', async () => {
+      vi.resetModules()
+      const { IntegrityCheckingMagicString: IsolatedMagicString } = await import('../__utils/IntegrityCheckingMagicString.ts')
+      const s = new IsolatedMagicString('abcdefghijkl')
       const warn = console.warn
       let warned = 0
       console.warn = () => {
@@ -25,7 +27,7 @@ describe('magicString', () => {
       finally {
         console.warn = warn
       }
-      assert.isAtMost(warned, 1)
+      assert.equal(warned, 1)
       assert.equal(s.toString(), 'abcDefGhijkl')
       assert.deepEqual(s.generateDecodedMap().names, ['d', 'g'])
     })

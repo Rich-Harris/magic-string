@@ -1,4 +1,4 @@
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 import { IntegrityCheckingMagicString as MagicString } from '../__utils/IntegrityCheckingMagicString.ts'
 
 describe('magicString', () => {
@@ -9,8 +9,10 @@ describe('magicString', () => {
       assert.throws(() => s.insert(6, 'X'), /deprecated/)
     })
 
-    it('insertLeft warns and delegates to appendLeft', () => {
-      const s = new MagicString('abcdefghijkl')
+    it('insertLeft warns and delegates to appendLeft', async () => {
+      vi.resetModules()
+      const { IntegrityCheckingMagicString: IsolatedMagicString } = await import('../__utils/IntegrityCheckingMagicString.ts')
+      const s = new IsolatedMagicString('abcdefghijkl')
       const warn = console.warn
       let warned = false
       console.warn = () => {
@@ -34,7 +36,8 @@ describe('magicString', () => {
         warnCount += 1
       }
       try {
-        // the deprecation warning was already emitted by the previous test
+        new MagicString('abcdefghijkl').insertLeft(6, 'X')
+        warnCount = 0
         s.insertLeft(6, 'X')
       }
       finally {
@@ -44,8 +47,10 @@ describe('magicString', () => {
       assert.equal(s.toString(), 'abcdefXghijkl')
     })
 
-    it('insertRight warns and delegates to prependRight', () => {
-      const s = new MagicString('abcdefghijkl')
+    it('insertRight warns and delegates to prependRight', async () => {
+      vi.resetModules()
+      const { IntegrityCheckingMagicString: IsolatedMagicString } = await import('../__utils/IntegrityCheckingMagicString.ts')
+      const s = new IsolatedMagicString('abcdefghijkl')
       const warn = console.warn
       let warned = false
       console.warn = () => {
@@ -69,7 +74,8 @@ describe('magicString', () => {
         warnCount += 1
       }
       try {
-        // the deprecation warning was already emitted by the previous test
+        new MagicString('abcdefghijkl').insertRight(6, 'X')
+        warnCount = 0
         s.insertRight(6, 'X')
       }
       finally {

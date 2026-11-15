@@ -238,6 +238,7 @@ describe('magicString', () => {
         const implicit = new MagicString('abcd')
         implicit.move(0, 1, 2).move(3, 4, 2)
 
+        assert.equal(implicit.toString(), 'badc')
         assert.equal(implicit.toString(), explicit.toString())
       })
 

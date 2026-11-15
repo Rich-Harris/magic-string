@@ -13,7 +13,10 @@ describe('magicString', () => {
       assert.equal(s.slice(1, 11), 'bZZk')
       assert.equal(s.slice(2, 10), 'ZZ')
 
-      assert.throws(() => s.slice(3, 9))
+      assert.throws(
+        () => s.slice(3, 9),
+        /cannot use edited character 3 as slice start anchor/,
+      )
     })
 
     it('should support slicing an empty string', () => {

@@ -85,14 +85,9 @@ describe('magicString', () => {
       s.trimStart()
 
       assert.equal(s.toString(), 'xyzb')
-
-      for (const line of s.generateDecodedMap({ source: 'in.js' }).mappings) {
-        for (const segment of line) {
-          if (segment.length > 1) {
-            assert.ok(segment[1]! >= 0 && segment[2]! >= 0 && segment[3]! >= 0, `segment ${JSON.stringify(segment)} points outside the original`)
-          }
-        }
-      }
+      assert.deepEqual(s.generateDecodedMap({ source: 'in.js' }).mappings, [
+        [[0, 0, 0, 0], [3, 0, 0, 1]],
+      ])
     })
 
     it('should trim the end of a replacement that is longer than the range it replaces', () => {

@@ -149,7 +149,7 @@ describe('bundle', () => {
     })
 
     it('should allow missing file option when generating map', () => {
-      new Bundle()
+      const map = new Bundle()
         .addSource({
           filename: 'foo.js',
           content: new MagicString('var answer = 42;'),
@@ -158,6 +158,11 @@ describe('bundle', () => {
           includeContent: true,
           hires: true,
         })
+
+      assert.equal(map.file, undefined)
+      assert.deepEqual(map.sources, ['foo.js'])
+      assert.deepEqual(map.sourcesContent, ['var answer = 42;'])
+      assert.equal(map.mappings, 'AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC')
     })
 
     it('should handle repeated sources', () => {
@@ -184,8 +189,11 @@ describe('bundle', () => {
         hires: true,
       })
 
-      assert.equal(map.sources.length, 2)
-      assert.equal(map.sourcesContent.length, 2)
+      assert.deepEqual(map.sources, ['foo.js', 'bar.js'])
+      assert.deepEqual(map.sourcesContent, [
+        'var one = 1;\nvar three = 3;',
+        'var two = 2;\nvar four = 4;',
+      ])
 
       const smc = new SourceMapConsumer(map as unknown as RawSourceMap)
       let loc
@@ -314,10 +322,8 @@ describe('bundle', () => {
         file: 'output.js',
       })
 
-      assert.deepEqual(map.x_google_ignoreList, [
-        map.sources.indexOf('two.js'),
-        map.sources.indexOf('three.js'),
-      ])
+      assert.deepEqual(map.sources, ['one.js', 'two.js', 'three.js', 'four.js'])
+      assert.deepEqual(map.x_google_ignoreList, [1, 2])
     })
 
     it('numbers hires "experimental-range" mappings across sources sharing a generated line', () => {
