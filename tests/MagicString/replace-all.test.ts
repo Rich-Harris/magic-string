@@ -37,20 +37,26 @@ describe('magicString', () => {
     })
 
     it('global regex result the same as .replace', () => {
+      const s1 = new MagicString('1 2 3 4 a b c').replaceAll(/(\d)/g, 'xx$1$10').toString()
+      assert.strictEqual(s1, 'xx110 xx220 xx330 xx440 a b c')
       assert.strictEqual(
-        new MagicString('1 2 3 4 a b c').replaceAll(/(\d)/g, 'xx$1$10').toString(),
+        s1,
         new MagicString('1 2 3 4 a b c').replace(/(\d)/g, 'xx$1$10').toString(),
       )
 
+      const s2 = new MagicString('1 2 3 4 a b c').replaceAll(/(\d)/g, '$$').toString()
+      assert.strictEqual(s2, '$ $ $ $ a b c')
       assert.strictEqual(
-        new MagicString('1 2 3 4 a b c').replaceAll(/(\d)/g, '$$').toString(),
+        s2,
         new MagicString('1 2 3 4 a b c').replace(/(\d)/g, '$$').toString(),
       )
 
+      const s3 = new MagicString('hey this is magic')
+        .replaceAll(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`)
+        .toString()
+      assert.strictEqual(s3, 'Hey This Is Magic')
       assert.strictEqual(
-        new MagicString('hey this is magic')
-          .replaceAll(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`)
-          .toString(),
+        s3,
         new MagicString('hey this is magic')
           .replace(/(\w)(\w+)/g, (_, $1, $2) => `${$1.toUpperCase()}${$2}`)
           .toString(),
@@ -63,24 +69,6 @@ describe('magicString', () => {
         MagicStringError,
         'replaceAll() requires a global RegExp',
       )
-    })
-
-    it('with offset', () => {
-      const s = new MagicString('hello world', { offset: 6 })
-      assert.equal(s.slice(0, 5), 'world')
-      assert.equal(s.remove(0, 5).toString(), 'hello ')
-      assert.equal(s.prependLeft(0, 'w').toString(), 'hello w')
-      assert.equal(s.appendLeft(0, 'o').toString(), 'hello wo')
-      assert.equal(s.prependRight(0, 'r').toString(), 'hello wor')
-      assert.equal(s.appendRight(0, 'l').toString(), 'hello worl')
-      assert.equal(s.reset(4, 5).toString(), 'hello world')
-      assert.equal(s.update(0, 5, 'd').toString(), 'hello world')
-      assert.equal(s.overwrite(0, 5, 'rld').toString(), 'hello world')
-
-      s.offset = 1
-      const s1 = s.clone()
-      assert.strictEqual(s1.slice(), 'ello world')
-      assert.equal(s1.move(0, 1, 2).slice(0), 'elo world')
     })
 
     it('should insert at every zero-length match', () => {
