@@ -345,6 +345,27 @@ describe('bundle', () => {
       assert.equal(map.rangeMappings, 'AC')
     })
 
+    it('starts a range after leading newlines in a bundled source', () => {
+      const b = new Bundle({ separator: '' })
+
+      b.addSource(new MagicString('aaa', { filename: 'a.js' }))
+      b.addSource(new MagicString('\n\nbb', { filename: 'b.js' }))
+      assert.equal(b.toString(), 'aaa\n\nbb')
+
+      const decoded = b.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [[0, 0, 0, 0], [2, 0, 0, 2]],
+        [],
+        [[0, 1, 2, 0], [1, 1, 2, 1]],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[0], [], [0]])
+
+      const map = b.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA,EAAE;;ACEF,CAAC')
+      assert.equal(map.rangeMappings, 'A;;A')
+    })
+
     it('records hires "experimental-range" mappings per generated line', () => {
       const b = new Bundle()
 

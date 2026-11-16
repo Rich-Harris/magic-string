@@ -145,6 +145,7 @@ export class Mappings {
       const encoder = experimentalRange ? null : this.encoder
       // when iterating each char, check if it's in a word boundary
       let charInHiresBoundary = false
+      let rangeStarted = false
       while (i < end) {
         if (encoder !== null && this.rawSegments.length >= SEGMENTS_PER_FLUSH) {
           // cap how many decoded segments a single (possibly very long) line buffers
@@ -178,9 +179,10 @@ export class Mappings {
             }
           }
           else if (experimentalRange) {
-            if (i === chunk.start) {
+            if (!rangeStarted) {
               this.rawRangeMappingsIndices.push(this.rawSegments.length)
               this.rawSegments.push([this.generatedCodeColumn, sourceIndex, loc.line, loc.column])
+              rangeStarted = true
             }
           }
           else {

@@ -573,6 +573,45 @@ describe('magicString', () => {
       assert.equal(loc.column, 17)
     })
 
+    it('starts a range after leading newlines in an unedited chunk', () => {
+      const s = new MagicString('aa\nbb')
+
+      s.update(0, 2, 'x')
+      assert.equal(s.toString(), 'x\nbb')
+
+      const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [[0, 0, 0, 0]],
+        [[0, 0, 1, 0], [1, 0, 1, 1]],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[], [0]])
+
+      const map = s.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, 'AAAA;AACA,CAAC')
+      assert.equal(map.rangeMappings, ';A')
+    })
+
+    it('starts a range after newlines at the beginning of the original', () => {
+      const s = new MagicString('\n\nabc')
+
+      s.prepend('/* intro */\n')
+
+      const decoded = s.generateDecodedMap({ hires: 'experimental-range' })
+
+      assert.deepEqual(decoded.mappings, [
+        [],
+        [],
+        [],
+        [[0, 0, 2, 0], [2, 0, 2, 2]],
+      ])
+      assert.deepEqual(decoded.rangeMappings, [[], [], [], [0]])
+
+      const map = s.generateMap({ hires: 'experimental-range' })
+      assert.equal(map.mappings, ';;;AAEA,EAAE')
+      assert.equal(map.rangeMappings, ';;;A')
+    })
+
     it('records hires "experimental-range" mappings on the line the range actually starts on', () => {
       const s = new MagicString('abcdef')
 
