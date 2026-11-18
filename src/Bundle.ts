@@ -383,7 +383,7 @@ export class Bundle {
    * when not supplied. Each source's `indentExclusionRanges` are left unindented.
    */
   indent(indentStr?: string): this {
-    if (!arguments.length) {
+    if (indentStr === undefined) {
       indentStr = this.getIndentString()
     }
 
@@ -393,22 +393,23 @@ export class Bundle {
     let trailingNewline = !this.intro || this.intro.slice(-1) === '\n'
 
     this.sources.forEach((source, i) => {
-      const indentStart = trailingNewline || (i > 0 && /\r?\n$/.test(source.separator))
+      if (i > 0 && source.separator) {
+        trailingNewline = source.separator.slice(-1) === '\n'
+      }
 
       source.content.indent(indentStr, {
         exclude: source.indentExclusionRanges,
-        indentStart, // : trailingNewline || /\r?\n$/.test( separator )  //true///\r?\n/.test( separator )
+        indentStart: trailingNewline,
       })
 
-      trailingNewline = source.content.lastChar() === '\n'
+      const lastChar = source.content.lastChar()
+      if (lastChar) {
+        trailingNewline = lastChar === '\n'
+      }
     })
 
     if (this.intro) {
-      this.intro
-        = indentStr
-          + this.intro.replace(/^[^\r\n]/gm, (match, index) => {
-            return index > 0 ? indentStr + match : match
-          })
+      this.intro = this.intro.replace(/^[^\r\n]/gm, match => indentStr + match)
     }
 
     return this
