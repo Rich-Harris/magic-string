@@ -115,5 +115,52 @@ describe('bundle', () => {
       b.indent('  ')
       assert.equal(b.toString(), '  a\r\n\r\n  b\n  x')
     })
+
+    it('should not indent leading blank lines in the intro', () => {
+      const lf = new Bundle({ intro: '\n\na\nb\n' })
+      lf.addSource(new MagicString('x'))
+      lf.indent('  ')
+      assert.equal(lf.toString(), '\n\n  a\n  b\n  x')
+
+      const crlf = new Bundle({ intro: '\r\n\r\na\r\nb\r\n' })
+      crlf.addSource(new MagicString('x'))
+      crlf.indent('  ')
+      assert.equal(crlf.toString(), '\r\n\r\n  a\r\n  b\r\n  x')
+    })
+
+    it('should treat an explicit undefined argument the same as no argument', () => {
+      const b = new Bundle({ intro: '// header\n' })
+      b.addSource(new MagicString('  a'))
+      b.addSource(new MagicString('  b'))
+      b.addSource(new MagicString('c'))
+
+      b.indent(undefined)
+      assert.equal(b.toString(), '  // header\n    a\n    b\n  c')
+    })
+
+    it('should preserve a trailing newline across an empty source', () => {
+      const b = new Bundle({ intro: '// header\n', separator: '' })
+      b.addSource(new MagicString(''))
+      b.addSource(new MagicString('a\n'))
+      const removed = new MagicString('removed')
+      removed.remove(0, 7)
+      b.addSource(removed)
+      b.append('b')
+
+      b.indent('  ')
+      assert.equal(b.toString(), '  // header\n  a\n  b')
+    })
+
+    it('should not indent a source after a non-newline separator following a source that ends with a newline', () => {
+      const b = new Bundle()
+      b.addSource(new MagicString('a\n'))
+      b.addSource({
+        content: new MagicString('b\nc'),
+        separator: '/* inline */ ',
+      })
+
+      b.indent('  ')
+      assert.equal(b.toString(), '  a\n/* inline */ b\n  c')
+    })
   })
 })
