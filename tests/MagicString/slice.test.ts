@@ -21,6 +21,43 @@ describe('magicString', () => {
       assert.equal(s.slice(), '')
     })
 
+    it.each([-3, 0, 3])('handles out-of-range slices of an empty string with offset %i', (offset) => {
+      const s = new MagicString('', { offset })
+      let lookups = 0
+      for (const map of [s.byStart, s.byEnd]) {
+        const get = map.get.bind(map)
+        map.get = (index) => {
+          // Fail rather than hang if the lookup revisits the empty chunk.
+          assert.isAtMost(++lookups, 10, 'chunk lookup must make progress')
+          return get(index)
+        }
+      }
+
+      for (let start = -3; start <= 3; start++) {
+        for (let end = -3; end <= 3; end++) {
+          lookups = 0
+          assert.equal(s.slice(start - offset, end - offset), '')
+        }
+        lookups = 0
+        assert.equal(s.slice(start - offset), '')
+      }
+    })
+
+    it.each([-3, 0, 3])('keeps insertions at the empty original boundary with offset %i', (offset) => {
+      const s = new MagicString('', { offset })
+      s.appendLeft(-offset, 'left').appendRight(-offset, 'right')
+      assert.equal(s.slice(-offset, 1 - offset), 'rightleft')
+      assert.equal(s.slice(-offset), '')
+    })
+
+    it('still validates indices when slicing an empty string', () => {
+      const s = new MagicString('')
+      for (const index of [Number.NaN, Number.POSITIVE_INFINITY, 0.5]) {
+        assert.throws(() => s.slice(index), /must be an integer/)
+        assert.throws(() => s.slice(0, index), /must be an integer/)
+      }
+    })
+
     it('defaults `end` to the original string length', () => {
       const s = new MagicString('abcdefghijkl')
       assert.equal(s.slice(3), 'defghijkl')
