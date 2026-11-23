@@ -1611,4 +1611,4 @@ export class MagicString {
 
     return this._replaceRegexp(searchValue, replacement)
   }
-          }
+}
