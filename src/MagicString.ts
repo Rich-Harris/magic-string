@@ -1134,6 +1134,8 @@ export class MagicString {
    * @internal
    */
   _chunkAt(index: number): Chunk | undefined {
+    if (index < 0 || index > this.original.length)
+      return undefined
     let chunk = this.byStart.get(index)
     if (chunk)
       return chunk
@@ -1609,4 +1611,4 @@ export class MagicString {
 
     return this._replaceRegexp(searchValue, replacement)
   }
-}
+          }
