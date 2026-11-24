@@ -25,4 +25,10 @@ describe('guessIndent', () => {
   it('prefers tabs when there are more tabbed lines than spaced lines', () => {
     assert.equal(guessIndent('foo\n\tbar\n\tbaz\n  qux'), '\t')
   })
+
+  it('handles empty input, an indented first line, a trailing newline and CRLF', () => {
+    assert.equal(guessIndent(''), null)
+    assert.equal(guessIndent('\tfoo\n'), '\t')
+    assert.equal(guessIndent('    foo\r\n  bar\r\n'), '  ')
+  })
 })

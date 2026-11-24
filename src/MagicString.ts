@@ -134,6 +134,10 @@ function expandReplacement(
   return result
 }
 
+// `^` in `INDENT_PATTERN` matches after each of the `LINE_BREAK` characters
+const INDENT_PATTERN = /^[^\r\n]/gm
+const LINE_BREAK = /[\n\r\u2028\u2029]/
+
 export class MagicString {
   declare public readonly original: string
   declare public offset: number
@@ -411,8 +415,6 @@ export class MagicString {
    */
   indent(indentStr?: string, options?: IndentOptions): this
   indent(indentStr?: string | IndentOptions, options?: IndentOptions): this {
-    const pattern = /^[^\r\n]/gm
-
     if (isObject(indentStr)) {
       options = indentStr
       indentStr = undefined
@@ -452,7 +454,15 @@ export class MagicString {
       if (str === '')
         return str
 
-      const indented = str.replace(pattern, (match: string, offset: number) =>
+      // without a line break only the first character can start a line, so
+      // skip the regexp replace and its callback for the common single-line piece
+      if (!LINE_BREAK.test(str)) {
+        const indented = shouldIndentNextCharacter ? resolvedIndentStr + str : str
+        shouldIndentNextCharacter = false
+        return indented
+      }
+
+      const indented = str.replace(INDENT_PATTERN, (match: string, offset: number) =>
         offset > 0 || shouldIndentNextCharacter ? `${resolvedIndentStr}${match}` : match)
 
       shouldIndentNextCharacter = str[str.length - 1] === '\n'
